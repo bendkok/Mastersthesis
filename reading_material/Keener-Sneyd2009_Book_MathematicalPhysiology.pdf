@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script type="text/javascript"><!--
+    if(window.localStorage && localStorage.getItem("ANDROID_TABLET")) {
+        var tabletVp = document.getElementById('viewport');
+        tabletVp.setAttribute("content","width=1020, user-scalable=yes");
+    } 
+    //-->
+</script>
+<script type="text/javascript" src="/simplesaml/resources/script.js"></script>
+<title>Mangler informasjonskapsel</title>
+
+    <link rel="stylesheet" type="text/css" href="https://weblogin.uio.no/simplesaml/module.php/uiotheme/uio-app-top-bottom.css" />
+    <link rel="stylesheet" type="text/css" href="https://weblogin.uio.no/simplesaml/module.php/uiotheme/uio-app-top-bottom-responsive.css"
+          media="screen and (max-width: 15.5cm) and (orientation : portrait),
+        screen and (max-width: 17.5cm) and (orientation : landscape)" />
+    <link rel="stylesheet" type="text/css" href="https://weblogin.uio.no/simplesaml/module.php/uiotheme/uio-app-weblogin.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="https://weblogin.uio.no/simplesaml/module.php/uiotheme/uio-app-weblogin-responsive.css"
+          media="screen and (max-width: 15.5cm) and (orientation : portrait),
+        screen and (max-width: 17.5cm) and (orientation : landscape)" />
+    <link rel="icon" type="image/png" href="https://weblogin.uio.no/simplesaml/module.php/uiotheme/favicon.ico" />
+
+
+    <!-- responsive libs -->
+    <script type="text/javascript" src="https://weblogin.uio.no/simplesaml/module.php/uiotheme/responsive-libs.js"></script>
+
+    <!-- UiO App -->
+    <script type="text/javascript" src="https://weblogin.uio.no/simplesaml/module.php/delegate/delegate.js"></script>
+    <script type="text/javascript" src="https://weblogin.uio.no/simplesaml/module.php/uiotheme/uio-app-weblogin.js"></script>
+    <script type="text/javascript" src="https://weblogin.uio.no/simplesaml/module.php/uiotheme/uio-app-weblogin-responsive.js"></script>
+
+    <meta name="robots" content="noindex, nofollow" />
+
+</head>
+<body class="app-fluid-responsive">
+
+<!-- Page header starts -->
+<div id="app-head-wrapper">
+  <div id="line-top">
+    <div id="uiologo">
+      <a href="https://www.uio.no/">
+        Universitetet i Oslo      </a>
+    </div>
+  </div>
+  <div id="app-head">
+    <div id="app-name">
+      <a href="https://www.uio.no/tjenester/it/brukernavn-passord/weblogin/">Weblogin</a>
+      <span id="tagline">Innloggingstjeneste for Universitetet i Oslo</span>
+    </div>
+    <div id="head-menu">
+      <a href="#" id="language-select">Language</a>
+      <ul class="language-menu"><li><a href="https://weblogin.uio.no/simplesaml/module.php/core/no_cookie.php?retryURL=https%3A%2F%2Fweblogin.uio.no%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Fezproxy.uio.no%26cookieTime%3D1623409843%26RelayState%3Dezp.2aHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS9jb250ZW50L3BkZi8xMC4xMDA3Lzk3OC0wLTM4Ny03NTg0Ny0zLnBkZg--&amp;language=en">English</a></li><li><a href="https://weblogin.uio.no/simplesaml/module.php/core/no_cookie.php?retryURL=https%3A%2F%2Fweblogin.uio.no%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Fezproxy.uio.no%26cookieTime%3D1623409843%26RelayState%3Dezp.2aHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS9jb250ZW50L3BkZi8xMC4xMDA3Lzk3OC0wLTM4Ny03NTg0Ny0zLnBkZg--&amp;language=nn">Nynorsk</a></li></ul>    </div>
+  </div>
+</div>
+<!-- Page header end -->
+
+
+<div id="app-content">
+
+<!--    <div id="content"> -->
+
+
+
+<h2>Mangler informasjonskapsel</h2><p>Du ser ut til å ha deaktivert informasjonskapsler. Kontroller innstillingene i nettleseren din og prøv igjen.</p><ul><li><a href="https://weblogin.uio.no/simplesaml/saml2/idp/SSOService.php?spentityid=https%3A%2F%2Fezproxy.uio.no&amp;cookieTime=1623409843&amp;RelayState=ezp.2aHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS9jb250ZW50L3BkZi8xMC4xMDA3Lzk3OC0wLTM4Ny03NTg0Ny0zLnBkZg--" id="retry">Prøv igjen</a></li></ul>
+</div> <!-- Page content end -->
+
+<!-- Page footer starts -->
+<div id="app-footer-wrapper"> 
+   <div id="app-footer">
+     <div id="app-responsible">
+       <span class="vrtx-label">Ansvarlig for denne tjenesten</span>
+       <span><a href="mailto:weblogin-drift@usit.uio.no">Seksjon for integrasjon og elektroniske identiteter (INT)</a></span>
+     </div>
+     <div id="contact-info" class="vcard"> 
+       <div class="phone-fax-email"> 
+         <span class="vrtx-label">Kontaktinformasjon</span>
+         <span class="email">E-post: <a href="mailto:houston@usit.uio.no">houston@usit.uio.no</a></span>
+       </div>
+     </div>
+   </div> 
+</div>
+
+<!-- Page footer end --> 
+
+<script type="text/javascript">  
+<!--
+  (function() {
+    var isAndroid = /Android/.test(navigator.userAgent);
+    var isOldAndroid = /Android [123]/.test(navigator.userAgent);
+    
+    if (responsiveApp.isResponsive) {
+      var responsive = (function() {
+        enquire.register(responsiveApp.responsiveMax, {
+          deferSetup : true,
+          setup : function() {
+            if (window == top && isAndroid && isOldAndroid && window.localStorage && !localStorage.getItem("ANDROID_TABLET")) {
+              localStorage.setItem("ANDROID_TABLET", "YES");
+              location.reload();
+            }
+          },
+          match : function() {
+            document.getElementById('language-select').style.display = 'block';
+          },
+          unmatch : function() {
+            document.getElementById('language-select').style.display = 'none';
+          }
+        });
+      }());
+    }
+  }());
+//-->
+</script>
+
