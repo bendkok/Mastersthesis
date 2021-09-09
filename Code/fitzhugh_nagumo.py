@@ -4,10 +4,15 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 
-def fitzhugh_nagumo(t, x, a, b, tau, Iext):
+def fitzhugh_nagumo(x, t, a, b, tau, Iext):
     """Time derivative of the Fitzhugh-Nagumo neural model.
     Parameters
-
+    
+    a = -0.3
+    b = 1.4
+    tau = 20
+    Iext = 0.23
+    
     Parameters
     ----------
     t : float

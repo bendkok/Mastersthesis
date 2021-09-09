@@ -173,20 +173,21 @@ def pinn(data_t, data_y, noise, savename):
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
     model.compile("adam", lr=1e-3, loss_weights=[0] * 7 + bc_weights + data_weights)
-    model.train(epochs=1000, display_every=1000)
+    model.train(epochs=int(1000/200), display_every=1000)
     ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
     model.compile("adam", lr=1e-3, loss_weights=ode_weights + bc_weights + data_weights)
     losshistory, train_state = model.train(
-        epochs=int(900000/90000) if noise == 0 else int(2000000/100),
+        epochs=900000 if noise == 0 else 2000000,
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,
-        # model_restore_path="./model/model.ckpt-"
+        # model_restore_path=os.path.join(savename,"/model/model.ckpt-")
     )
-    dde.saveplot(losshistory=losshistory, train_state=train_state, issave=True, isplot=True, output_dir=savename)
+    dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
+                                                                                    #TypeError: saveplot() got an unexpected keyword argument 'output_dir'
     var_list = [model.sess.run(v) for v in var_list]
     return var_list
 
