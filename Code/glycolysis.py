@@ -157,7 +157,7 @@ def pinn(data_t, data_y, noise, savename):
     model = dde.Model(data, net)
 
     checkpointer = dde.callbacks.ModelCheckpoint(
-        # "./model/model.ckpt", verbose=1, save_better_only=True, period=1000
+        # os.path.join(savename,"model/model.ckpt"), verbose=1, save_better_only=True, period=1000
         os.path.join(savename,"model/model.ckpt"), verbose=1, save_better_only=True, period=1000
     )
     variable = dde.callbacks.VariableValue(
