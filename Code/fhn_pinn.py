@@ -12,6 +12,8 @@ from deepxde.backend import tf
 import os
 import time
 
+from postprocessing import saveplot
+
 
 def fitzhugh_nagumo_model(
         t,
@@ -30,10 +32,10 @@ def fitzhugh_nagumo_model(
 
 
 def pinn(data_t, data_y, noise, savename):
-    a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
+    a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1
     b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
-    tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
-    Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
+    tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
+    Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1 #try testing different values
 
     var_list = [a, b, tau, Iext]
     
@@ -47,8 +49,7 @@ def pinn(data_t, data_y, noise, savename):
     
     geom = dde.geometry.TimeDomain(data_t[0, 0], data_t[-1, 0])
     
-    """
-    Not sure about boundary conditions.
+    
     # Right point
     def boundary(x, _):
         return np.isclose(x[0], data_t[-1, 0])
@@ -56,7 +57,8 @@ def pinn(data_t, data_y, noise, savename):
     y1 = data_y[-1]
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
-    bc2 = dde.DirichletBC(geom, lambda X: y1[2], boundary, component=2)
+    # bc2 = dde.DirichletBC(geom, lambda X: y1[2], boundary, component=2)
+    """
     bc3 = dde.DirichletBC(geom, lambda X: y1[3], boundary, component=3)
     bc4 = dde.DirichletBC(geom, lambda X: y1[4], boundary, component=4)
     bc5 = dde.DirichletBC(geom, lambda X: y1[5], boundary, component=5)
@@ -74,20 +76,21 @@ def pinn(data_t, data_y, noise, savename):
     ptset = dde.bc.PointSet(data_t[idx])
     inside = lambda x, _: ptset.inside(x)
     observe_y4 = dde.DirichletBC(
-        geom, ptset.values_to_func(data_y[idx, 4:5]), inside, component=4
+        geom, ptset.values_to_func(data_y[idx, 0:1]), inside, component=0
     )
     observe_y5 = dde.DirichletBC(
-        geom, ptset.values_to_func(data_y[idx, 5:6]), inside, component=5
+        geom, ptset.values_to_func(data_y[idx, 1:2]), inside, component=1
     )
     
     
-    np.savetxt( os.path.join(savename, "input.dat"), np.hstack((data_t[idx], data_y[idx, 4:5], data_y[idx, 5:6])))
+    np.savetxt( os.path.join(savename, "input.dat"), np.hstack((data_t[idx], data_y[idx, 0:1], data_y[idx, 1:2])))
 
     data = dde.data.PDE(
         geom,
         ODE,
         # [bc0, bc1, bc2, bc3, bc4, bc5, bc6, observe_y4, observe_y5],
-        [ observe_y4, observe_y5],
+        [bc0, bc1, observe_y4, observe_y5],
+        # [],
         anchors=data_t,
     )
     
@@ -130,17 +133,17 @@ def pinn(data_t, data_y, noise, savename):
     callbacks = [checkpointer, variable]
     
     
-    # bc_weights = [1, 1, 10, 10, 10, 1, 10]
+    # bc_weights = [1, 1, 10, 10, 10, 1, 10] 
     bc_weights = [1, 1]
     if noise >= 0.1:
         bc_weights = [w * 10 for w in bc_weights]
-    data_weights = [1e3, 1]
+    data_weights = [1, 1]
     # Large noise requires small data_weights
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
     # print(np.shape([0]*2), np.shape(bc_weights), np.shape(data_weights))
-    model.compile("adam", lr=1e-3, loss_weights=[0] * 2 + bc_weights + data_weights)
-    model.train(epochs=int(1000/200), display_every=1000)
+    model.compile("adam", lr=1e-3, loss_weights=[0] * 2 + bc_weights + data_weights) #test diffenet optimizers
+    model.train(epochs=1, display_every=1000)
     # ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
     ode_weights = [1e-3, 1e-3]
     # Large noise requires large ode_weights
@@ -148,13 +151,15 @@ def pinn(data_t, data_y, noise, savename):
         ode_weights = [10 * w for w in ode_weights]
     model.compile("adam", lr=1e-3, loss_weights=ode_weights + bc_weights + data_weights)
     losshistory, train_state = model.train(
-        epochs=900000 if noise == 0 else 2000000,
+        epochs=100 if noise == 0 else 2000000,
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,
         # model_restore_path=os.path.join(savename,"/model/model.ckpt-")
     )
-    dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
+    
+    saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename) #wanted to add output_dir=savename but get:
+    # dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
                                                                                     #TypeError: saveplot() got an unexpected keyword argument 'output_dir'
     var_list = [model.sess.run(v) for v in var_list]
     return var_list

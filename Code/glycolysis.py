@@ -86,7 +86,7 @@ def pinn(data_t, data_y, noise, savename):
             tf.gradients(y[:, 1:2], t)[0] - (2 * v1 - v2 - v6),
             tf.gradients(y[:, 2:3], t)[0] - (v2 - v3),
             tf.gradients(y[:, 3:4], t)[0] - (v3 - v4 - J),
-            tf.gradients(y[:, 4:5], t)[0] - (v2 - v4 - v6),
+            tf.gradients(y[:, 4:5], t)[0] - (v2 - v4 - v6), #observe_y4 and 5 would equal this and the next line?
             tf.gradients(y[:, 5:6], t)[0] - (-2 * v1 + 2 * v3 - v5),
             tf.gradients(y[:, 6:7], t)[0] - (psi * J - v7),
         ]
@@ -102,7 +102,7 @@ def pinn(data_t, data_y, noise, savename):
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
     bc2 = dde.DirichletBC(geom, lambda X: y1[2], boundary, component=2)
     bc3 = dde.DirichletBC(geom, lambda X: y1[3], boundary, component=3)
-    bc4 = dde.DirichletBC(geom, lambda X: y1[4], boundary, component=4)
+    bc4 = dde.DirichletBC(geom, lambda X: y1[4], boundary, component=4) #this also has component 4 and 5
     bc5 = dde.DirichletBC(geom, lambda X: y1[5], boundary, component=5)
     bc6 = dde.DirichletBC(geom, lambda X: y1[6], boundary, component=6)
 
@@ -173,7 +173,7 @@ def pinn(data_t, data_y, noise, savename):
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
     model.compile("adam", lr=1e-3, loss_weights=[0] * 7 + bc_weights + data_weights)
-    model.train(epochs=int(1000/200), display_every=1000)
+    model.train(epochs=int(1000/1), display_every=200)
     ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
     # Large noise requires large ode_weights
     if noise > 0:
@@ -184,7 +184,7 @@ def pinn(data_t, data_y, noise, savename):
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,
-        # model_restore_path=os.path.join(savename,"/model/model.ckpt-")
+        # model_restore_path=os.path.join(savename,"model\\model.ckpt-")
     )
     dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
                                                                                     #TypeError: saveplot() got an unexpected keyword argument 'output_dir'
