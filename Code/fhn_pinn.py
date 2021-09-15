@@ -15,6 +15,7 @@ import time
 from postprocessing import saveplot
 
 
+
 def fitzhugh_nagumo_model(
         t,
         a = -0.3,
@@ -143,7 +144,7 @@ def pinn(data_t, data_y, noise, savename):
         data_weights = [w / 10 for w in data_weights]
     # print(np.shape([0]*2), np.shape(bc_weights), np.shape(data_weights))
     model.compile("adam", lr=1e-3, loss_weights=[0] * 2 + bc_weights + data_weights) #test diffenet optimizers
-    model.train(epochs=1, display_every=1000)
+    model.train(epochs=int(1e3), display_every=1000)
     # ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
     ode_weights = [1e-3, 1e-3]
     # Large noise requires large ode_weights
@@ -151,14 +152,14 @@ def pinn(data_t, data_y, noise, savename):
         ode_weights = [10 * w for w in ode_weights]
     model.compile("adam", lr=1e-3, loss_weights=ode_weights + bc_weights + data_weights)
     losshistory, train_state = model.train(
-        epochs=100 if noise == 0 else 2000000,
+        epochs=int(5e5) if noise == 0 else int(1e6),
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,
-        # model_restore_path=os.path.join(savename,"/model/model.ckpt-")
+        model_restore_path=os.path.join(savename,"model/model.ckpt-4000") #add the final epoch number 
     )
     
-    saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename) #wanted to add output_dir=savename but get:
+    saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename) 
     # dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
                                                                                     #TypeError: saveplot() got an unexpected keyword argument 'output_dir'
     var_list = [model.sess.run(v) for v in var_list]
@@ -170,9 +171,9 @@ def pinn(data_t, data_y, noise, savename):
 def main():
     start = time.time()
     #t = np.arange(0, 10, 0.005)[:, None]
-    noise = 0.
-    
-    savename = "fitzhugh_nagumo_res"
+    noise = 0.1
+    tf.device("gpu")
+    savename = "./fitzhugh_nagumo_res_01_1e6" #make sure that this directory exists
     
     # Data
     

@@ -5,6 +5,8 @@ from scipy.integrate import odeint
 import deepxde as dde
 from deepxde.backend import tf
 
+from postprocessing import saveplot
+
 
 def glycolysis_model(
     t,
@@ -186,7 +188,7 @@ def pinn(data_t, data_y, noise, savename):
         disregard_previous_best=True,
         # model_restore_path=os.path.join(savename,"model\\model.ckpt-")
     )
-    dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
+    saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename) #wanted to add output_dir=savename but get:
                                                                                     #TypeError: saveplot() got an unexpected keyword argument 'output_dir'
     var_list = [model.sess.run(v) for v in var_list]
     return var_list
