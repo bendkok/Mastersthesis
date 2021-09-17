@@ -1,0 +1,11 @@
+Try to repoduce plot from the paper
+Try changing weights
+Make notes about what to discuss on the meetings
+try looking at the different loss-parts
+Start writing the thesis document
+Go through the code and make sure I understand it
+Use IPython.embed() to check variables
+Make document with: theese variables gave theese results, etc.
+Maybe try reproducing the code, perhaps in Pythorch
+Make a presentation of the code, explaining what each part does
+Kristian August gate 3
