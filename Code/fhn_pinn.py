@@ -32,7 +32,32 @@ def fitzhugh_nagumo_model(
 
 
 
-def pinn(data_t, data_y, noise, savename):
+def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e3), sec_num_epochs=int(1e5)):
+    """
+    Parameters
+    ----------
+    data_t : TYPE
+        DESCRIPTION.
+    data_y : TYPE
+        DESCRIPTION.
+    noise : TYPE
+        DESCRIPTION.
+    savename : TYPE
+        DESCRIPTION.
+    restore : TYPE, optional
+        DESCRIPTION. The default is False.
+    first_num_epochs : TYPE, optional
+        DESCRIPTION. The default is int(1e3).
+    sec_num_epochs : TYPE, optional
+        DESCRIPTION. The default is int(1e5).
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
+    
     a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1
     b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
     tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
@@ -138,27 +163,48 @@ def pinn(data_t, data_y, noise, savename):
     bc_weights = [1, 1]
     if noise >= 0.1:
         bc_weights = [w * 10 for w in bc_weights]
+        
     data_weights = [1, 1]
     # Large noise requires small data_weights
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
-    # print(np.shape([0]*2), np.shape(bc_weights), np.shape(data_weights))
+    
     model.compile("adam", lr=1e-3, loss_weights=[0] * 2 + bc_weights + data_weights) #test diffenet optimizers
-    model.train(epochs=int(1e3), display_every=1000)
+    model.train(epochs=int(first_num_epochs), display_every=1000)
+    
     # ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
-    ode_weights = [1e-3, 1e-3]
+    # ode_weights = [1e-3, 1e-3]
+    ode_weights = [0, 0]
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
     model.compile("adam", lr=1e-3, loss_weights=ode_weights + bc_weights + data_weights)
-    losshistory, train_state = model.train(
-        epochs=int(5e5) if noise == 0 else int(1e6),
-        display_every=1000,
-        callbacks=callbacks,
-        disregard_previous_best=True,
-        model_restore_path=os.path.join(savename,"model/model.ckpt-4000") #add the final epoch number 
-    )
     
+    #if you want to restore from a previous run
+    if restore == True:
+        #reads form the checkpoint text file
+        with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
+            inp = reader.read()
+            restore_from = inp.split(" ")[1].split('"')[1]
+            
+        losshistory, train_state = model.train(
+            epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
+            display_every=1000,
+            callbacks=callbacks,
+            disregard_previous_best=True,
+            model_restore_path=os.path.join(savename,"model", restore_from) #add the final epoch number 
+        )
+    else:
+        losshistory, train_state = model.train(
+            epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
+            display_every=1000,
+            callbacks=callbacks,
+            disregard_previous_best=True
+        )
+    
+    import IPython
+    #breakpoint()
+    IPython.embed()
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename) 
     # dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
                                                                                     #TypeError: saveplot() got an unexpected keyword argument 'output_dir'
@@ -171,9 +217,9 @@ def pinn(data_t, data_y, noise, savename):
 def main():
     start = time.time()
     #t = np.arange(0, 10, 0.005)[:, None]
-    noise = 0.1
+    noise = 0.
     tf.device("gpu")
-    savename = "./fitzhugh_nagumo_res_01_1e6" #make sure that this directory exists
+    savename = "./fitzhugh_nagumo_res" #make sure that this directory exists
     
     # Data
     
@@ -188,7 +234,7 @@ def main():
         np.savetxt(os.path.join(savename, "fitzhugh_nagumo_noise.dat"), np.hstack((t, y)))
 
     # Train
-    var_list = pinn(t, y, noise, savename)
+    var_list = pinn(t, y, noise, savename, restore=False, first_num_epochs=0e3, sec_num_epochs=1e1)
 
     # Prediction
     y = fitzhugh_nagumo_model(np.ravel(t), *var_list)

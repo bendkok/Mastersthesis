@@ -130,3 +130,9 @@ dmypy.json
 
 # PDFs
 # *.pdf
+
+*.dat
+*.png
+*.index
+*.meta
+*.ckpt*
