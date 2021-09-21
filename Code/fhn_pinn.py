@@ -21,12 +21,12 @@ def fitzhugh_nagumo_model(
         a = -0.3,
         b = 1.4,
         tau = 20,
-        Iext = 0.23
+        Iext = 0.23 #maybe try different init values
 ):
     def func(x, t):
         return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
     
-    x0 = [0,0]
+    x0 = [0,0] #maybe try different init values
     
     return odeint(func, x0, t)
 
@@ -169,7 +169,7 @@ def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
     
-    model.compile("adam", lr=1e-3, loss_weights=[0] * 2 + bc_weights + data_weights) #test diffenet optimizers
+    model.compile("adam", lr=1e-3, loss_weights=[0] * 2 + bc_weights + data_weights) #test differnet optimizers
     model.train(epochs=int(first_num_epochs), display_every=1000)
     
     # ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
@@ -202,9 +202,9 @@ def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e
             disregard_previous_best=True
         )
     
-    import IPython
-    #breakpoint()
-    IPython.embed()
+    # import IPython
+    # #breakpoint()
+    # IPython.embed()
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename) 
     # dde.postprocessing.saveplot(losshistory, train_state, issave=True, isplot=True) #wanted to add output_dir=savename but get:
                                                                                     #TypeError: saveplot() got an unexpected keyword argument 'output_dir'

@@ -1,0 +1,53 @@
+\chapter{Introduction}
+\label{sec:intro}
+
+Metamorphic rocks compose \SI{27,4}{\%} of the Earth's crust by volume.
+We can cite this claim using a totally unrelated source \parencite{Cor+14}.
+Gold has a density of \SI{19,32}{\gram\per\centi\meter\cubed}.
+We can back up this claim with two unrelated sources at the same time \parencite{DeB11, NGU19}.
+
+We have a cross-correlation function given by
+\begin{equation}
+    \label{eq:cross-correlation}
+    C(\omega)
+    =
+    \int_{0}^{2\pi} \exp \p*{i \frac{\omega r}{c} \cos \theta} \diff \theta.
+\end{equation}
+Applying the inverse Fourier transform to \eqref{eq:cross-correlation} yields
+\begin{equation*}
+    C(t)
+    =
+    \frac{1}{2\pi} \int_{-\infty}^{\infty} \int_{0}^{2\pi}
+    \exp \p*{-i \frac{\omega r}{c} \cos \theta}
+    \exp \p{i \omega t} \diff \theta \diff \omega.
+\end{equation*}
+
+\kant[4-6] % Dummy text
+
+\section{Outline}
+
+The rest of the text is organised as follows:
+\begin{description}
+    \item[\cref{sec:method}]
+    is second to none, with the notable exception of \cref{sec:intro}.
+    The main tool introduced here is the employment of unintelligible sentences.
+
+    \item[\cref{sec:results}]
+    asserts the basic properties of being the third chapter of a text.
+    This section reveals the shocking truth of filler content.
+
+    \item[\cref{sec:discussion}]
+    demonstrates how easily one can get to four chapters by simply using
+    the \texttt{kantlipsum} package to generate dummy words.
+    
+    \item[\cref{sec:conslusion}]
+    demonstrates how easily one can get to four chapters by simply using
+    the \texttt{kantlipsum} package to generate dummy words.
+
+    \item[\cref{sec:first-app}]
+    features additional material for the specially interested.
+
+    \item[\cref{sec:second-app}]
+    consists of results best relegated to the back of the document,
+    ensuring that nobody will ever read it.
+\end{description}

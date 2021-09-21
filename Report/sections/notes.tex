@@ -1,0 +1,47 @@
+
+Notes from 10.09.21:
+
+Read:
+    Physics-informed  neural  networks:  A  deep  learning framework  for  solving  forward  and  inverse  problems  involving nonlinear  partial  differential  equations
+    DEEPXDE: A DEEP LEARNING LIBRARY FOR SOLVING DIFFERENTIAL EQUATIONS
+    Systems biology informed deep learning for inferring parameters and hidden dynamics
+
+Code:
+Verified that glycolysis.py and $fitzhugh_nagumo.py$ run.
+There were some problems with version, SBINN uses an old version of deepxde, 0.13 instead of 0.10. Had to downgrade.
+Led to some problems with dde.postprocessing.saveplot(). It didn't have the $output_dir$ paramter, but it said it did.
+
+Started implementing a SBINN version for FitzHugh-Nagumo. 
+Originally tried to just call the FitzHugh-Nagumo function instead of the glycolysis function. Obviously didn't work. 
+Needed to adapt the FHN function to be compatible with the PINN function. Just copied the syntax form glycolysis.
+
+Also needed to adapt the PINN function. Had to change a bunch of smaller stuff around:
+    The variables at the start.
+    The ODE function.
+    Etc.
+Had some problems with list shape - resolved.
+The code doesn't use the GPU.
+Was unsure about boundary conditions. I think it's a way/hack to get initial conditions. Was also unsure about how many is needed, settled on one for each variable in FHN, meaning 2. 
+Was unsure about Observes. I think it's supposed to be the "raw" data. glycolysis had two, seemed to also work for FHN. 
+
+Still allot of variables I'm unsure of. Probably need to test different ones. 
+Still unsure about $feature_transform$ and $output_transform$.
+
+
+To do:
+Set up a conda environment. - done, or not. Doesn't look like it's working 
+Fix gpu issue. Install gpu version of a module in the conda environment. - done
+Maybe use a cluster as well. 
+Create new version of dde.postprocessing.saveplot that supports output directory. - done
+Figure out $observe_y4$ and 5, and also component = 4 and 5. Need to check the documentation. 
+See if I can get the $model_restore_path$ thing working. - done
+
+
+
+
+15.09.21:
+Ran code for 5e5 epochs, got NaN after ~3e5 epochs.
+Looks like the optimal value came quite early, after 17e3 epochs.
+
+Did some small restructuring to get the $model_restore_path$ thing working.
+
