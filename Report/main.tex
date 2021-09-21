@@ -1,0 +1,71 @@
+% Documentation for front page:
+% https://github.com/martinhelso/mnfrontpage
+
+
+\documentclass[a4paper, british]{memoir}
+% Add [final] to remove marginal notes
+
+\usepackage{style}      % Custom style
+\usepackage{kantlipsum} % Dummy text
+
+\title{Characterization of cardiac cellular dynamics using Physics-Informed Neural Networks}
+% \subtitle{Optional Subtitle}
+\author{Bendik Steinsvåg Dalen}
+
+\includeonly
+{
+    sections/abstract,
+    sections/acknowledgements,
+    sections/introduction,
+    sections/method,
+    sections/results,
+    sections/discussion,
+    sections/conclusion,
+    sections/appendixA,
+    sections/appendixB,
+}
+
+\begin{document}
+
+    \frontmatter        % Folios in Roman numerals, unnumbered chapters.
+
+    \mnfrontpage
+
+    \include{sections/abstract}
+    \include{sections/acknowledgements}
+
+    \cleartorecto
+    \microtypesetup{protrusion = false}
+    \tableofcontents    % Or \tableofcontents*
+    \cleartorecto
+    \listoffigures      % Or \listoffigures*
+    \cleartorecto
+    \listoftables       % Or \listoftables*
+    \microtypesetup{protrusion = true}
+
+    \mainmatter         % Folios in Arabic numerals, numbered chapters.
+
+    \include{sections/introduction}
+
+    % \part{The First Part}
+    
+    \include{sections/method}
+    \include{sections/results}
+    \include{sections/discussion}
+    \include{sections/conclusion}
+    
+    % \include{sections/chapter2}
+    % \include{sections/chapter3}
+    % \include{sections/chapter4}
+
+    \appendix           % "Chapter" is renamed "Appendix"
+    \appendixpage       % Similar to \part*{Appendices}, but appears in TOC.
+
+    \include{sections/appendixA}
+    \include{sections/appendixB}
+
+    \backmatter         % Folios in Arabic numerals, unnumbered chapters.
+
+    \printbibliography
+
+\end{document}

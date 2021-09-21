@@ -49,8 +49,10 @@ def saveplot(
         save_best_state(train_state, train_fname, test_fname)
 
     if isplot:
-        plot_loss_history(loss_history)
-        plot_best_state(train_state)
+        plot_loss_fname =  os.path.join(output_dir, "loss_history.pdf")
+        plot_state_fname =  os.path.join(output_dir, "best_state.pdf")
+        plot_loss_history(loss_history, plot_loss_fname)
+        plot_best_state(train_state, plot_state_fname)
         plt.show()
 
 
@@ -102,7 +104,7 @@ def save_loss_history(loss_history, fname):
 
 
 
-def plot_best_state(train_state):
+def plot_best_state(train_state, fname=None):
     """Plot the best result of the smallest training loss.
 
     This function only works for 1D and 2D problems. For other problems and to better
@@ -138,6 +140,9 @@ def plot_best_state(train_state):
         plt.xlabel("x")
         plt.ylabel("y")
         plt.legend()
+        if isinstance(fname, str):
+            plt.savefig(fname)
+            
     elif X_test.shape[1] == 2:
         for i in range(y_dim):
             plt.figure()
@@ -146,6 +151,8 @@ def plot_best_state(train_state):
             ax.set_xlabel("$x_1$")
             ax.set_ylabel("$x_2$")
             ax.set_zlabel("$y_{}$".format(i + 1))
+        if isinstance(fname, str):
+            plt.savefig(fname)
 
     # Residual plot
     if y_test is not None:

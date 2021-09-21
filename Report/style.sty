@@ -1,0 +1,278 @@
+\NeedsTeXFormat{LaTeX2e}
+
+
+\ProvidesPackage{style}[15/03/2019 Custom LaTeX style]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PACKAGES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Standalone
+\RequirePackage{standalone}
+
+
+%% Encoding
+\RequirePackage[utf8]{inputenx}
+\RequirePackage[T1]{fontenc}
+
+
+%% Fonts and typography
+\RequirePackage{lmodern}           % Latin Modern
+\renewcommand{\sfdefault}{phv}     % Helvetica
+\RequirePackage[scaled]{beramono}  % Bera Mono (Bitstream Vera Sans Mono)
+\RequirePackage[final]{microtype}  % Improved typography
+\RequirePackage{enumitem}          % Format lists
+\setlist[itemize]{font = \upshape, before = \leavevmode}
+\setlist[enumerate]{font = \upshape, before = \leavevmode}
+\setlist[description]{font = \bfseries\sffamily, before = \leavevmode}
+\RequirePackage{siunitx}           % Typesetting units
+\sisetup{per-mode = symbol}
+\RequirePackage{listings}          % Typesetting code
+\lstset
+{
+    basicstyle       = \ttfamily\footnotesize,
+    commentstyle     = \color{gray},
+    stringstyle      = \itshape,
+    showstringspaces = false,
+    frame            = tb
+}
+\RequirePackage[obeyspaces,
+                spaces,
+                hyphens]{url}      % Typesetting URLs
+\urlstyle{sf}
+
+
+%% Language
+\RequirePackage{babel}      % Automatic translations
+\RequirePackage{csquotes}   % Quotation marks with \enquote
+
+
+%% Mathematics
+\RequirePackage{amssymb}    % Extra symbols
+\RequirePackage{mathtools}  % Fonts and environments for mathematical formulae
+
+
+%% Figures
+\RequirePackage[dvipsnames,
+                svgnames,
+                cmyk]{xcolor}     % Pre-defined colors
+\RequirePackage{graphicx}         % Tool for importing images
+\graphicspath{{figures/}}
+\RequirePackage{subcaption}       % Multiple figures in one
+
+
+%% Tables
+\RequirePackage{multirow}       % Rows spanning multiple lines in tables
+\RequirePackage{tablefootnote}  % Footnotes for tables
+\RequirePackage{longtable}      % Table that can break across pages
+\RequirePackage{pdflscape}      % Rotate pages
+
+
+%% Front page
+\usepackage[FYS, master]{mnfrontpage}
+
+
+%% Organising tools
+\RequirePackage{comment}                                 % Multiline comments
+\RequirePackage[notref, notcite]{showkeys}               % Labels in margins, cooment out to remove
+\renewcommand{\showkeyslabelformat}[1]
+{
+    \fbox
+    {
+        \parbox[t]{0.6\marginparwidth}
+        {
+            \centering\normalfont\footnotesize\ttfamily
+            \path{#1}
+        }
+    }
+}
+\RequirePackage[obeyFinal,
+                color       = LightGray,
+                bordercolor = LightGray,
+                textsize    = footnotesize,
+                figwidth    = 0.99\linewidth]{todonotes} % Marginal notes
+
+
+%% Miscellaneous
+\RequirePackage{xspace}         % Clever space
+\RequirePackage{textcomp}       % Extra symbols
+
+
+%% Bibliography
+\RequirePackage{mathscinet}
+\RequirePackage[backend      = biber,
+                sortcites    = true,
+                giveninits   = true,
+                uniquename   = init,
+                doi          = false,
+                isbn         = false,
+                url          = false,
+                maxcitenames = 2,
+                maxbibnames  = 10,
+                sortlocale   = nb_NO,
+                style        = authoryear]{biblatex} % or style = apa
+\renewcommand*{\nameyeardelim}{\addcomma\space}
+\DeclareNameAlias{sortname}{family-given}
+\DeclareNameAlias{default}{family-given}
+\DeclareFieldFormat[article]{volume}{\bibstring{jourvol}\addnbspace#1}
+\DeclareFieldFormat[article]{number}{\bibstring{number}\addnbspace#1}
+\renewbibmacro*{volume+number+eid}
+{
+    \printfield{volume}
+    \setunit{\addcomma\space}
+    \printfield{number}
+    \setunit{\addcomma\space}
+    \printfield{eid}
+}
+\addbibresource{bibliography.bib}
+
+
+%% Cross references
+\RequirePackage{varioref}
+\RequirePackage[pdfusetitle]{hyperref}
+\RequirePackage[nameinlink, capitalize, noabbrev]{cleveref}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CORE PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Initiate new paragraphs with a blank line
+%% and no indentation
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.5ex plus 0.5ex minus 0.2ex}
+
+
+%% Relax parameters for line breaks
+\pretolerance = 2000
+\tolerance    = 6000
+\hbadness     = 6000
+\setlength{\emergencystretch}{3em}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MEMOIR SETTINGS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Title page
+\pretitle{\begin{center}\huge\sffamily\bfseries\boldmath}
+
+
+%% Book
+\renewcommand*{\printbooktitle}[1]
+{
+    \hrule\vskip\onelineskip
+    \centering\booktitlefont #1
+    \vskip\onelineskip\hrule
+}
+\renewcommand*{\afterbookskip}{\par}
+\renewcommand*{\booktitlefont}{\Huge\bfseries\boldmath\sffamily}
+\renewcommand*{\booknamefont}{\normalfont\huge\bfseries\MakeUppercase}
+
+
+%% Part
+\renewcommand*{\printparttitle}[1]
+{
+    \hrule\vskip\onelineskip
+    \centering\parttitlefont #1
+    \vskip\onelineskip\hrule
+}
+\renewcommand*{\afterpartskip}{\par}
+\renewcommand*{\parttitlefont}{\Huge\bfseries\boldmath\sffamily}
+\renewcommand*{\partnamefont}{\normalfont\huge\bfseries\MakeUppercase}
+
+
+%% Chapter
+\chapterstyle{demo2}
+\renewcommand*{\printchaptername}
+{
+    \centering\chapnamefont\MakeUppercase{\@chapapp}
+}
+\renewcommand*{\printchapternum}{\chapnumfont\thechapter\space}
+\renewcommand*{\chaptitlefont}{\Huge\bfseries\boldmath\sffamily\center}
+
+
+%% Lower level sections
+\setsecheadstyle{\Large\bfseries\boldmath\sffamily\raggedright}
+\setsubsecheadstyle{\large\bfseries\boldmath\sffamily\raggedright}
+\setsubsubsecheadstyle{\normalsize\bfseries\boldmath\sffamily\raggedright}
+\setparaheadstyle{\normalsize\bfseries\boldmath\sffamily\raggedright}
+\setsubparaheadstyle{\normalsize\bfseries\boldmath\sffamily\raggedright}
+
+
+%% Abstract
+\renewcommand{\abstractnamefont}{\sffamily\bfseries}
+\renewcommand{\abstracttextfont}{\normalfont\small\noindent\ignorespaces}
+
+
+%% Table of contents
+\setrmarg{3em}
+\setpnumwidth{2em}
+\addtolength{\cftbooknumwidth}{0.5em}
+\addtolength{\cftpartnumwidth}{0.5em}
+\addtolength{\cftchapternumwidth}{0.5em}
+\addtolength{\cftsectionindent}{0.5em}
+\addtolength{\cftsubsectionindent}{0.5em}
+\addtolength{\cftsubsubsectionindent}{0.5em}
+\addtolength{\cftparagraphindent}{0.5em}
+\addtolength{\cftsubparagraphindent}{0.5em}
+\renewcommand{\cftchapteraftersnumb}{\bfseries\boldmath}
+
+
+%% Header and footer
+\pagestyle{ruled}
+\makeevenhead{ruled}{\sffamily\leftmark}{}{}
+\makeoddhead {ruled}{}{}{\sffamily\rightmark}
+\makeevenfoot{ruled}{\sffamily\thepage}{}{}
+\makeoddfoot{ruled}{}{}{\sffamily\thepage}
+
+\makepagestyle{chapter}
+\makeevenfoot{chapter}{\sffamily\thepage}{}{}
+\makeoddfoot{chapter}{}{}{\sffamily\thepage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% USER-DEFINED MACROS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Operators
+\newcommand{\diff}{\mathop{}\!\mathrm{d}}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\rank}{rank}
+
+
+%% Delimiters
+\DeclarePairedDelimiter{\p}{\lparen}{\rparen}     % Parenthesis
+\DeclarePairedDelimiter{\set}{\lbrace}{\rbrace}   % Set
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}     % Absolute value
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}    % Norm
+\DeclarePairedDelimiter{\ip}{\langle}{\rangle}    % Inner product
+\DeclarePairedDelimiter{\sqb}{\lbrack}{\rbrack}   % Square brackets
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}    % Ceiling
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor} % Floor
+
+
+%% Blackboard bold
+\newcommand{\N}{\mathbb{N}}    % Natural numbers
+\newcommand{\Z}{\mathbb{Z}}    % Integers
+\newcommand{\Q}{\mathbb{Q}}    % Rational numbers
+\newcommand{\R}{\mathbb{R}}    % Real numbers
+\newcommand{\C}{\mathbb{C}}    % Complex numbers
+\newcommand{\A}{\mathbb{A}}    % Affine space
+\renewcommand{\P}{\mathbb{P}}  % Projective space
+
+
+%% Bold face
+\renewcommand{\a}{\mathbf{a}}
+\renewcommand{\b}{\mathbf{b}}
+\renewcommand{\c}{\mathbf{c}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\0}{\mathbf{0}}
+\newcommand{\1}{\mathbf{1}}
+
+
+%% Miscellaneous
+\newcommand{\ie}{\leavevmode\unskip, i.e.,\xspace}
+\newcommand{\eg}{\leavevmode\unskip, e.g.,\xspace}
+\newcommand{\dash}{\textthreequartersemdash\xspace}
+\newcommand{\matlab}{\textsc{Matlab}\xspace}
+
+
+\endinput

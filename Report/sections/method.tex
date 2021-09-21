@@ -1,0 +1,40 @@
+\chapter{Method}
+\label{sec:method}
+
+\subsection{Physics-Informed Neural Networks}
+
+Physics-informed neural networks (PINN) were introduced by M. Raissi et. al (citation here). 
+They are neural networks designed to solve partial differential equations. 
+Essentially you constrain a neural network using physical laws.
+
+Create a DNN with param $\theta$
+Have two training sets, one for the equ and one for BC/IC
+Have a loss function that sums the loss from the pde and the bc
+Find best $\theta$ that minimizes the loss function
+
+Define a PDE problem, $u_{t}+\mathcal{N}[u]=0, x \in \Omega, t \in[0, T]$
+Define $f:=u_{t}+\mathcal{N}[u]$
+Approximate $u(t,x)$ with a DNN
+$f(x,t)$ is thus a PINN 
+Train by minimizing $M S E=M S E_{u}+M S E_{f}$, where $M S E_{u}=\frac{1}{N_{u}} \sum_{i=1}^{N_{u}}\left|u\left(t_{u}^{i}, x_{u}^{i}\right)-u^{i}\right|^{2}$ and $M S E_{f}=\frac{1}{N_{f}} \sum_{i=1}^{N_{f}}\left|f\left(t_{f}^{i}, x_{f}^{i}\right)\right|^{2}$
+
+To implement PINNs we used the package DeepXDE by Lu Lu et. al (citation here). 
+
+
+\subsection{Systems Biology Informed Deep Learning}
+
+Further complication of a PINN. 
+Used to infer the hidden dynamics of experimentally unobserved species as well as the unknown parameters in the system of equations
+
+
+\subsection{FitzHugh–Nagumo}
+
+The FitzHugh–Nagumo model is considered one of the simplest cardiac cell models. It has two states and four variables.
+
+\begin{align}\label{eq:fhn}
+    &\dot{v}=v-\frac{v^{3}}{3}-w+R I_{\mathrm{ext}} \\
+    &\tau \dot{w}=v+a-b w
+\end{align}
+
+
+
