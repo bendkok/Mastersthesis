@@ -175,14 +175,14 @@ def pinn(data_t, data_y, noise, savename):
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
     model.compile("adam", lr=1e-3, loss_weights=[0] * 7 + bc_weights + data_weights)
-    model.train(epochs=int(1000/1), display_every=200)
+    model.train(epochs=int(1000/1), display_every=1000)
     ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
     model.compile("adam", lr=1e-3, loss_weights=ode_weights + bc_weights + data_weights)
     losshistory, train_state = model.train(
-        epochs=900000 if noise == 0 else 2000000,
+        epochs=int(5e4) if noise == 0 else 2000000,
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,
