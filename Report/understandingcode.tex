@@ -76,9 +76,9 @@ We can think of the problem as trying to solve the optimization problem $min_x f
 \end{align}
 where
 \begin{align}
-	\mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right] \\
-	\mathcal{L}^{\text {ode }}(\boldsymbol{\theta}, \mathbf{p}) &= \sum_{s=1}^{s} w_{s}^{\text {ode }} \mathcal{L}_{s}^{\text {ode }}=\sum_{s=1}^{s} w_{s}^{\text {ode }}\left[\frac{1}{N^{\text {ode }}} \sum_{n=1}^{N^{\text {ode }}}\left(\left.\frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}-f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right] \\
-	\mathcal{L}^{a u x}(\boldsymbol{\theta}) &= \sum_{s=1}^{s} w_{s}^{a u x} \mathcal{L}_{s}^{a u x}=\sum_{s=1}^{s} w_{s}^{\text {aux }} \frac{\left(x_{s}\left(T_{0}\right)-\hat{x}_{s}\left(T_{0} ; \boldsymbol{\theta}\right)\right)^{2}+\left(x_{s}\left(T_{1}\right)-\hat{x}_{s}\left(T_{1} ; \boldsymbol{\theta}\right)\right)^{2}}{2}.
+\mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right] \\
+\mathcal{L}^{\text {ode }}(\boldsymbol{\theta}, \mathbf{p}) &= \sum_{s=1}^{s} w_{s}^{\text {ode }} \mathcal{L}_{s}^{\text {ode }}=\sum_{s=1}^{s} w_{s}^{\text {ode }}\left[\frac{1}{N^{\text {ode }}} \sum_{n=1}^{N^{\text {ode }}}\left(\left.\frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}-f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right] \\
+\mathcal{L}^{a u x}(\boldsymbol{\theta}) &= \sum_{s=1}^{s} w_{s}^{a u x} \mathcal{L}_{s}^{a u x}=\sum_{s=1}^{s} w_{s}^{\text {aux }} \frac{\left(x_{s}\left(T_{0}\right)-\hat{x}_{s}\left(T_{0} ; \boldsymbol{\theta}\right)\right)^{2}+\left(x_{s}\left(T_{1}\right)-\hat{x}_{s}\left(T_{1} ; \boldsymbol{\theta}\right)\right)^{2}}{2}.
 \end{align}
 (Let's get back to what these mean later).
 
@@ -163,15 +163,55 @@ $f(x)$, or our loss function, has three parts: data, ODE and auxiliary loss.
 
 \subsection{Data}
 
+The function for the data loss is
+\begin{align}
+\mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right],
+\end{align}
+where $N^{\text {data }}$ is the number of datapoints, $M$ is the number of measurements, $y_{1}, y_{2}, \ldots, y_{M}$ is our measurements at time $t_{1}, t_{2}, \ldots, t_{N^{d a t a}}$, $\hat{x}_{S_m}$ are the outputs of the NN, and $w_{m}^{\text {data }}$ are the data weights. 
+
+In the code the data loss has several compnents. 
 
 
 
 
+\subsection{Weights}
 
+The weights are represented as such in the code:
+\begin{lstlisting}[language=python]
+bc_weights = [1, 1]
+if noise >= 0.1:
+	bc_weights = [w * 10 for w in bc_weights]
+	
+data_weights = [1, 1]
+# Large noise requires small data_weights
+if noise >= 0.1:
+	data_weights = [w / 10 for w in data_weights]
+	
+ode_weights = [1, 1]
+# Large noise requires large ode_weights
+if noise > 0:
+	ode_weights = [10 * w for w in ode_weights]
+\end{lstlisting}
 
-
-
-
+When the model is compiled the loss is added as such:
+\begin{lstlisting}[language=python]
+model.compile(
+	"adam",
+	lr=1e-3,
+	loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
+)
+\end{lstlisting}
+for first 1000 epochs. Here there's the ODE loss has no weight, and is thus ignored. 
+For the remining epochs the loss is added as such:
+\begin{lstlisting}[language=python]
+model.compile(
+	"adam",
+	lr=1e-3,
+	loss_weights=weights["ode_weights"]
+	+ weights["bc_weights"]
+	+ weights["data_weights"],
+)
+\end{lstlisting}
 
 
 
