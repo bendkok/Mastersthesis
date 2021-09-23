@@ -26,9 +26,8 @@ def fitzhugh_nagumo_model(
     x0 = [0,0] #maybe try different init values
 ):
     def func(x, t):
+        #shouldn't v^3 be divided by 3?
         return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
-    
-    
     
     return odeint(func, x0, t)
 
@@ -65,7 +64,7 @@ def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e
     
     a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1
     b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
-    tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 20
+    tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
     Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1 #try testing different values
 
     var_list = [a, b, tau, Iext]
@@ -150,7 +149,6 @@ def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e
     net.apply_feature_transform(feature_transform) #maybe try without this one
     
     def output_transform(t, y):
-        # print( np.shape(data_y[0]), np.shape(t), np.shape([1., 1.]), np.shape(y) )
         return (
             # data_y[0] + tf.math.tanh(t) * tf.constant([1, 1, 0.1, 0.1, 0.1, 1, 0.1]) * y
             data_y[0] + tf.math.tanh(t) * tf.constant([1., 1.]) * y #test different vaules
@@ -159,6 +157,7 @@ def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e
     net.apply_output_transform(output_transform)
 
     model = dde.Model(data, net)
+    
 
     checkpointer = dde.callbacks.ModelCheckpoint(
         # os.path.join(savename,"model/model.ckpt"), verbose=1, save_better_only=True, period=1000
@@ -184,8 +183,8 @@ def pinn(data_t, data_y, noise, savename, restore=False, first_num_epochs=int(1e
     model.train(epochs=int(first_num_epochs), display_every=int(display_every))
     
     # ode_weights = [1e-3, 1e-3, 1e-2, 1e-2, 1e-2, 1e-3, 1]
-    # ode_weights = [1e-3, 1e-3]
-    ode_weights = [0, 0]
+    ode_weights = [1e-3, 1e-3]
+    # ode_weights = [0, 0]
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
@@ -238,20 +237,6 @@ def main():
     
     y = fitzhugh_nagumo_model(np.ravel(t))
     
-    # plt.plot(t, y[:,0], label="v")
-    # plt.plot(t, y[:,1], label="w")
-    # plt.legend(loc="best")
-    # plt.xlabel("Time (ms)")
-    # plt.ylabel("Voltage (mV)")
-    # plt.title("Input data")
-    # plt.savefig(savename + "/plot_exe.pdf")
-    # plt.show()
-    # plt.plot(t, y[:,0] + y[:,1], label="v+w")
-    # plt.legend(loc="best")
-    # plt.show()
-    
-    # print(t.shape, y.shape)
-    
     np.savetxt(os.path.join(savename, "fitzhugh_nagumo.dat"), np.hstack((t, y)))
     # Add noise
     if noise > 0:
@@ -268,40 +253,6 @@ def main():
     
     print("Shapes: ", t.shape, y_pred.shape, np.shape(var_list))
     
-    # plt.plot(t, y_pred[:,0], label="v")
-    # plt.plot(t, y_pred[:,1], label="w")
-    # plt.legend(loc="best")
-    # plt.xlabel("Time (ms)")
-    # plt.ylabel("Voltage (mV)")
-    # plt.title("Prediction")
-    # plt.savefig(savename + "/plot_pred.pdf")
-    # plt.show()
-    
-    # plt.plot(t, y[:,0], label="Exact")
-    # plt.plot(t, y_pred[:,0], "r--", label="Learned")
-    # plt.legend(loc="best")
-    # plt.xlabel("Time (ms)")
-    # plt.ylabel("Voltage (mV)")
-    # plt.title("Exact vs. Predicted v")
-    # plt.savefig(savename + "/plot_comp0.pdf")
-    # plt.show()
-    
-    # plt.plot(t, y[:,1], label="Exact")
-    # plt.plot(t, y_pred[:,1], "r--", label="Learned")
-    # plt.legend(loc="best")
-    # plt.xlabel("Time (ms)")
-    # plt.ylabel("Voltage (mV)")
-    # plt.title("Exact vs. Predicted w")
-    # plt.savefig(savename + "/plot_comp1.pdf")
-    # plt.show()
-    
-    # plt.plot(y_pred[:,0], y_pred[:,1], label="v against w")
-    # # plt.legend(loc="best")
-    # plt.ylabel("w (mA)")
-    # plt.xlabel("v (mV)")
-    # plt.title("Phase space of the FitzHugh–Nagumo model")
-    # plt.savefig(savename + "/plot_pha.pdf")
-    # plt.show()
     
     print(var_list)
 
