@@ -1,0 +1,23 @@
+The code now uses dde.data.PDE. Should it use dde.data.TimePDE instead?
+Are Observes the input data?
+Looks like the code dosen't use dde's built in funtionality to randomly sample the input data. Instead they randomly sample the data, then use the PointSet method.
+Anchors in data?
+Currently we use 3 hidden layers with 128 nodes.
+We use swish as the activation function, $\operatorname{swish}(x):=x \times \operatorname{sigmoid}(\beta x)=\frac{x}{1+e^{-\beta x}}$.
+It uses the Glorot normal initializer as an initilation function. Not sure what that is.
+Not sure why 'loss_weights=[0] * 2 + bc_weights + data_weights' is used, instead of just 'loss_weights=bc_weights + data_weights'?
+Should component be 0 for bc1? Or maybe it should be the init condition?
+Just realised the out FHN model is a neural one, not a cardiac one. Not sure if that's a problem.
+
+Managed to plot exact vs. predicted values. It looks really bad.
+Scratch that, it's a complete disaster.
+It might become better with more epochs giving a better model.
+The feature layer might be where the problem comes from. 
+Also remember to test different values in the output_transform.
+
+First the input data is generated using linspace and y using the fitzhugh_nagumo_model model. Noise might be added.
+Then the pinn() function is called with the data. 
+The variables are assigned/defined using a softplus activation function and tf.Variable.
+They are added into var_list, which also the thing that is returned.
+
+
