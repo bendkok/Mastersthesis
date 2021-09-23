@@ -7,12 +7,16 @@ Created on Thu Sep 23 00:48:56 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+
+path = "fitzhugh_nagumo_res_bad_feature"
 
 filename0 = "fitzhugh_nagumo.dat"
 filename1 = "fitzhugh_nagumo_pred.dat"
 
-data0 = np.loadtxt(filename0, delimiter=' ', skiprows=0, dtype=float)
-data1 = np.loadtxt(filename1, delimiter=' ', skiprows=0, dtype=float)
+data0 = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
+data1 = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
 
 t = data0[:,0]
 v_exe = data0[:,1]
@@ -34,7 +38,7 @@ plt.legend(loc="best")
 plt.xlabel("Time (ms)")
 plt.ylabel("Voltage (mV)")
 plt.title("Input data")
-plt.savefig("plot_exe.pdf")
+plt.savefig(path + "/plot_exe.pdf")
 plt.show()
     
 #prediction
@@ -44,7 +48,7 @@ plt.legend(loc="best")
 plt.xlabel("Time (ms)")
 plt.ylabel("Voltage (mV)")
 plt.title("Prediction")
-plt.savefig("plot_pred.pdf")
+plt.savefig(path + "/plot_pred.pdf")
 plt.show()
 
 plt.plot(t, v_exe, label="Exact")
@@ -53,7 +57,7 @@ plt.legend(loc="best")
 plt.xlabel("Time (ms)")
 plt.ylabel("Voltage (mV)")
 plt.title("Exact vs. Predicted v")
-plt.savefig("plot_comp0.pdf")
+plt.savefig(path + "/plot_comp0.pdf")
 plt.show()
 
 plt.plot(t, w_exe, label="Exact")
@@ -62,7 +66,7 @@ plt.legend(loc="best")
 plt.xlabel("Time (ms)")
 plt.ylabel("Current (mA)")
 plt.title("Exact vs. Predicted w")
-plt.savefig("plot_comp1.pdf")
+plt.savefig(path + "/plot_comp1.pdf")
 plt.show()
 
 plt.plot(v_pre, w_pre, label="v against w")
@@ -70,6 +74,6 @@ plt.plot(v_pre, w_pre, label="v against w")
 plt.xlabel("v (mV)")
 plt.ylabel("w (mA)")
 plt.title("Phase space of the FitzHugh–Nagumo model")
-plt.savefig("plot_pha.pdf")
+plt.savefig(path + "/plot_pha.pdf")
 plt.show()
 
