@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import os
 
 
-path = "fitzhugh_nagumo_res_bad_feature"
+path = "fitzhugh_nagumo_res"
 
 filename0 = "fitzhugh_nagumo.dat"
 filename1 = "fitzhugh_nagumo_pred.dat"

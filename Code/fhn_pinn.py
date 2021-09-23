@@ -175,7 +175,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
     )
     # And train
     model.train(epochs=int(first_num_epochs), display_every=1000)
-
+    
     # Now compile the model, but this time include the ode weights
     model.compile(
         "adam",
@@ -326,7 +326,7 @@ def main():
         axi.legend()
         axi.grid()
 
-    fig.savefig(savename.joinpath("predicted_vs_true.png"))
+    fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
     plt.show()
 
 
