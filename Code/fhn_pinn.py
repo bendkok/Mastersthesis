@@ -88,7 +88,7 @@ def create_data(data_t, data_y):
 
     observe_y4, observe_y5 = create_observations(data_t, data_y, geom)
 
-    data = dde.data.PDE(
+    data = dde.data.PDE(  # should this be TimePDE?
         geom,
         ODE,
         [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
