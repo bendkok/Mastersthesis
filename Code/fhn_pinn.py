@@ -165,7 +165,7 @@ def default_weights(noise):
     )
 
 
-def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs):
+def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None):
 
     # First compile the model with ode weights set to zero
     model.compile(
@@ -190,31 +190,35 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs):
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,
+        model_restore_path=model_restore_path,
     )
     return losshistory, train_state
 
 """
 #if you want to restore from a previous run
-    if restore == True:
-        #reads form the checkpoint text file
-        with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
-            inp = reader.read()
-            restore_from = inp.split(" ")[1].split('"')[1]
-            
-        losshistory, train_state = model.train(
-            epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
-            display_every=int(display_every),
-            callbacks=callbacks,
-            disregard_previous_best=True,
-            model_restore_path=os.path.join(savename,"model", restore_from) #add the final epoch number 
-        )
-    else:
-        losshistory, train_state = model.train(
-            epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
-            display_every=int(display_every),
-            callbacks=callbacks,
-            disregard_previous_best=True
-        )
+if restore == True:
+    #reads form the checkpoint text file
+    with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
+        inp = reader.read()
+        restore_from = inp.split(" ")[1].split('"')[1]
+    model_restore_path=os.path.join(savename,"model", restore_from)
+else:
+    model_restore_path = None
+        
+    losshistory, train_state = model.train(
+        epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
+        display_every=int(display_every),
+        callbacks=callbacks,
+        disregard_previous_best=True,
+        model_restore_path=os.path.join(savename,"model", restore_from) #add the final epoch number 
+    )
+else:
+    losshistory, train_state = model.train(
+        epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
+        display_every=int(display_every),
+        callbacks=callbacks,
+        disregard_previous_best=True
+    )
 """
 
 
@@ -259,8 +263,18 @@ def pinn(
     callbacks = create_callbacks(var_list, savename)
 
     weights = default_weights(noise)
+    #if you want to restore from a previous run
+    if restore == True:
+        #reads form the checkpoint text file
+        with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
+            inp = reader.read()
+            restore_from = inp.split(" ")[1].split('"')[1]
+        model_restore_path=os.path.join(savename,"model", restore_from)
+    else:
+        model_restore_path = None
+        
     losshistory, train_state = train_model(
-        model, weights, callbacks, first_num_epochs, sec_num_epochs
+        model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
@@ -288,7 +302,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fitzhugh_nagumo_res_henrik")
+    savename = Path("fitzhugh_nagumo_res")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
@@ -357,5 +371,5 @@ def plot_features():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     plot_features()
