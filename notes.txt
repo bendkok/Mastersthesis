@@ -14,6 +14,7 @@ Scratch that, it's a complete disaster.
 It might become better with more epochs giving a better model.
 The feature layer might be where the problem comes from. 
 Also remember to test different values in the output_transform.
+shouldn't v^3 be divided by 3?
 
 First the input data is generated using linspace and y using the fitzhugh_nagumo_model model. Noise might be added.
 Then the pinn() function is called with the data. 

@@ -1,0 +1,193 @@
+\documentclass[a4paper]{article}
+% Import some useful packages
+\usepackage[margin=0.6in]{geometry} % narrow margins
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{amsmath,graphicx,varioref,verbatim,amsfonts,geometry,amssymb,dsfont,blindtext}
+%\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{epstopdf}
+\usepackage{media9}
+\usepackage{float}
+\hypersetup{colorlinks=true}
+\definecolor{LightGray}{gray}{0.95}
+
+\definecolor{dkgreen}{rgb}{0,0.55,0}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{red}{rgb}{0.8,0,0}
+\definecolor{mygray}{rgb}{0.96,0.96,0.96}
+\definecolor{LightGray}{gray}{0.95}
+\newcommand{\code}[1]{\colorbox{lightgray}{\texttt{#1}}}
+
+\lstset{frame=tb,
+	language=Python,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	otherkeywords={self,np,plt},
+	numberstyle=\tiny\color{mauve},
+	identifierstyle=\color{black},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{red},
+	backgroundcolor=\color{mygray},
+	rulecolor=\color{black},
+	breaklines=true,
+	breakatwhitespace=true,
+	%tabsize=3
+	extendedchars=true,
+	literate=
+	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	{à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+	{À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+	{ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+	{Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+	{â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+	{Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+	{œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+	{ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+	{€}{{\EUR}}1 {£}{{\pounds}}1
+}
+
+
+%\title{Understanding the Code}
+%\author{Bendik Steinsvåg Dalen}
+\renewcommand\thesubsection{\thesection.\alph{subsection}}
+\renewcommand\thesubsubsection{\thesubsection.\roman{subsubsection}}
+\begin{document}
+
+
+\section{Intro}
+
+We can think of the problem as trying to solve the optimization problem $min_x f(x)$ numerically. Here $f(x)$ would be the loss function,
+\begin{align}
+	f(x) = \mathcal{L}(\boldsymbol{\theta}, \mathbf{p})=\mathcal{L}^{\text {data }}(\boldsymbol{\theta})+\mathcal{L}^{\text {ode }}(\boldsymbol{\theta}, \mathbf{p})+\mathcal{L}^{\operatorname{aux}}(\boldsymbol{\theta}), 
+\end{align}
+where
+\begin{align}
+	\mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right] \\
+	\mathcal{L}^{\text {ode }}(\boldsymbol{\theta}, \mathbf{p}) &= \sum_{s=1}^{s} w_{s}^{\text {ode }} \mathcal{L}_{s}^{\text {ode }}=\sum_{s=1}^{s} w_{s}^{\text {ode }}\left[\frac{1}{N^{\text {ode }}} \sum_{n=1}^{N^{\text {ode }}}\left(\left.\frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}-f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right] \\
+	\mathcal{L}^{a u x}(\boldsymbol{\theta}) &= \sum_{s=1}^{s} w_{s}^{a u x} \mathcal{L}_{s}^{a u x}=\sum_{s=1}^{s} w_{s}^{\text {aux }} \frac{\left(x_{s}\left(T_{0}\right)-\hat{x}_{s}\left(T_{0} ; \boldsymbol{\theta}\right)\right)^{2}+\left(x_{s}\left(T_{1}\right)-\hat{x}_{s}\left(T_{1} ; \boldsymbol{\theta}\right)\right)^{2}}{2}.
+\end{align}
+(Let's get back to what these mean later).
+
+\section{What x is}
+
+The $x$ in our problem can be represented as $[\boldsymbol{\theta}, \mathbf{p}]$, where $\boldsymbol{\theta}$ is the internal paramaters of the NN, while $\mathbf{p} = [a, b, \tau, I_{ext}]$ is the constants in our ODE (the FitzHugh–Nagumo model). 
+
+\subsection{\textbf{p}}
+
+In our code the ODE-constants are represented as:
+\begin{lstlisting}[language=python]
+a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1
+b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
+tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
+Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1
+var_list = [a, b, tau, Iext]
+\end{lstlisting}
+The constants are represented using \lstinline|tf.Variable()|-function. This is a common way to represent paramters in TensorFlow, especially ones that can be differentiated or tuned.
+I'm not sure what it does exactly, but I think it's a type of tensor with some extra properties. 
+
+The \lstinline|softpluss()| function is a smooth approximation to relu, and scales the variable. I'm not sure why this function is used specifically though. 
+The multiplications at the end are used to further scale the variables to be of the same order of magnitued as the values we are trying to approximate. 
+
+
+\subsection{$\theta$}
+
+Our neural network is represented as:
+\begin{lstlisting}[language=python]
+net = dde.maps.FNN([1] + [128] * 3 + [2], "swish", "Glorot normal")
+\end{lstlisting}
+All of $\boldsymbol{\theta}$ is contained in this variable. 
+
+We thus have a NN with 1 input node, 3 hidden layers with 128 nodes, and two output nodes. 
+I belive only one value of $t$ is used at a time, though I'm not entierly sure. 
+%I assume all of $t$ is inserted into the input, otherwise I'm not sure why there's only one input node.
+
+The NN uses the swish activation function,
+\begin{align}
+	\operatorname{swish}(x):=x \times \operatorname{sigmoid}(\beta x)=\frac{x}{1+e^{-\beta x}}.
+\end{align}
+
+The paramters are initalized using the Glorot normal initializer, which has a mean of 0 and a standard deviation of $\sqrt{\frac{2}{N_{\text{input nodes}} + N_{\text{output nodes}}}}$. It might be wort looking into other initilization methods. 
+
+It also recives a input feature transform:
+\begin{lstlisting}[language=python]
+def feature_transform(t):
+	return tf.concat(
+		(
+			t,
+			tf.sin(t),
+			tf.sin(2 * t),
+			tf.sin(3 * t),
+			tf.sin(4 * t),
+			tf.sin(5 * t),
+			tf.sin(6 * t),
+		),
+		axis=1,
+	)
+net.apply_feature_transform(feature_transform)
+\end{lstlisting}
+$t$ will thus go from having shape $[N, 1]$ to $[N, 7]$. 
+This specific transformation is used to mimic the periodicity pattern in the yeast glycolysis model. Our model also has periodicity, so using $\sin(kt)$ is also likely to be a good idea, however differnt choises for $k$ (and a differnt number of $k$s) might be more appropriate. Leaving out the feature transforms might work as well. 
+
+Finally the NN recives a output transformation:
+\begin{lstlisting}[language=python]
+def output_transform(t, y):
+	return (
+		data_y[0] + tf.math.tanh(t) * tf.constant([1., 1.]) * y
+	)
+net.apply_output_transform(output_transform)
+\end{lstlisting}
+If I've understood it correctly, this part essentially just scales the output.
+
+The paper also mentions input scaling, however I haven't been able to find a specific place in the code where this is done.
+
+
+
+
+\section{Loss function}
+
+$f(x)$, or our loss function, has three parts: data, ODE and auxiliary loss. 
+
+
+\subsection{Data}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+\end{document}
+
