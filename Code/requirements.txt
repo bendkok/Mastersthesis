@@ -1,0 +1,5 @@
+deepxde==0.10.0
+numpy
+scipy
+matplotlib
+ap_features
