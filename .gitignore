@@ -434,6 +434,7 @@ TSWLatexianTemp*
 *.index
 *.meta
 *.ckpt*
+model.ckpt*
 
 variables.dat
 checkpoint
