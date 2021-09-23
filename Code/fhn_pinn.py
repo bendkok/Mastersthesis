@@ -194,33 +194,6 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
     )
     return losshistory, train_state
 
-"""
-#if you want to restore from a previous run
-if restore == True:
-    #reads form the checkpoint text file
-    with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
-        inp = reader.read()
-        restore_from = inp.split(" ")[1].split('"')[1]
-    model_restore_path=os.path.join(savename,"model", restore_from)
-else:
-    model_restore_path = None
-        
-    losshistory, train_state = model.train(
-        epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
-        display_every=int(display_every),
-        callbacks=callbacks,
-        disregard_previous_best=True,
-        model_restore_path=os.path.join(savename,"model", restore_from) #add the final epoch number 
-    )
-else:
-    losshistory, train_state = model.train(
-        epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
-        display_every=int(display_every),
-        callbacks=callbacks,
-        disregard_previous_best=True
-    )
-"""
-
 
 def pinn(
     data_t,
@@ -283,9 +256,9 @@ def pinn(
     return var_list
 
 
-def generate_data(savename, true_values, t_vars = [0, 999, 1000], noise=0.0):
+def generate_data(savename, true_values, t_vars, noise=0.0):
     # Generate data to be used as observations
-    t = np.linspace(*t_vars)[:, None]
+    t = np.linspace(*t_vars)[:, None] 
     y = fitzhugh_nagumo_model(np.ravel(t), *true_values)
     np.savetxt(os.path.join(savename, "fitzhugh_nagumo.dat"), np.hstack((t, y)))
     # Add noise
@@ -312,8 +285,9 @@ def main():
     tau = 20
     Iext = 0.23
     true_values = [a, b, tau, Iext]
+    t_vars = [0, 999, 1000]
 
-    t, y = generate_data(savename, true_values, noise)
+    t, y = generate_data(savename, true_values, t_vars, noise)
 
     # Train
     var_list = pinn(
