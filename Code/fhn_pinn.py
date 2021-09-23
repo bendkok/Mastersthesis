@@ -17,13 +17,11 @@ from postprocessing import saveplot
 
 
 def fitzhugh_nagumo_model(
-    t, a=-0.3, b=1.4, tau=20, Iext=0.23  # maybe try different init values
+    t, a=-0.3, b=1.4, tau=20, Iext=0.23, x0 = [0, 0]   # maybe try different init values
 ):
     def func(x, t):
         #shouldn't v^3 be divided by 3?
         return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
-
-    x0 = [0, 0]  # maybe try different init values
 
     return odeint(func, x0, t)
 
@@ -195,6 +193,30 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs):
     )
     return losshistory, train_state
 
+"""
+#if you want to restore from a previous run
+    if restore == True:
+        #reads form the checkpoint text file
+        with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
+            inp = reader.read()
+            restore_from = inp.split(" ")[1].split('"')[1]
+            
+        losshistory, train_state = model.train(
+            epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
+            display_every=int(display_every),
+            callbacks=callbacks,
+            disregard_previous_best=True,
+            model_restore_path=os.path.join(savename,"model", restore_from) #add the final epoch number 
+        )
+    else:
+        losshistory, train_state = model.train(
+            epochs = int(sec_num_epochs), #int(1e5) if noise == 0 else int(1e5),
+            display_every=int(display_every),
+            callbacks=callbacks,
+            disregard_previous_best=True
+        )
+"""
+
 
 def pinn(
     data_t,
@@ -247,9 +269,9 @@ def pinn(
     return var_list
 
 
-def generate_data(savename, true_values, noise=0.0):
+def generate_data(savename, true_values, t_vars = [0, 999, 1000], noise=0.0):
     # Generate data to be used as observations
-    t = np.linspace(0, 999, 1000)[:, None]
+    t = np.linspace(*t_vars)[:, None]
     y = fitzhugh_nagumo_model(np.ravel(t), *true_values)
     np.savetxt(os.path.join(savename, "fitzhugh_nagumo.dat"), np.hstack((t, y)))
     # Add noise
