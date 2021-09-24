@@ -103,7 +103,9 @@ def create_nn(data_y):
         activation="swish",
         kernel_initializer="Glorot normal",
     )
-
+    
+    #try to visualize the output with and without feature_transform
+    
     def feature_transform(t):
         return tf.concat(
             (
@@ -112,6 +114,7 @@ def create_nn(data_y):
                 tf.sin(0.05 * t),
                 tf.sin(0.1 * t),
                 tf.sin(0.15 * t),
+                #try f.exs. tf.sin(0.15 * t + 5),
             ),
             axis=1,
         )
