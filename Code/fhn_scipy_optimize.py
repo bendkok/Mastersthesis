@@ -81,7 +81,7 @@ def optimize_two_parameters():
 
     elif method == "differential_evolution":
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
-        res = differential_evolution(fun, bounds=((-0.5, 0), (1, 1.7)))
+        res = differential_evolution(fun, bounds=((-0.5, 0), (1, 1.7)), tol=0.02, atol=.01)
         x = res.x
         print(res)
     else:
