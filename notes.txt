@@ -19,6 +19,7 @@ shouldn't v^3 be divided by 3?
 First the input data is generated using linspace and y using the fitzhugh_nagumo_model model. Noise might be added.
 Then the pinn() function is called with the data. 
 The variables are assigned/defined using a softplus activation function and tf.Variable.
+	In glucose_insulin they used tanh, that might be a better fit for our model.
 They are added into var_list, which also the thing that is returned.
 
 
