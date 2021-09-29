@@ -84,7 +84,7 @@ where
 
 \section{What x is}
 
-The $x$ in our problem can be represented as $[\boldsymbol{\theta}, \mathbf{p}]$, where $\boldsymbol{\theta}$ is the internal paramaters of the NN, while $\mathbf{p} = [a, b, \tau, I_{ext}]$ is the constants in our ODE (the FitzHugh–Nagumo model). 
+The $x$ in our problem can be represented as $[\boldsymbol{\theta}, \mathbf{p}]$, where $\boldsymbol{\theta}$ is the internal parameters of the NN, while $\mathbf{p} = [a, b, \tau, I_{ext}]$ is the constants in our ODE (the FitzHugh–Nagumo model). 
 
 \subsection{\textbf{p}}
 
@@ -96,11 +96,11 @@ tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
 Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * .1
 var_list = [a, b, tau, Iext]
 \end{lstlisting}
-The constants are represented using \lstinline|tf.Variable()|-function. This is a common way to represent paramters in TensorFlow, especially ones that can be differentiated or tuned.
+The constants are represented using \lstinline|tf.Variable()|-function. This is a common way to represent parameters in TensorFlow, especially ones that can be differentiated or tuned.
 I'm not sure what it does exactly, but I think it's a type of tensor with some extra properties. 
 
-The \lstinline|softpluss()| function is a smooth approximation to relu, and scales the variable. I'm not sure why this function is used specifically though. 
-The multiplications at the end are used to further scale the variables to be of the same order of magnitued as the values we are trying to approximate. 
+The \lstinline|softpluss()| function is a smooth approximation to ReLU, and scales the variable. I'm not sure why this function is used specifically though. 
+The multiplications at the end are used to further scale the variables to be of the same order of magnitude as the values we are trying to approximate. 
 
 
 \subsection{$\theta$}
@@ -112,7 +112,7 @@ net = dde.maps.FNN([1] + [128] * 3 + [2], "swish", "Glorot normal")
 All of $\boldsymbol{\theta}$ is contained in this variable. 
 
 We thus have a NN with 1 input node, 3 hidden layers with 128 nodes, and two output nodes. 
-I belive only one value of $t$ is used at a time, though I'm not entierly sure. 
+I belive only one value of $t$ is used at a time, though I'm not entirely sure. 
 %I assume all of $t$ is inserted into the input, otherwise I'm not sure why there's only one input node.
 
 The NN uses the swish activation function,
@@ -120,9 +120,9 @@ The NN uses the swish activation function,
 	\operatorname{swish}(x):=x \times \operatorname{sigmoid}(\beta x)=\frac{x}{1+e^{-\beta x}}.
 \end{align}
 
-The paramters are initalized using the Glorot normal initializer, which has a mean of 0 and a standard deviation of $\sqrt{\frac{2}{N_{\text{input nodes}} + N_{\text{output nodes}}}}$. It might be wort looking into other initilization methods. 
+The parameters are initialized using the Glorot normal initializer, which has a mean of 0 and a standard deviation of $\sqrt{\frac{2}{N_{\text{input nodes}} + N_{\text{output nodes}}}}$. It might be wort looking into other initialization methods. 
 
-It also recives a input feature transform:
+It also receives a input feature transform:
 \begin{lstlisting}[language=python]
 def feature_transform(t):
 	return tf.concat(
@@ -140,9 +140,9 @@ def feature_transform(t):
 net.apply_feature_transform(feature_transform)
 \end{lstlisting}
 $t$ will thus go from having shape $[N, 1]$ to $[N, 7]$. 
-This specific transformation is used to mimic the periodicity pattern in the yeast glycolysis model. Our model also has periodicity, so using $\sin(kt)$ is also likely to be a good idea, however differnt choises for $k$ (and a differnt number of $k$s) might be more appropriate. Leaving out the feature transforms might work as well. 
+This specific transformation is used to mimic the periodicity pattern in the yeast glycolysis model. Our model also has periodicity, so using $\sin(kt)$ is also likely to be a good idea, however different choices for $k$ (and a different number of $k$s) might be more appropriate. Leaving out the feature transforms might work as well. 
 
-Finally the NN recives a output transformation:
+Finally the NN receives a output transformation:
 \begin{lstlisting}[language=python]
 def output_transform(t, y):
 	return (
@@ -163,23 +163,41 @@ $f(x)$, or our loss function, has three parts: data, ODE and auxiliary loss.
 
 \subsection{Auxiliary}
 
-The function for the auxiliary loss is
+The function for auxiliary loss is
 
 \begin{align}
 \mathcal{L}^{a u x}(\boldsymbol{\theta}) &= \sum_{s=1}^{S} w_{s}^{a u x} \mathcal{L}_{s}^{a u x}=\sum_{s=1}^{S} w_{s}^{\text {aux }} \frac{\left(x_{s}\left(T_{0}\right)-\hat{x}_{s}\left(T_{0} ; \boldsymbol{\theta}\right)\right)^{2}+\left(x_{s}\left(T_{1}\right)-\hat{x}_{s}\left(T_{1} ; \boldsymbol{\theta}\right)\right)^{2}}{2}.
 \end{align}
-Here $S$ is the 
+The article describes $S$ as the amount of species in the system. I think that's the same as states in the ODE-system, which would be 2 for FHN. 
+$x_s$ represents the value state $S$, $\hat{x}_{s}$ is the output of the NN, $T_0$ is the start time point, $T_1$ is an arbitrary time point, $\boldsymbol{\theta}$ are the internal variables of the NN and $w_{m}^{\text {data }}$ are the auxiliary weights.
+
 
 
 \subsection{Data}
 
-The function for the data loss is
+The function for data loss is
 \begin{align}
 \mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right],
 \end{align}
-where $N^{\text {data }}$ is the number of datapoints, $M$ is the number of measurements, $y_{1}, y_{2}, \ldots, y_{M}$ is our measurements at time $t_{1}, t_{2}, \ldots, t_{N^{d a t a}}$. $\hat{x}_{S_m}$ are the outputs of the NN, $w_{m}^{\text {data }}$ are the data weights, and $\boldsymbol{\theta}$ are the internal variables of the NN. 
+where $N^{\text {data }}$ is the number of data points, $M$ is the number of measurements, $y_{1}, y_{2}, \ldots, y_{M}$ is our measurements at time $t_{1}, t_{2}, \ldots, t_{N^{d a t a}}$. $\hat{x}_{S_m}$ are the outputs of the NN, $w_{m}^{\text {data }}$ are the data weights, $\boldsymbol{\theta}$ are the internal variables of the NN, and $w_{m}^{\text {data }}$ are the data weights. 
 
-In the code the data loss has several components: geometry, bcs, observes and anchors. 
+For the FHN model we get $M=S$ since both the states are measurable. 
+
+%In the code the data loss has several components: geometry, bcs, observes and anchors. 
+
+
+\subsection{ODE}
+
+We enforce the network to satisfy the ODE system at $N^{\text {ode }}$ time points $\tau_{n}$.
+The function for ODE loss then becomes 
+\begin{align}
+\mathcal{L}^{\text {ode }}(\boldsymbol{\theta}, \mathbf{p}) 
+&= \sum_{s=1}^{S} w_{s}^{\text {ode }} \mathcal{L}_{s}^{\text {ode }}
+= \sum_{s=1}^{S} w_{s}^{\text {ode }} \left[\frac{1}{N^{\text {ode }}} \sum_{n=1}^{N^{\text {ode }}}\left(\left. \frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}} - f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right],
+\end{align}
+where $\hat{x}_{s}$ is the output of the NN for state $s$, $w_{m}^{\text {ode }}$ are the ODE weights and $f_s$ is the solution to the ODE system with the given parameters $\mathbf{p}$.
+
+Automatic differentiation is used to compute $\left. \frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}$. 
 
 
 
