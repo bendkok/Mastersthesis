@@ -128,12 +128,11 @@ def feature_transform(t):
 	return tf.concat(
 		(
 			t,
-			tf.sin(t),
-			tf.sin(2 * t),
-			tf.sin(3 * t),
-			tf.sin(4 * t),
-			tf.sin(5 * t),
-			tf.sin(6 * t),
+			tf.sin(0.01 * t),
+			tf.sin(0.05 * t),
+			tf.sin(0.1 * t),
+			tf.sin(0.15 * t),
+			#try f.exs. tf.sin(0.15 * t + 5),
 		),
 		axis=1,
 	)
@@ -171,6 +170,22 @@ The function for auxiliary loss is
 The article describes $S$ as the amount of species in the system. I think that's the same as states in the ODE-system, which would be 2 for FHN. 
 $x_s$ represents the value state $S$, $\hat{x}_{s}$ is the output of the NN, $T_0$ is the start time point, $T_1$ is an arbitrary time point, $\boldsymbol{\theta}$ are the internal variables of the NN and $w_{m}^{\text {data }}$ are the auxiliary weights.
 
+I'm not sure exactly which part of the code is meant to be the auxiliary loss. It's either
+\begin{lstlisting}[language=python]
+# Create a time domain from first to last timepoint
+geom = dde.geometry.TimeDomain(data_t[0, 0], data_t[-1, 0])
+\end{lstlisting}
+or
+\begin{lstlisting}[language=python]
+def boundary(x, _):
+	return np.isclose(x[0], data_t[-1, 0])
+
+y1 = data_y[-1]
+bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
+bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
+\end{lstlisting}
+or both. 
+
 
 
 \subsection{Data}
@@ -195,9 +210,13 @@ The function for ODE loss then becomes
 &= \sum_{s=1}^{S} w_{s}^{\text {ode }} \mathcal{L}_{s}^{\text {ode }}
 = \sum_{s=1}^{S} w_{s}^{\text {ode }} \left[\frac{1}{N^{\text {ode }}} \sum_{n=1}^{N^{\text {ode }}}\left(\left. \frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}} - f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right],
 \end{align}
-where $\hat{x}_{s}$ is the output of the NN for state $s$, $w_{m}^{\text {ode }}$ are the ODE weights and $f_s$ is the solution to the ODE system with the given parameters $\mathbf{p}$.
+where $\hat{x}_{s}$ is the output of the NN for state $s$, $w_{m}^{\text {ode }}$ are the ODE weights and $f_s$ is the solution to the ODE system with the given parameters $\mathbf{p}$. For FHN $\mathbf{p} = [a, b, \tau, I_{ext}]$.
 
 Automatic differentiation is used to compute $\left. \frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}$. 
+
+
+\subsection{Compiling the Loss Functions}
+
 
 
 

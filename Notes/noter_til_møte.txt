@@ -1,0 +1,10 @@
+How much should I have to change glycolysis.py and fitzhugh_nagumo.py?
+Simply changing function for y dosen't work. Need to change pinn-function too.
+	Boundary conditions?
+	Observes?
+Tried chaning pinn() manually, encountered some problems. Line 146 gives:
+RuntimeError: DirichletBC should output 1D values. Use argument 'component' for different components.
+
+output_dir in saveplot()?
+How does model_restore_path work?
+Google group
