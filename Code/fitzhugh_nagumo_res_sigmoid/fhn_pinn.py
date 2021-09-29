@@ -6,7 +6,6 @@ Created on Thu Sep  9 14:13:48 2021
 """
 from pathlib import Path
 import numpy as np
-import scipy as sp
 from scipy.integrate import odeint
 import deepxde as dde
 from deepxde.backend import tf
@@ -59,16 +58,14 @@ def create_observations(data_t, data_y, geom):
 def create_data(data_t, data_y):
 
     # Define the variables in the model
-    #gaussian
-    a = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
-    b = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1
-    tau = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    Iext = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
-    
-    # a = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
-    # b = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1
-    # tau = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    # Iext = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+    a = tf.math.sigmoid(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+    b = tf.math.sigmoid(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1
+    tau = tf.math.sigmoid(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
+    Iext = tf.math.sigmoid(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+    # a = tf.Variable(0, trainable=True, dtype=tf.float32) * 0.1
+    # b = tf.Variable(0, trainable=True, dtype=tf.float32) * 1
+    # tau = tf.Variable(0, trainable=True, dtype=tf.float32) * 10
+    # Iext = tf.Variable(0, trainable=True, dtype=tf.float32) * 0.1
     var_list = [a, b, tau, Iext]
 
     def ODE(t, y):
@@ -311,7 +308,7 @@ def main():
         savename,
         restore=False,
         first_num_epochs=1000,
-        sec_num_epochs=50000,
+        sec_num_epochs=90000,
     )
 
     # Prediction

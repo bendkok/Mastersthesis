@@ -161,13 +161,23 @@ The paper also mentions input scaling, however I haven't been able to find a spe
 
 $f(x)$, or our loss function, has three parts: data, ODE and auxiliary loss. 
 
+\subsection{Auxiliary}
+
+The function for the auxiliary loss is
+
+\begin{align}
+\mathcal{L}^{a u x}(\boldsymbol{\theta}) &= \sum_{s=1}^{S} w_{s}^{a u x} \mathcal{L}_{s}^{a u x}=\sum_{s=1}^{S} w_{s}^{\text {aux }} \frac{\left(x_{s}\left(T_{0}\right)-\hat{x}_{s}\left(T_{0} ; \boldsymbol{\theta}\right)\right)^{2}+\left(x_{s}\left(T_{1}\right)-\hat{x}_{s}\left(T_{1} ; \boldsymbol{\theta}\right)\right)^{2}}{2}.
+\end{align}
+Here $S$ is the 
+
+
 \subsection{Data}
 
 The function for the data loss is
 \begin{align}
 \mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right],
 \end{align}
-where $N^{\text {data }}$ is the number of datapoints, $M$ is the number of measurements, $y_{1}, y_{2}, \ldots, y_{M}$ is our measurements at time $t_{1}, t_{2}, \ldots, t_{N^{d a t a}}$, $\hat{x}_{S_m}$ are the outputs of the NN, and $w_{m}^{\text {data }}$ are the data weights. 
+where $N^{\text {data }}$ is the number of datapoints, $M$ is the number of measurements, $y_{1}, y_{2}, \ldots, y_{M}$ is our measurements at time $t_{1}, t_{2}, \ldots, t_{N^{d a t a}}$. $\hat{x}_{S_m}$ are the outputs of the NN, $w_{m}^{\text {data }}$ are the data weights, and $\boldsymbol{\theta}$ are the internal variables of the NN. 
 
 In the code the data loss has several components: geometry, bcs, observes and anchors. 
 
@@ -202,7 +212,7 @@ model.compile(
 )
 \end{lstlisting}
 for first 1000 epochs. Here there's the ODE loss has no weight, and is thus ignored. 
-For the remining epochs the loss is added as such:
+For the remaining epochs the loss is added as such:
 \begin{lstlisting}[language=python]
 model.compile(
 	"adam",
