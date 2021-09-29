@@ -1,0 +1,8 @@
+Wrote some more on understandingcode document.
+
+Tried different scaling functions, all of them were worse.
+Some gave bad results, some just gave nan, like tanh.
+In glucose_insulin they use tanh, but they also have f.exs. * 10 + 290. That might be something to try out.
+
+Maybe nested k-fold?
+https://machinelearningmastery.com/nested-cross-validation-for-machine-learning-with-python/

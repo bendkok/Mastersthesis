@@ -46,29 +46,25 @@ def create_observations(data_t, data_y, geom):
     inside = lambda x, _: ptset.inside(x)
 
     # Create the observations by using the point set
-    observe_y4 = dde.DirichletBC(
+    observe_y0 = dde.DirichletBC(
         geom, ptset.values_to_func(data_y[idx, 0:1]), inside, component=0
     )
-    observe_y5 = dde.DirichletBC(
+    observe_y1 = dde.DirichletBC(
         geom, ptset.values_to_func(data_y[idx, 1:2]), inside, component=1
     )
 
-    return observe_y4, observe_y5
+    return observe_y0, observe_y1
 
 
 def create_data(data_t, data_y):
 
     # Define the variables in the model
     #gaussian
-    a = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
-    b = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1
-    tau = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    Iext = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+    a = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1 *10
+    b = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1 *10
+    tau = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10 *10 
+    Iext = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1 *10
     
-    # a = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
-    # b = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1
-    # tau = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    # Iext = sp.special.softmax(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
     var_list = [a, b, tau, Iext]
 
     def ODE(t, y):
@@ -92,12 +88,12 @@ def create_data(data_t, data_y):
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
 
-    observe_y4, observe_y5 = create_observations(data_t, data_y, geom)
+    observe_y0, observe_y1 = create_observations(data_t, data_y, geom)
 
     data = dde.data.PDE(  
         geom,
         ODE,
-        [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
+        [bc0, bc1, observe_y0, observe_y1],  # list of boundary conditions
         anchors=data_t,
     )
     return data, var_list
