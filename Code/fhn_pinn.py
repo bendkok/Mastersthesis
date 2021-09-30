@@ -108,6 +108,16 @@ def create_nn(data_y):
     )
     
     #try to visualize the output with and without feature_transform
+    #you need to use build() for the feature transformation to take effect
+    
+    net.build()
+    print("NN outputs: ", net.outputs)
+    print("NN inputs: ", net.inputs)
+    print("NN targets: ", net.targets)
+    print("NN layer_size: ", net.layer_size)
+    print("NN _input_transform: ", net._input_transform)
+    print("NN _output_transform: ", net._output_transform)
+    print("\n")
     
     def feature_transform(t):
         return tf.concat(
@@ -120,9 +130,7 @@ def create_nn(data_y):
                 #try f.exs. tf.sin(0.15 * t + 5),
             ),
             axis=1,
-        )
-
-    net.apply_feature_transform(feature_transform)
+        )    
 
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
@@ -130,6 +138,31 @@ def create_nn(data_y):
         return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
 
     net.apply_output_transform(output_transform)
+    
+    net.apply_feature_transform(feature_transform)
+    net.build()
+    print("NN outputs: ", net.outputs)
+    print("NN inputs: ", net.inputs)
+    print("NN targets: ", net.targets)
+    print("NN layer_size: ", net.layer_size)
+    ten = tf.constant( [[1.]] )
+    # print(ten)
+    # with tf.Session() as sess:  print(ten.eval()) 
+    inp = net._input_transform( ten )
+    print("NN _input_transform: ", inp)
+    oup = net._output_transform( ten, 1.)
+    print("NN _output_transform: ", oup)
+    print("\n")
+    with tf.Session() as sess:  
+        print("NN _input_transform: ", inp.eval() )
+        print("NN _output_transform: ", oup.eval() )
+        # print("NN outputs: ", net.outputs.eval() )
+    
+    print("\n")
+    
+    import sys
+    sys.exit()
+    
     return net
 
 
@@ -179,6 +212,9 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         lr=1e-3,
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
+    
+    
+    
     # And train
     model.train(epochs=int(first_num_epochs), display_every=1000)
     
