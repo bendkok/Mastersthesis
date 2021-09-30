@@ -1,8 +1,8 @@
-Wrote some more on understandingcode document.
+Wrote some more on understandingcode document, about the loss functions.
 
 Tried different scaling functions, all of them were worse.
-Some gave bad results, some just gave nan, like tanh.
-In glucose_insulin they use tanh, but they also have f.exs. * 10 + 290. That might be something to try out.
+Some gave bad results (gaussian, sigmois), some just gave nan (tanh).
+In glucose_insulin they use tanh, but they also have f.exs. v * 10 + 290. That might be something to try out.
 
 Tried to visualize the output with and without feature_transform. You need to use build() for the feature transform to take effect.
 Didn't have much success here, but got something.

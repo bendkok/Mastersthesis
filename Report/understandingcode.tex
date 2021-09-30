@@ -80,7 +80,7 @@ where
 \mathcal{L}^{\text {ode }}(\boldsymbol{\theta}, \mathbf{p}) &= \sum_{s=1}^{s} w_{s}^{\text {ode }} \mathcal{L}_{s}^{\text {ode }}=\sum_{s=1}^{s} w_{s}^{\text {ode }}\left[\frac{1}{N^{\text {ode }}} \sum_{n=1}^{N^{\text {ode }}}\left(\left.\frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}-f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right] \\
 \mathcal{L}^{a u x}(\boldsymbol{\theta}) &= \sum_{s=1}^{s} w_{s}^{a u x} \mathcal{L}_{s}^{a u x}=\sum_{s=1}^{s} w_{s}^{\text {aux }} \frac{\left(x_{s}\left(T_{0}\right)-\hat{x}_{s}\left(T_{0} ; \boldsymbol{\theta}\right)\right)^{2}+\left(x_{s}\left(T_{1}\right)-\hat{x}_{s}\left(T_{1} ; \boldsymbol{\theta}\right)\right)^{2}}{2}.
 \end{align}
-(Let's get back to what these mean later).
+Let's get back to what these mean later.
 
 \section{What x is}
 
@@ -195,12 +195,43 @@ The function for data loss is
 \mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{m=1}^{M} w_{m}^{\text {data }} \mathcal{L}_{m}^{\text {data }}=\sum_{m=1}^{M} w_{m}^{\text {data }}\left[\frac{1}{N^{\text {data }}} \sum_{n=1}^{N^{\text {data }}}\left(y_{m}\left(t_{n}\right)-\hat{x}_{s_{m}}\left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2}\right],
 \end{align}
 where $N^{\text {data }}$ is the number of data points, $M$ is the number of measurements, $y_{1}, y_{2}, \ldots, y_{M}$ is our measurements at time $t_{1}, t_{2}, \ldots, t_{N^{d a t a}}$. $\hat{x}_{S_m}$ are the outputs of the NN, $w_{m}^{\text {data }}$ are the data weights, $\boldsymbol{\theta}$ are the internal variables of the NN, and $w_{m}^{\text {data }}$ are the data weights. 
-
 For the FHN model we get $M=S$ since both the states are measurable. 
 
+In the code the data is created in the \lstinline|create_observations()| function. Here a random subset of the total data is chosen to be used as the data for the model. %todo: bad wording
 
+First a random set of the indexes is generated:
+\begin{lstlisting}[language=python]
+n = len(data_t)
+# Create a random array of size n/4 selecting indices between 1 and n-1
+idx = np.random.choice(np.arange(1, n - 1), size=n // 4, replace=False)
+# Add the last point to the list
+idx = np.append(idx, [0, n - 1])
+\end{lstlisting}
+Then these are used to make a set of points using \lstinline|DeepXDE|'s \lstinline|PointSet()| function:
+\begin{lstlisting}[language=python]
+# Turn these timepoints into a set of points
+ptset = dde.bc.PointSet(data_t[idx])
+# Create a function that returns true when a point is part of the point set
+inside = lambda x, _: ptset.inside(x)
+\end{lstlisting}
+\lstinline|DeepXDE| also has built in functionality to generate a random subset of points. I'm not sure why this method isn't used, but I guess it doesn't really matter. 
 
+Finally two sets of observations, or data points, are generated, one for each state:
+\begin{lstlisting}[language=python]
+# Create the observations by using the point set
+observe_y0 = dde.DirichletBC(
+	geom, ptset.values_to_func(data_y[idx, 0:1]), inside, component=0
+)
+observe_y1 = dde.DirichletBC(
+	geom, ptset.values_to_func(data_y[idx, 1:2]), inside, component=1
+)
+\end{lstlisting}
 
+There's also a part called anchors:
+\begin{lstlisting}[language=python]
+anchors=data_t
+\end{lstlisting}
+I'm not really sure what it does, but I believe it's part of the data at least. 
 
 
 \subsection{ODE}
@@ -216,11 +247,34 @@ where $\hat{x}_{s}$ is the output of the NN for state $s$, $w_{m}^{\text {ode }}
 
 Automatic differentiation is used to compute $\left. \frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}$. 
 
+In the code the ODE is represented as
+\begin{lstlisting}[language=python]
+def ODE(t, y):
+	v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + Iext
+	v2 = (y[:, 0:1] - a - b * y[:, 1:2]) / tau
+	return [
+		tf.gradients(y[:, 0:1], t)[0] - v1,
+		tf.gradients(y[:, 1:2], t)[0] - v2,
+	]
+\end{lstlisting}
+which is then compiled together with the data, and later with the NN. 
+
 
 \subsection{Compiling the Loss Functions}
 
-
-
+All the loss functions (the geometry, the ODE function, the boundary conditions and observes, and the anchors) are combined into a \lstinline|dde.data.PDE()| variable:
+\begin{lstlisting}[language=python]
+data = dde.data.PDE(  
+	geom,
+	ODE,
+	[bc0, bc1, observe_y0, observe_y1],  # list of boundary conditions
+	anchors=data_t,
+)
+\end{lstlisting}
+This is then combined with the NN to create a \lstinline|dde.Model| variable:
+\begin{lstlisting}[language=python]
+model = dde.Model(data, net)
+\end{lstlisting}
 
 
 \subsection{Weights}
@@ -250,7 +304,8 @@ model.compile(
 	loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
 )
 \end{lstlisting}
-for first 1000 epochs. Here there's the ODE loss has no weight, and is thus ignored. 
+and the model is trained for 1000 epochs. 
+Here there's the ODE loss has no weight, and is thus ignored. 
 For the remaining epochs the loss is added as such:
 \begin{lstlisting}[language=python]
 model.compile(
@@ -261,6 +316,35 @@ model.compile(
 	+ weights["data_weights"],
 )
 \end{lstlisting}
+The model is then trained for more epochs, currently 50000:
+\begin{lstlisting}[language=python]
+losshistory, train_state = model.train(
+	epochs=int(sec_num_epochs),
+	display_every=1000,
+	callbacks=callbacks,
+	disregard_previous_best=True,
+	model_restore_path=model_restore_path,
+)
+\end{lstlisting}
+
+
+\subsection{Final bit}
+
+Finally the estimate for the variables $\mathbf{p}$ is created using:
+\begin{lstlisting}[language=python]
+var_list = [model.sess.run(v) for v in var_list]
+\end{lstlisting}
+I'm sure exactly how \lstinline|run()| works, but it seems like it makes an estimate for each variable individually. 
+
+
+
+\section{End}
+
+With that I have described most of the code as it stands. Let me know if I missed any parts. There's also a couple of parts of the code I didn't quite understand, which I will have to look into.
+
+
+
+
 
 
 
