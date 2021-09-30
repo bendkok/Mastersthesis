@@ -4,5 +4,8 @@ Tried different scaling functions, all of them were worse.
 Some gave bad results, some just gave nan, like tanh.
 In glucose_insulin they use tanh, but they also have f.exs. * 10 + 290. That might be something to try out.
 
+Tried to visualize the output with and without feature_transform. You need to use build() for the feature transform to take effect.
+Didn't have much success here, but got something.
+
 Maybe nested k-fold?
 https://machinelearningmastery.com/nested-cross-validation-for-machine-learning-with-python/
