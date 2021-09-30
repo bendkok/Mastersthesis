@@ -59,7 +59,6 @@ def create_observations(data_t, data_y, geom):
 def create_data(data_t, data_y):
 
     # Define the variables in the model
-    #gaussian
     a = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1 *10
     b = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 1 *10
     tau = tf.math.tanh(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10 *10 
@@ -213,8 +212,6 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
     
-    
-    
     # And train
     model.train(epochs=int(first_num_epochs), display_every=1000)
     
@@ -297,7 +294,7 @@ def pinn(
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
-
+    
     var_list = [model.sess.run(v) for v in var_list]
     return var_list
 
@@ -322,7 +319,7 @@ def main():
     noise = 0.0
     # tf.device("gpu")
     savename = Path("fitzhugh_nagumo_res")
-    # Create directory if not exist
+    # Create directory if it dosen't exist
     savename.mkdir(exist_ok=True)
 
     # a, b, tau, Iext
