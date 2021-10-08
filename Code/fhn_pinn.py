@@ -122,10 +122,10 @@ def create_nn(data_y, k_vals=[0.013]):
     #try to visualize the output with and without feature_transform
     
     def feature_transform(t):
-        features = np.zeros((len(k_vals) + 1, t.shape[0]))
-        features[0] = t
+        features = [] # np.zeros(len(k_vals) + 1)
+        features.append(t) #[0] = t
         for k in range(len(k_vals)):
-            features[k+1] = tf.sin(k_vals[k] * 2*np.pi*t),
+            features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
         return tf.concat(features, axis=1)
             # (
             #     # t,
@@ -362,7 +362,7 @@ def main():
         first_num_epochs=1000,
         sec_num_epochs=int(1e5),
         var_trainable=[True, True, False, False], 
-        var_modifier=[-.25, 1.1, 20, 0.23],
+        var_modifier=[-.1, 1, 20, 0.23],
         init_weights = [[1, 1], [1e2, 1], [1e-2, 1e-2]],
         k_vals=[0.013]
     )
