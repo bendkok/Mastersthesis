@@ -12,10 +12,8 @@ from deepxde.backend import tf
 import os
 import time
 import matplotlib.pyplot as plt
-import json
 
 from postprocessing import saveplot
-from make_plots import make_plots
 
 
 def fitzhugh_nagumo_model(
@@ -57,31 +55,18 @@ def create_observations(data_t, data_y, geom):
     return observe_y4, observe_y5
 
 
-def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23]):
-    
-    # Define the variables and constants in the model
-    var_list = [] # a, b, tau, Iext
-    #we want to include the possibility for the variables to be both trainable and constant
-    for i in range(len(var_trainable)):
-        if var_trainable[i]:
-            #try having a and b be tanh()
-            var = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
-        else:
-            var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
-        var_list.append(var)
-        
-    # a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * - 0.25
-    # b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) 
-    # # tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    # # Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.18
-    # tau = tf.Variable(20, trainable=False, dtype=tf.float32)
-    # Iext = tf.Variable(0.23, trainable=False, dtype=tf.float32)
-    # var_list = [a, b, tau, Iext]
-    
+def create_data(data_t, data_y):
+
+    # Define the variables in the model
+    a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+    b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32))
+    tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
+    Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+    var_list = [a, b, tau, Iext]
 
     def ODE(t, y):
-        v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
-        v2 = (y[:, 0:1] - var_list[0] - var_list[1] * y[:, 1:2]) / var_list[2]
+        v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + Iext
+        v2 = (y[:, 0:1] - a - b * y[:, 1:2]) / tau
         return [
             tf.gradients(y[:, 0:1], t)[0] - v1,
             tf.gradients(y[:, 1:2], t)[0] - v2,
@@ -111,7 +96,7 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
     return data, var_list
 
 
-def create_nn(data_y, k_vals=[0.013]):
+def create_nn(data_y):
     # Feed-forward neural networks
     net = dde.maps.FNN(
         layer_size=[1, 128, 128, 128, 2],
@@ -122,27 +107,17 @@ def create_nn(data_y, k_vals=[0.013]):
     #try to visualize the output with and without feature_transform
     
     def feature_transform(t):
-        features = np.zeros((len(k_vals) + 1, t.shape[0]))
-        features[0] = t
-        for k in range(len(k_vals)):
-            features[k+1] = tf.sin(k_vals[k] * 2*np.pi*t),
-        return tf.concat(features, axis=1)
-            # (
-            #     # t,
-            #     # tf.sin(0.01 * t),
-            #     # tf.sin(0.05 * t),
-            #     # tf.sin(0.1 * t),
-            #     # tf.sin(0.15 * t),
-            #     # tf.sin(0.005*2*np.pi*t),
-            #     # tf.sin(0.01*2*np.pi*t),
-            #     tf.sin(0.013*2*np.pi*t),
-            #     # tf.sin(0.02*2*np.pi*t),
-            #     # tf.sin(k * t),
-            #     # tf.sin(0.05*2*np.pi*t),
-            #     #try f.exs. tf.sin(0.15 * t + 5),
-            # ),
-            # axis=1,
-        # )
+        return tf.concat(
+            (
+                t,
+                tf.sin(0.01 * t),
+                tf.sin(0.05 * t),
+                tf.sin(0.1 * t),
+                tf.sin(0.15 * t),
+                #try f.exs. tf.sin(0.15 * t + 5),
+            ),
+            axis=1,
+        )
 
     net.apply_feature_transform(feature_transform)
 
@@ -173,18 +148,17 @@ def create_callbacks(var_list, savename):
     return [checkpointer, variable]
 
 
-def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
-    #init_weights are the wheights before noise is considered
-    bc_weights = init_weights[0] # [1, 1]
+def default_weights(noise):
+    bc_weights = [1, 1]
     if noise >= 0.1:
         bc_weights = [w * 10 for w in bc_weights]
 
-    data_weights = init_weights[1] # [1, 1]  
+    data_weights = [1, 1]
     # Large noise requires small data_weights
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
 
-    ode_weights = init_weights[2] # [1, 1] 
+    ode_weights = [1, 1]
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
@@ -194,12 +168,12 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
     )
 
 
-def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None, lr=1e-3):
+def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None):
 
     # First compile the model with ode weights set to zero
     model.compile(
         "adam",
-        lr=lr,
+        lr=1e-3,
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
     # And train
@@ -208,7 +182,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
     # Now compile the model, but this time include the ode weights
     model.compile(
         "adam",
-        lr=lr,
+        lr=1e-3,
         loss_weights=weights["ode_weights"]
         + weights["bc_weights"]
         + weights["data_weights"],
@@ -235,28 +209,6 @@ def get_model_restore_path(restore, savename):
     else:
         return None
 
-def create_hyperparam_dict(
-    savename,
-    first_num_epochs,
-    sec_num_epochs,
-    var_trainable, 
-    var_modifier,
-    lr,
-    init_weights,
-    k_vals,
-):
-    dictionary = dict(
-        bc_weights=init_weights[0], data_weights=init_weights[1], ode_weights=init_weights[2],
-        first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
-        var_trainable=var_trainable, var_modifier=var_modifier, 
-        k_vals=k_vals, lr=lr
-    )
-    # np.savetxt(os.path.join(savename, "hyperparameters.dat"), dictionary)   
-    with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
-        for key, value in dictionary.items(): 
-            data.write('%s: %s\n' % (key, value))
-    
-
 
 def pinn(
     data_t,
@@ -266,11 +218,6 @@ def pinn(
     restore=False,
     first_num_epochs=int(1e3),
     sec_num_epochs=int(1e5),
-    var_trainable=[True, True, False, False], 
-    var_modifier=[-.25, 1.1, 20, 0.23],
-    lr=1e-3,
-    init_weights = [[1, 1], [1, 1], [1, 1]],
-    k_vals=[0.013],
 ):
     """
     Parameters
@@ -298,16 +245,13 @@ def pinn(
     """
     data, var_list = create_data(data_t, data_y)
 
-    net = create_nn(data_y, k_vals)
+    net = create_nn(data_y)
     model = dde.Model(data, net)
 
     callbacks = create_callbacks(var_list, savename)
 
     weights = default_weights(noise)
     model_restore_path = get_model_restore_path(restore, savename)
-    
-    create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, init_weights, k_vals)
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path
@@ -338,7 +282,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fitzhugh_nagumo_res_feature")
+    savename = Path("fitzhugh_nagumo_res")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
@@ -360,11 +304,7 @@ def main():
         savename,
         restore=False,
         first_num_epochs=1000,
-        sec_num_epochs=int(1e5),
-        var_trainable=[True, True, False, False], 
-        var_modifier=[-.25, 1.1, 20, 0.23],
-        init_weights = [[1, 1], [1e2, 1], [1e-2, 1e-2]],
-        k_vals=[0.013]
+        sec_num_epochs=90000,
     )
 
     # Prediction
@@ -378,7 +318,7 @@ def main():
     print(f"(a, b tau, Iext) = {true_values=}")
 
     print("Predicted values: ")
-    print(f"(a, b tau, Iext) = {var_list=}\n")
+    print(f"(a, b tau, Iext) = {var_list=}")
 
     fig, ax = plt.subplots(2, 1, sharex=True)
     ax[0].set_title("$v$")
@@ -395,8 +335,6 @@ def main():
 
     fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
     plt.show()
-    
-    make_plots(savename)
 
 
 def plot_features():
@@ -404,18 +342,15 @@ def plot_features():
     t = np.linspace(0, 999, 1000)
     y = fitzhugh_nagumo_model(t)
     fig, ax = plt.subplots()
-    ax.plot(t, y[:,0])
-    # ax.plot(t, np.sin(0.01 * t))
-    # ax.plot(t, np.sin(0.05 * t))
-    # ax.plot(t, np.sin(0.1 * t))
-    ax.plot(t, np.sin(0.013*2*np.pi*t))
-    # ax.plot(t, np.sin(0.015*2*np.pi*t))
-    # ax.plot(t, np.sin(0.012*2*np.pi*t))
-    
+    ax.plot(t, y)
+    ax.plot(t, np.sin(0.01 * t))
+    ax.plot(t, np.sin(0.05 * t))
+    ax.plot(t, np.sin(0.1 * t))
+    ax.plot(t, np.sin(0.15 * t))
 
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-    # plot_features()
+    plot_features()

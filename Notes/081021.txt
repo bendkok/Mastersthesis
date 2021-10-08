@@ -1,0 +1,5 @@
+To do:
+
+Make variables constant.
+Make hyperparameters more easily ajustable.
+Try running with tau and Iext constant.

@@ -9,3 +9,19 @@ Didn't have much success here, but got something.
 
 Maybe nested k-fold?
 https://machinelearningmastery.com/nested-cross-validation-for-machine-learning-with-python/
+
+
+Try changing feature transform and weights first, scailing later.
+
+min f(x)
+f(x) = f_data (x) + f_ode(x) + f_bc(x)
+optimal control:
+min f1(x) s.t. h(x) = 0
+f1(x) = f_data(x)
+h(x) = 0 < = > f_ode(x) = 0, f_bc(x) = 0
+ode depends on parameters (alpha, beta, Iext, tau)
+(v, w)
+PINNs: penalization of constraints: min f1(x) + penalization_factor*( f_ode(x)^2 + f_bc(x)^2)
+
+
+Read about optimal control.
