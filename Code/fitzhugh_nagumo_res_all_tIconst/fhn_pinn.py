@@ -6,15 +6,16 @@ Created on Thu Sep  9 14:13:48 2021
 """
 from pathlib import Path
 import numpy as np
-import scipy as sp
 from scipy.integrate import odeint
 import deepxde as dde
 from deepxde.backend import tf
 import os
 import time
 import matplotlib.pyplot as plt
+import json
 
 from postprocessing import saveplot
+from make_plots import make_plots
 
 
 def fitzhugh_nagumo_model(
@@ -46,29 +47,41 @@ def create_observations(data_t, data_y, geom):
     inside = lambda x, _: ptset.inside(x)
 
     # Create the observations by using the point set
-    observe_y0 = dde.DirichletBC(
+    observe_y4 = dde.DirichletBC(
         geom, ptset.values_to_func(data_y[idx, 0:1]), inside, component=0
     )
-    observe_y1 = dde.DirichletBC(
+    observe_y5 = dde.DirichletBC(
         geom, ptset.values_to_func(data_y[idx, 1:2]), inside, component=1
     )
 
-    return observe_y0, observe_y1, idx
+    return observe_y4, observe_y5
 
 
-def create_data(data_t, data_y):
-
-    # Define the variables in the model
-    a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1 
-    b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) 
-    tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10 
-    Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.1
+def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23]):
     
-    var_list = [a, b, tau, Iext]
+    # Define the variables and constants in the model
+    var_list = [] # a, b, tau, Iext
+    #we want to include the possibility for the variables to be both trainable and constant
+    for i in range(len(var_trainable)):
+        if var_trainable[i]:
+            #try having a and b be tanh()
+            var = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
+        else:
+            var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
+        var_list.append(var)
+        
+    # a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * - 0.25
+    # b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) 
+    # # tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
+    # # Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.18
+    # tau = tf.Variable(20, trainable=False, dtype=tf.float32)
+    # Iext = tf.Variable(0.23, trainable=False, dtype=tf.float32)
+    # var_list = [a, b, tau, Iext]
+    
 
     def ODE(t, y):
-        v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + Iext
-        v2 = (y[:, 0:1] - a - b * y[:, 1:2]) / tau
+        v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
+        v2 = (y[:, 0:1] - var_list[0] - var_list[1] * y[:, 1:2]) / var_list[2]
         return [
             tf.gradients(y[:, 0:1], t)[0] - v1,
             tf.gradients(y[:, 1:2], t)[0] - v2,
@@ -86,20 +99,19 @@ def create_data(data_t, data_y):
     # Question: Does it matter which point we choose?
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
-    #try running without
 
-    observe_y0, observe_y1, idx = create_observations(data_t, data_y, geom)
+    observe_y4, observe_y5 = create_observations(data_t, data_y, geom)
 
     data = dde.data.PDE(  
         geom,
         ODE,
-        [bc0, bc1, observe_y0, observe_y1],  # list of boundary conditions
-        anchors=data_t, #[idx] does this still work with idx? or is anchors part of the ODE?
+        [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
+        anchors=data_t,
     )
     return data, var_list
 
 
-def create_nn(data_y):
+def create_nn(data_y, k_vals=[0.013]):
     # Feed-forward neural networks
     net = dde.maps.FNN(
         layer_size=[1, 128, 128, 128, 2],
@@ -108,34 +120,31 @@ def create_nn(data_y):
     )
     
     #try to visualize the output with and without feature_transform
-    #you need to use build() for the feature transformation to take effect
-    
-    # net.build()
-    # print("NN outputs: ", net.outputs)
-    # print("NN inputs: ", net.inputs)
-    # print("NN targets: ", net.targets)
-    # print("NN layer_size: ", net.layer_size)
-    # print("NN _input_transform: ", net._input_transform)
-    # print("NN _output_transform: ", net._output_transform)
-    # print("\n")
     
     def feature_transform(t):
-        return tf.concat(
-            (
-                t,
-                tf.sin(0.01 * t),
-                tf.sin(0.05 * t),
-                tf.sin(0.1 * t),
-                tf.sin(0.15 * t),
-                # tf.sin(0.012 * t),
-                # tf.sin(0.013 * t),
-                #try f.exs. tf.sin(0.15 * t + 5),
-            ),
-            axis=1,
-        )    
+        features = [] # np.zeros(len(k_vals) + 1)
+        features.append(t) #[0] = t
+        for k in range(len(k_vals)):
+            features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
+        return tf.concat(features, axis=1)
+            # (
+            #     # t,
+            #     # tf.sin(0.01 * t),
+            #     # tf.sin(0.05 * t),
+            #     # tf.sin(0.1 * t),
+            #     # tf.sin(0.15 * t),
+            #     # tf.sin(0.005*2*np.pi*t),
+            #     # tf.sin(0.01*2*np.pi*t),
+            #     tf.sin(0.013*2*np.pi*t),
+            #     # tf.sin(0.02*2*np.pi*t),
+            #     # tf.sin(k * t),
+            #     # tf.sin(0.05*2*np.pi*t),
+            #     #try f.exs. tf.sin(0.15 * t + 5),
+            # ),
+            # axis=1,
+        # )
 
     net.apply_feature_transform(feature_transform)
-
 
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
@@ -143,30 +152,6 @@ def create_nn(data_y):
         return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
 
     net.apply_output_transform(output_transform)
-    
-    # net.build()
-    # print("NN outputs: ", net.outputs)
-    # print("NN inputs: ", net.inputs)
-    # print("NN targets: ", net.targets)
-    # print("NN layer_size: ", net.layer_size)
-    # ten = tf.constant( [[1.]] )
-    # # print(ten)
-    # # with tf.Session() as sess:  print(ten.eval()) 
-    # inp = net._input_transform( ten )
-    # print("NN _input_transform: ", inp)
-    # oup = net._output_transform( ten, 1.)
-    # print("NN _output_transform: ", oup)
-    # print("\n")
-    # with tf.Session() as sess:  
-    #     print("NN _input_transform: ", inp.eval() )
-    #     print("NN _output_transform: ", oup.eval() )
-    #     # print("NN outputs: ", net.outputs.eval() )
-    
-    # print("\n")
-    
-    # import sys
-    # sys.exit()
-    
     return net
 
 
@@ -188,18 +173,18 @@ def create_callbacks(var_list, savename):
     return [checkpointer, variable]
 
 
-def default_weights(noise):
-    #try setting each value to 0
-    bc_weights = [1, 1]
+def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
+    #init_weights are the wheights before noise is considered
+    bc_weights = init_weights[0] # [1, 1]
     if noise >= 0.1:
         bc_weights = [w * 10 for w in bc_weights]
 
-    data_weights = [1, 1] # [0,0] #
+    data_weights = init_weights[1] # [1, 1]  
     # Large noise requires small data_weights
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
 
-    ode_weights = [1, 1]
+    ode_weights = init_weights[2] # [1, 1] 
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
@@ -209,22 +194,21 @@ def default_weights(noise):
     )
 
 
-def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None):
+def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None, lr=1e-3):
 
     # First compile the model with ode weights set to zero
     model.compile(
         "adam",
-        lr=1e-3,
+        lr=lr,
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
-    
     # And train
     model.train(epochs=int(first_num_epochs), display_every=1000)
     
     # Now compile the model, but this time include the ode weights
     model.compile(
         "adam",
-        lr=1e-3,
+        lr=lr,
         loss_weights=weights["ode_weights"]
         + weights["bc_weights"]
         + weights["data_weights"],
@@ -251,6 +235,33 @@ def get_model_restore_path(restore, savename):
     else:
         return None
 
+def create_hyperparam_dict(
+    savename,
+    first_num_epochs,
+    sec_num_epochs,
+    var_trainable, 
+    var_modifier,
+    lr,
+    init_weights,
+    k_vals,
+):
+    """
+    This function creates a dictionary contianing all the hyperparameters, and 
+    saves it to a file.
+    """
+    
+    dictionary = dict(
+        bc_weights=init_weights[0], data_weights=init_weights[1], ode_weights=init_weights[2],
+        first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
+        var_trainable=var_trainable, var_modifier=var_modifier, 
+        k_vals=k_vals, lr=lr
+    )
+    # np.savetxt(os.path.join(savename, "hyperparameters.dat"), dictionary)   
+    with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
+        for key, value in dictionary.items(): 
+            data.write('%s: %s\n' % (key, value))
+    
+
 
 def pinn(
     data_t,
@@ -260,6 +271,11 @@ def pinn(
     restore=False,
     first_num_epochs=int(1e3),
     sec_num_epochs=int(1e5),
+    var_trainable=[True, True, False, False], 
+    var_modifier=[-.25, 1.1, 20, 0.23],
+    lr=1e-3,
+    init_weights = [[1, 1], [1, 1], [1, 1]],
+    k_vals=[0.013],
 ):
     """
     Parameters
@@ -287,7 +303,7 @@ def pinn(
     """
     data, var_list = create_data(data_t, data_y)
 
-    net = create_nn(data_y)
+    net = create_nn(data_y, k_vals)
     model = dde.Model(data, net)
 
     callbacks = create_callbacks(var_list, savename)
@@ -295,12 +311,15 @@ def pinn(
     weights = default_weights(noise)
     model_restore_path = get_model_restore_path(restore, savename)
     
+    create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
+                           var_modifier, lr, init_weights, k_vals)
+    
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
-    
+
     var_list = [model.sess.run(v) for v in var_list]
     return var_list
 
@@ -324,8 +343,8 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fitzhugh_nagumo_res")
-    # Create directory if it dosen't exist
+    savename = Path("fitzhugh_nagumo_res_feature")
+    # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
     # a, b, tau, Iext
@@ -346,7 +365,11 @@ def main():
         savename,
         restore=False,
         first_num_epochs=1000,
-        sec_num_epochs=100000,
+        sec_num_epochs=int(5e4),
+        var_trainable=[True, True, False, False], 
+        var_modifier=[-.1, .9, 20, 0.23],
+        init_weights = [[1, 1], [1, 1], [1, 1]],
+        k_vals=[0.013]
     )
 
     # Prediction
@@ -360,7 +383,7 @@ def main():
     print(f"(a, b tau, Iext) = {true_values=}")
 
     print("Predicted values: ")
-    print(f"(a, b tau, Iext) = {var_list=}")
+    print(f"(a, b tau, Iext) = {var_list=}\n")
 
     fig, ax = plt.subplots(2, 1, sharex=True)
     ax[0].set_title("$v$")
@@ -377,6 +400,8 @@ def main():
 
     fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
     plt.show()
+    
+    make_plots(savename)
 
 
 def plot_features():
@@ -384,15 +409,18 @@ def plot_features():
     t = np.linspace(0, 999, 1000)
     y = fitzhugh_nagumo_model(t)
     fig, ax = plt.subplots()
-    ax.plot(t, y)
-    ax.plot(t, np.sin(0.01 * t))
-    ax.plot(t, np.sin(0.05 * t))
-    ax.plot(t, np.sin(0.1 * t))
-    ax.plot(t, np.sin(0.15 * t))
+    ax.plot(t, y[:,0])
+    # ax.plot(t, np.sin(0.01 * t))
+    # ax.plot(t, np.sin(0.05 * t))
+    # ax.plot(t, np.sin(0.1 * t))
+    ax.plot(t, np.sin(0.013*2*np.pi*t))
+    # ax.plot(t, np.sin(0.015*2*np.pi*t))
+    # ax.plot(t, np.sin(0.012*2*np.pi*t))
+    
 
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-    plot_features()
+    # plot_features()
