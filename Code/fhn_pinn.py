@@ -70,14 +70,15 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
         
-    # a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * - 0.25
-    # b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) 
-    # # tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    # # Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.18
-    # tau = tf.Variable(20, trainable=False, dtype=tf.float32)
-    # Iext = tf.Variable(0.23, trainable=False, dtype=tf.float32)
-    # var_list = [a, b, tau, Iext]
-    
+    """
+    a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * - 0.25
+    b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) 
+    # tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
+    # Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.18
+    tau = tf.Variable(20, trainable=False, dtype=tf.float32)
+    Iext = tf.Variable(0.23, trainable=False, dtype=tf.float32)
+    var_list = [a, b, tau, Iext]
+    """
 
     def ODE(t, y):
         v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
@@ -127,22 +128,24 @@ def create_nn(data_y, k_vals=[0.013]):
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
         return tf.concat(features, axis=1)
-            # (
-            #     # t,
-            #     # tf.sin(0.01 * t),
-            #     # tf.sin(0.05 * t),
-            #     # tf.sin(0.1 * t),
-            #     # tf.sin(0.15 * t),
-            #     # tf.sin(0.005*2*np.pi*t),
-            #     # tf.sin(0.01*2*np.pi*t),
-            #     tf.sin(0.013*2*np.pi*t),
-            #     # tf.sin(0.02*2*np.pi*t),
-            #     # tf.sin(k * t),
-            #     # tf.sin(0.05*2*np.pi*t),
-            #     #try f.exs. tf.sin(0.15 * t + 5),
-            # ),
-            # axis=1,
-        # )
+    """
+            (
+                # t,
+                # tf.sin(0.01 * t),
+                # tf.sin(0.05 * t),
+                # tf.sin(0.1 * t),
+                # tf.sin(0.15 * t),
+                # tf.sin(0.005*2*np.pi*t),
+                # tf.sin(0.01*2*np.pi*t),
+                tf.sin(0.013*2*np.pi*t),
+                # tf.sin(0.02*2*np.pi*t),
+                # tf.sin(k * t),
+                # tf.sin(0.05*2*np.pi*t),
+                #try f.exs. tf.sin(0.15 * t + 5),
+            ),
+            axis=1,
+        )
+    """
 
     net.apply_feature_transform(feature_transform)
 
@@ -235,6 +238,7 @@ def get_model_restore_path(restore, savename):
     else:
         return None
 
+
 def create_hyperparam_dict(
     savename,
     first_num_epochs,
@@ -277,30 +281,7 @@ def pinn(
     init_weights = [[1, 1], [1, 1], [1, 1]],
     k_vals=[0.013],
 ):
-    """
-    Parameters
-    ----------
-    data_t : TYPE
-        DESCRIPTION.
-    data_y : TYPE
-        DESCRIPTION.
-    noise : TYPE
-        DESCRIPTION.
-    savename : TYPE
-        DESCRIPTION.
-    restore : TYPE, optional
-        DESCRIPTION. The default is False.
-    first_num_epochs : TYPE, optional
-        DESCRIPTION. The default is int(1e3).
-    sec_num_epochs : TYPE, optional
-        DESCRIPTION. The default is int(1e5).
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    """
+   
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
 
     net = create_nn(data_y, k_vals)
@@ -308,14 +289,14 @@ def pinn(
 
     callbacks = create_callbacks(var_list, savename)
 
-    weights = default_weights(noise)
+    weights = default_weights(noise, init_weights)
     model_restore_path = get_model_restore_path(restore, savename)
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
                            var_modifier, lr, init_weights, k_vals)
     
     losshistory, train_state = train_model(
-        model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path
+        model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
@@ -366,10 +347,10 @@ def main():
         restore=False,
         first_num_epochs=1000,
         sec_num_epochs=int(5e4),
-        var_trainable=[False, True, False, False], 
-        var_modifier=[-.3, 1, 20, 0.23],
-        init_weights = [[1, 1], [1, 1], [1, 1]],
-        k_vals=[0.013]
+        var_trainable=[False, True, False, False], #a, b, tau, Iext
+        var_modifier=[-.3, 1, 20, 0.23], #a, b, tau, Iext
+        init_weights = [[1, 1], [1, 1], [1, 1]], # [[bc], [data], [ode]]
+        k_vals=[0.013] # tf.sin(k * 2*np.pi*t)
     )
 
     # Prediction
