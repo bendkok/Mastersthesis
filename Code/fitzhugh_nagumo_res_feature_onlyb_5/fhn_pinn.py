@@ -342,7 +342,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fitzhugh_nagumo_res_feature_onlyb_6")
+    savename = Path("fitzhugh_nagumo_res_feature_onlyb_5")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
@@ -369,7 +369,7 @@ def main():
         var_modifier=[-.3, 1, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
         init_weights = [[1, 1], [1e1, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
-        k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
+        k_vals=[0.013], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
     )
 

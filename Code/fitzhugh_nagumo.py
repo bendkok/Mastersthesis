@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
+np.random.seed(2)
 
 def fitzhugh_nagumo(t, x, a, b, tau, Iext):
     """Time derivative of the Fitzhugh-Nagumo neural model.
@@ -33,13 +34,13 @@ def fitzhugh_nagumo(t, x, a, b, tau, Iext):
     np.ndarray
         dx/dt - size 2
     """
-    return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
+    return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
 
 
 def main():
 
     a = -0.3
-    b = 1.4
+    b = 1.1
     tau = 20
     Iext = 0.23
     time = np.linspace(0, 999, 1000)
@@ -56,11 +57,18 @@ def main():
 
     s = apf.Beats(y=v, t=time)
     beats = s.chop()
+    
+    n = len(time)
+    idx = np.random.choice(np.arange(1, n - 1), size=n // 4, replace=False)
+    # Add the last point to the list
+    idx = np.append(idx, [0, n - 1])
 
     # Plot al beats
     fig, ax = plt.subplots()
+    # ax.plot(time[idx], v[idx], "o", label="$v$")
     ax.plot(time, v, label="$v$")
-    ax.plot(time, w, label="$w$")
+    # ax.plot(time, w, label="$w$")
+    ax.plot(time, 2*np.sin(2*np.pi * time * 0.016))
     ax.legend()
     ax.set_xlabel("Time [ms]")
     ax.set_title("Fithugh Nagumo model")
@@ -68,7 +76,8 @@ def main():
     fig, ax = plt.subplots()
     for beat in beats:
         ax.plot(beat.t, beat.y)
-    ax.set_title("Chopped beats")
+    ax.plot(time, 2*np.sin(2*np.pi * time * 0.016))
+    ax.set_title("Chopped beats, n = {}".format(len(beats)))
 
     # Plot some APDs
     fig, ax = plt.subplots()

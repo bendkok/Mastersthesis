@@ -1,0 +1,36 @@
+fitzhugh_nagumo_res_nonoise_1e5: 		14.09.21 13:06 x
+fitzhugh_nagumo_res_nonoise_5e5: 		14.09.21 15:15 x
+fitzhugh_nagumo_res0: 				23.09.21 23:15 
+fitzhugh_nagumo_res_sigmoid:			27.09.21 12:56 
+fitzhugh_nagumo_res_gaus:			27.09.21 13:30
+fitzhugh_nagumo_res_idx: 			01.10.21 12:07
+fitzhugh_nagumo_res_nofeature: 			01.10.21 12:48
+fitzhugh_nagumo_res_justode: 			01.10.21 18:29
+fitzhugh_nagumo_res_justdata: 			01.10.21 14:43
+fitzhugh_nagumo_res_zeroweights: 		01.10.21 15:19
+fitzhugh_nagumo_res_justaux: 			01.10.21 17:32
+fitzhugh_nagumo_res_all_tIconst: 		01.10.21 19:17 ? 
+fitzhugh_nagumo_res1: 				01.10.21 19:44
+fitzhugh_nagumo_res_noode: 			03.10.21 20:06
+fitzhugh_nagumo_res_noaux: 			03.10.21 20:35
+fitzhugh_nagumo_res_nodata: 			03.10.21 21:04
+fitzhugh_nagumo_res_neg: 			03.10.21 17:56
+fitzhugh_nagumo_res_neg0: 			03.10.21 21:42
+fitzhugh_nagumo_res_feature0:			04.10.21 18:43
+fitzhugh_nagumo_res_feature1:			04.10.21 23:06
+fitzhugh_nagumo_res_feature2:			06.10.21 16:37
+fitzhugh_nagumo_res2: 				08.10.21 02:53
+fitzhugh_nagumo_res_feature3:			08.10.21 14:13
+fitzhugh_nagumo_res_feature:			08.10.21 19:51 x
+fitzhugh_nagumo_res_feature_onlyb: 		08.10.21 23:36
+fitzhugh_nagumo_res_feature_onlyb_lowode:	11.10.21 17:15
+fitzhugh_nagumo_res_feature_onlyb0: 		08.10.21 17:57
+fitzhugh_nagumo_res_feature_onlyb1: 		08.10.21 23:38
+fitzhugh_nagumo_res_feature_onlyb2: 		12.10.21 15:23 ?
+fitzhugh_nagumo_res_feature_onlyb3: 		12.10.21 15:48
+fitzhugh_nagumo_res_feature_onlyb_ode: 		12.10.21 16:33
+fitzhugh_nagumo_res_feature_onlyb_data: 	13.10.21 17:01
+fitzhugh_nagumo_res_feature_onlyb_bc: 		13.10.21 19:44
+fitzhugh_nagumo_res_feature_onlyb4: 		13.10.21 13:14
+fitzhugh_nagumo_res_feature_onlyb5: 		13.10.21 13:59
+fitzhugh_nagumo_res_feature_onlyb6: 		19.10.21 04:56
