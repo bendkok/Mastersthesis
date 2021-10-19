@@ -1,0 +1,26 @@
+The FHN-model is kinda unstable. Got bad plot, but the predicted value was 1.463 vs. the true value 1.4.
+Changing the weights to [[1, 1], [1e3, 1], [1e-2, 1e-2]] didn't lead to any improvement, actually it got kinda worse.
+Changing the weights to [[1, 1], [1e1, 1e1], [1e-2, 1e-2]] gave a closer b value, but still a bad plot.
+
+Tried making b_exact = 1.1, worked way better. The plot isn't exact, but it has the correct form.
+
+Tried ploting the prediciton from the NN. 
+
+Plotted the change in b over the itterations.
+
+Made functionality for importing a model from file, and then ploting (t, NN(theta, b, sin(alpha*t)) with different values for alpha.
+
+Read stuff.
+
+
+Maybe try Evolutionary algorithm or k-fold crossvalidation, or some other form of hyperparameter tuning.
+	Which method?
+	Which hyperparameters to tune?
+	How to check accuracy/how good it was? Againt the resulting plot, ode-parameters, or both?
+
+
+
+
+Try getting a good intuition of how the result change if you change f.exs. the feature_transform or the output_transform, or the weights.
+Plot the differnet losses.
+Try writing while the code runs.

@@ -17,15 +17,13 @@ import json
 from postprocessing import saveplot
 from make_plots import make_plots
 
-np.random.seed(2)
-
 
 def fitzhugh_nagumo_model(
-    t, a=-0.3, b=1.1, tau=20, Iext=0.23, x0 = [0, 0]   # maybe try different init values
+    t, a=-0.3, b=1.4, tau=20, Iext=0.23, x0 = [0, 0]   # maybe try different init values
 ):
     def func(x, t):
         #shouldn't v^3 be divided by 3?
-        return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
+        return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
 
     return odeint(func, x0, t)
 
@@ -83,7 +81,7 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
     """
 
     def ODE(t, y):
-        v1 = y[:, 0:1] - y[:, 0:1] ** 3 / 3 - y[:, 1:2] + var_list[3]
+        v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
         v2 = (y[:, 0:1] - var_list[0] - var_list[1] * y[:, 1:2]) / var_list[2]
         return [
             tf.gradients(y[:, 0:1], t)[0] - v1,
@@ -127,7 +125,7 @@ def create_nn(data_y, k_vals=[0.013], nn_layers=3, nn_nodes=128):
     
     def feature_transform(t):
         features = [] # np.zeros(len(k_vals) + 1)
-        features.append(t) #[0] = t
+        # features.append(t) #[0] = t
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
         return tf.concat(features, axis=1)
@@ -342,7 +340,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fitzhugh_nagumo_res_feature_onlyb_6")
+    savename = Path("fitzhugh_nagumo_res_feature_onlyb_4")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
@@ -366,11 +364,10 @@ def main():
         first_num_epochs=1000,
         sec_num_epochs=int(1e5),
         var_trainable=[False, True, False, False], #a, b, tau, Iext
-        var_modifier=[-.3, 1, 20, 0.23], #a, b, tau, Iext
+        var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
         init_weights = [[1, 1], [1e1, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
-        k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
-        # lr = 5e4,
+        k_vals=[0.013] # tf.sin(k * 2*np.pi*t)
     )
 
     # Prediction
@@ -416,7 +413,7 @@ def plot_features():
     # ax.plot(t, np.sin(0.01 * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
-    ax.plot(t, np.sin(0.0173*2*np.pi*t))
+    ax.plot(t, np.sin(0.013*2*np.pi*t))
     # ax.plot(t, np.sin(0.015*2*np.pi*t))
     # ax.plot(t, np.sin(0.012*2*np.pi*t))
     
