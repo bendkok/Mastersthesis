@@ -68,15 +68,17 @@ def main():
     # ax.plot(time[idx], v[idx], "o", label="$v$")
     ax.plot(time, v, label="$v$")
     # ax.plot(time, w, label="$w$")
-    ax.plot(time, 2*np.sin(2*np.pi * time * 0.016))
+    ax.plot(time, 2*np.sin(2*np.pi * time * 0.013))
+    ax.plot(time, 2*np.sin(2*np.pi * time * 0.0173))
+    ax.plot(time, 2*np.sin(2*np.pi * time * 0.021))
     ax.legend()
     ax.set_xlabel("Time [ms]")
     ax.set_title("Fithugh Nagumo model")
 
     fig, ax = plt.subplots()
+    ax.plot(time, 2*np.sin(2*np.pi * time * 0.0173))
     for beat in beats:
         ax.plot(beat.t, beat.y)
-    ax.plot(time, 2*np.sin(2*np.pi * time * 0.016))
     ax.set_title("Chopped beats, n = {}".format(len(beats)))
 
     # Plot some APDs

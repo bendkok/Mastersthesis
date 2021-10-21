@@ -70,7 +70,10 @@
 	
 %[Work in progress].
 
-All of the analysis here is done based on the python file which was copied into each respective folder. However you should keep in mind that I might have copied the wrong file at some point, especially for the earlier ones. 
+All of the analysis here is done based on the python file which was copied into each respective folder. However you should keep in mind that I might have copied the wrong file at some point, especially for the earlier ones.
+
+The weights are in the order $\left[ \text{BC}, \text{data}, \text{ODE} \right]$.
+ 
 
 \section{Fitting all parameters}
 
@@ -95,29 +98,29 @@ After $10^5$ epochs we got a prediction that flattened out instead of oscillatin
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_1e5/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_1e5/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all00a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_1e5/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_1e5/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all00b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_1e5/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_1e5/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all00c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_1e5/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_1e5/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all00d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all00}
 \end{figure}
@@ -130,29 +133,29 @@ After $5\cdot10^5$ we got some overflow, which made the plots not appear, see \r
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_5e5/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_5e5/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all01a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_5e5/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_5e5/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all01b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_5e5/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_5e5/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all01c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nonoise_5e5/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nonoise_5e5/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all01d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^5$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all01}
 \end{figure} 	
@@ -166,29 +169,29 @@ In figure \ref{plot:all02} we got better results, but now with only $9\cdot10^4$
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res0/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res0/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all02a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res0/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res0/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all02b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res0/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res0/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all02c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res0/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res0/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all02d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all02}
 \end{figure}
@@ -206,29 +209,29 @@ Other scaling methods were tried as well, including $\tanh$ and no scaling, but 
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_sigmoid/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_sigmoid/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all03a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_sigmoid/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_sigmoid/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all03b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_sigmoid/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_sigmoid/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all03c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_sigmoid/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_sigmoid/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all03d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all03}
 \end{figure} 	
@@ -239,29 +242,29 @@ Other scaling methods were tried as well, including $\tanh$ and no scaling, but 
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_gaus/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_gaus/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all04a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_gaus/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_gaus/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all04b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_gaus/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_gaus/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all04c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_gaus/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_gaus/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all04d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all04}
 \end{figure}
@@ -277,29 +280,29 @@ In figure \ref{plot:all05} I tried to have the anchors only use part of \lstinli
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_idx/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_idx/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all05a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_idx/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_idx/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all05b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_idx/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_idx/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all05c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_idx/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_idx/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all05d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all05}
 \end{figure} 	
@@ -315,29 +318,29 @@ Figure \ref{plot:all06} shows the result with no feature transform.
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nofeature/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nofeature/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all06a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nofeature/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nofeature/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all06b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nofeature/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nofeature/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all06c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nofeature/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nofeature/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all06d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all06}
 \end{figure}
@@ -353,29 +356,29 @@ Figure \ref{plot:weight01} is the prediction with just the ODE-weights, the rest
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justode/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justode/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight01a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justode/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justode/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight01b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justode/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justode/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight01c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justode/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justode/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight01d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 0, 0\right], \left[ 0, 0\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight01}
 \end{figure} 	
@@ -387,29 +390,29 @@ Figure \ref{plot:weight02} is the prediction with just the data-weights, the res
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justdata/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justdata/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight02a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justdata/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justdata/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight02b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justdata/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justdata/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight02c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justdata/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justdata/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight02d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 0, 0\right], \left[ 1, 1\right], \left[ 0, 0\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight02}
 \end{figure}
@@ -421,29 +424,29 @@ Figure \ref{plot:weight03} is the prediction with just the auxiliary-weights, th
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justaux/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justaux/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight03a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justaux/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justaux/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight03b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justaux/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justaux/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight03c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_justaux/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_justaux/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight03d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 0, 0\right], \left[ 0, 0\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight03}
 \end{figure} 	
@@ -455,29 +458,29 @@ Figure \ref{plot:weight04} is the prediction with all weights set to zero.
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_zeroweights/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_zeroweights/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight04a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_zeroweights/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_zeroweights/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight04b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_zeroweights/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_zeroweights/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight04c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_zeroweights/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_zeroweights/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight04d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 0, 0\right], \left[ 0, 0\right], \left[ 0, 0\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight04}
 \end{figure}
@@ -490,29 +493,29 @@ Figure \ref{plot:weight05} is the prediction with the ODE-weights set to zero, t
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noode/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noode/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight05a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noode/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noode/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight05b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noode/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noode/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight05c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noode/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noode/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight05d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 0, 0\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight05}
 \end{figure} 	
@@ -524,29 +527,29 @@ Figure \ref{plot:weight06} is the prediction with the data-weights set to zero, 
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nodata/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nodata/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight06a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nodata/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nodata/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight06b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nodata/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nodata/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight06c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_nodata/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_nodata/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight06d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 0, 0\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight06}
 \end{figure}
@@ -558,29 +561,29 @@ Figure \ref{plot:weight07} is the prediction with the auxiliary-weights set to z
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noaux/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noaux/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:weight07a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noaux/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noaux/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:weight07b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noaux/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noaux/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:weight07c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_noaux/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_noaux/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:weight07d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 0, 0\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:weight07}
 \end{figure} 	
@@ -595,29 +598,29 @@ Figure \ref{plot:weight07} is the prediction with the auxiliary-weights set to z
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res1/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res1/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:all11a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res1/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res1/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:all11b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res1/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res1/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:all11c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res1/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res1/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:all11d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all11}
 \end{figure}
@@ -632,29 +635,29 @@ In figure \ref{plot:neg1} and \ref{plot:neg2} I tried forcing $a$ to be negative
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:neg1a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:neg1b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:neg1c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:neg1d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:neg1}
 \end{figure}
@@ -664,43 +667,213 @@ In figure \ref{plot:neg1} and \ref{plot:neg2} I tried forcing $a$ to be negative
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg1/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg0/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:neg2a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg1/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg0/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:neg2b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg1/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg0/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:neg2c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_neg1/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_neg0/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:neg2d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t, \sin(0.01 * t), \sin(0.05 * t), \sin(0.1 * t), \sin(0.15 * t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:neg2}
 \end{figure}
 
 
+
 \subsection{Changing feature transform}
 
+Here we tried changing the input feature transformation. In figure \ref{plot:feature00} the feature transformation was $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $. We observed that the model had 13 peaks in 1000$ms$, and tried to mimic that. For the first attempt here I forgot to include $2\pi$ to get the proper periodicity. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature0/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:feature00a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature0/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:feature00b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature0/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:feature00c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature0/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:feature00d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:feature00}
+\end{figure} 	
+
+In figure \ref{plot:feature01} the feature transformation was $t \rightarrow \left[t, \sin(0.013\cdot 2 \pi t) \right]$. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature1/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:feature01a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature1/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:feature01b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature1/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:feature01c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature1/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:feature01d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[  t, \sin(0.013\cdot 2 \pi t) \right]$, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:feature01}
+\end{figure}
+
+In figure \ref{plot:feature02}  the feature transformation was $t \rightarrow \left[  t, \sin(0.005\cdot 2 \pi t), \sin(0.01\cdot 2 \pi t), \sin(0.013\cdot 2 \pi t), \sin(0.02\cdot 2 \pi t) \right]$. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature2/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:feature02a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature2/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:feature02b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature2/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:feature02c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature2/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:feature02d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[  t, \sin(0.005\cdot 2 \pi t), \sin(0.01\cdot 2 \pi t), \sin(0.013\cdot 2 \pi t), \sin(0.02\cdot 2 \pi t) \right]$, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:feature02}
+\end{figure} 	
 
 
+In figure \ref{plot:feature03} the feature transformation was $t \rightarrow \left[t, \sin(0.013\cdot 2 \pi t) \right]$. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature3/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:feature03a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature3/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:feature03b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature3/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:feature03c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature3/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:feature03d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $3\cdot10^5$ epochs. With feature transform $t \rightarrow \left[  t, \sin(0.013\cdot 2 \pi t) \right]$, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:feature03}
+\end{figure}
+
+
+In figure \ref{plot:feature04}  the feature transformation was $t \rightarrow \left[  t, \sin(0.005\cdot 2 \pi t), \sin(0.01\cdot 2 \pi t), \sin(0.015\cdot 2 \pi t), \sin(0.02\cdot 2 \pi t) \right]$. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res2/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:feature04a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res2/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:feature04b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res2/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:feature04c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res2/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:feature04d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[  t, \sin(0.005\cdot 2 \pi t), \sin(0.01\cdot 2 \pi t), \sin(0.015\cdot 2 \pi t), \sin(0.02\cdot 2 \pi t) \right]$, and weights $\left[ \left[ 1, 1\right], \left[ 10^3, 1\right], \left[ 10^{-2}, 10^{-2}\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:feature04}
+\end{figure}
 
 
 \section{Fitting $a$ and $b$}
 
-In figure \ref{plot:ab0} we kept $\tau$ and $I_{\text{ext}}$ constant, and tried to only fit $a$ and $b$.
+In figure \ref{plot:ab0} and \ref{plot:ab1} we kept $\tau$ and $I_{\text{ext}}$ constant, and tried to only fit $a$ and $b$.
 %something about the strange date? I think the result is the correct one, but the date when the results were gathered might be wrong. 
 
 \begin{figure}[H]
@@ -708,35 +881,503 @@ In figure \ref{plot:ab0} we kept $\tau$ and $I_{\text{ext}}$ constant, and tried
 	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_all_tIconst/plot_pred.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_all_tIconst/plot_pred.pdf}
 		\caption{Prediction}
 		\label{fig:ab0a}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_all_tIconst/plot_comp0.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_all_tIconst/plot_comp0.pdf}
 		\caption{$v$ exact vs. prediction}
 		\label{fig:ab0b}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_all_tIconst/plot_comp1.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_all_tIconst/plot_comp1.pdf}
 		\caption{$w$ exact vs. prediction}
 		\label{fig:ab0c}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.46]{../fitzhugh_nagumo_res_all_tIconst/plot_pha.pdf}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_all_tIconst/plot_pha.pdf}
 		\caption{Phase space}
 		\label{fig:ab0d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t, \sin(0.013*2*\\\pi*t)$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[  t, \sin(0.013\cdot 2 \pi t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:ab0}
 \end{figure}
 
 
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:ab1a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:ab1b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:ab1c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:ab1d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:ab1}
+\end{figure} 	
 
+
+\section{Fitting only $b$}
+
+\subsection{Baseline}
+
+In this section we tried to only fit $b$ while keeping the other variables constant. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_lowode/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb00a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_lowode/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb00b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_lowode/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb00c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_lowode/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb00d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10^3, 1\right], \left[ 10^{-2}, 10^{-2}\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb00}
+\end{figure} 	
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_0/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb01a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_0/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb01b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_0/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb01c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_0/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb01d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 10\right], \left[ 10^{-2}, 10^{-2}\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb01}
+\end{figure} 	
+
+We realised that the FHN-model is quite unstable. For example, a value of $b>1.43$ will give a flat curve. 
+In figure \ref{plot:justb02} we tried setting the real value of $b$ to $1.1$ instead. %because instability
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_1/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb02a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_1/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb02b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_1/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb02c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_1/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb02d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 10\right], \left[ 10^{-2}, 10^{-2}\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb02}
+\end{figure} 	
+
+
+As far as I can tell, figure \ref{plot:justb03} and \ref{plot:justb04} have exactly the hyperparameters, but one gives much better results. Maybe I copied the wrong file.
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_2/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb03a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_2/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb03b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_2/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb03c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_2/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb03d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb03}
+\end{figure} 	
+
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_3/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb04a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_3/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb04b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_3/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb04c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_3/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb04d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb04}
+\end{figure} 	
+
+
+
+\subsection{Weights}
+
+In figure \ref{plot:justbode} we only have the ODE-weights. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_ode/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justbodea}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_ode/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justbodeb}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_ode/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justbodec}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_ode/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justboded}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 0, 0\right], \left[ 0, 0\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justbode}
+\end{figure} 	
+
+
+In figure \ref{plot:justbdata} we only have the data-weights. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_data/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justbdataa}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_data/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justbdatab}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_data/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justbdatac}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_data/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justbdatad}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 0, 0\right],\left[ 1, 1\right],  \left[ 0, 0\right] \right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justbdata}
+\end{figure} 	
+
+
+In figure \ref{plot:justbaux} we only have the BC-weights. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_bc/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justbauxa}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_bc/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justbauxb}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_bc/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justbauxc}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_bc/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justbauxd}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 0, 0\right], \left[ 0, 0\right] \right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justbaux}
+\end{figure} 	
+
+
+
+\subsection{More regular running}
+
+
+A plot of the exact solution with $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ can be seen in figure \ref{plot:exe0}.
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\includegraphics[scale=0.7]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_exe.pdf}
+	\caption{Plot of the exact solution when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:exe0}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb05a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb05b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb05c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb05d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb05}
+\end{figure} 	
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_5/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb06a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_5/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb06b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_5/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb06c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_5/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb06d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb06}
+\end{figure} 	
+
+
+Here I realised 0.013 wouldn't work for $b=1.1$, so I used 0.0173 instead.
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_6/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb07a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_6/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb07b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_6/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb07c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_6/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb07d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb07}
+\end{figure} 	
+
+
+\subsection{No output scaling}
+
+In figure \ref{plot:justb08} I tried removing the output scaling.
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb08a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb08b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb08c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput/plot_pha.pdf}
+		\caption{Phase space}
+		\label{fig:justb08d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb08}
+\end{figure} 	
 
 
 
