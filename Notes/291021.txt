@@ -1,0 +1,3 @@
+fhn_pinn uses scipy.integrate.odeint, while fitzhug_nagumo uses scipy.integrate.solve_ivp. Not sure if that's important.
+
+Read about stiff functions.

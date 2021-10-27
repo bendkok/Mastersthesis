@@ -340,7 +340,7 @@ Figure \ref{plot:all06} shows the result with no feature transform.
 		\caption{Phase space}
 		\label{fig:all06d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $5\cdot10^4$ epochs. With no feature transform, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:all06}
 \end{figure}
@@ -1074,8 +1074,8 @@ As far as I can tell, figure \ref{plot:justb03} and \ref{plot:justb04} have exac
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_2/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_2/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justb03d}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1\right]\right]$.}
@@ -1108,8 +1108,8 @@ As far as I can tell, figure \ref{plot:justb03} and \ref{plot:justb04} have exac
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_3/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_3/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justb04d}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
@@ -1146,8 +1146,8 @@ In figure \ref{plot:justbode} we only have the ODE-weights.
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_ode/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_ode/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justboded}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 0, 0\right], \left[ 0, 0\right], \left[ 1, 1\right]\right]$.}
@@ -1181,8 +1181,8 @@ In figure \ref{plot:justbdata} we only have the data-weights.
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_data/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_data/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justbdatad}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 0, 0\right],\left[ 1, 1\right],  \left[ 0, 0\right] \right]$.}
@@ -1216,8 +1216,8 @@ In figure \ref{plot:justbaux} we only have the BC-weights.
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_bc/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_bc/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justbauxd}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 0, 0\right], \left[ 0, 0\right] \right]$.}
@@ -1241,6 +1241,7 @@ A plot of the exact solution with $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ex
 	\label{plot:exe0}
 \end{figure}
 
+Figure \ref{plot:justb05} has the feature transform  $t \rightarrow \left[ \sin(0.013\cdot t) \right] $.
 
 \begin{figure}[H]
 	\centering 
@@ -1265,11 +1266,11 @@ A plot of the exact solution with $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ex
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_4/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justb05d}
 	\end{subfigure}
-	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:justb05}
 \end{figure} 	
@@ -1298,8 +1299,8 @@ A plot of the exact solution with $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ex
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_5/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_5/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justb06d}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.013\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
@@ -1333,8 +1334,8 @@ Here I realised 0.013 wouldn't work for $b=1.1$, so I used 0.0173 instead.
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_6/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_6/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justb07d}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
@@ -1370,13 +1371,46 @@ In figure \ref{plot:justb08} I tried removing the output scaling.
 	\end{subfigure}
 	\begin{subfigure}[b]{0.47\textwidth}
 		\centering
-		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput/plot_pha.pdf}
-		\caption{Phase space}
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
 		\label{fig:justb08d}
 	\end{subfigure}
 	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
 	%Label gjør det enkelt å referere til ulike bilder.
 	\label{plot:justb08}
+\end{figure} 	
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput1/plot_pred.pdf}
+		\caption{Prediction}
+		\label{fig:justb09a}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput1/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:justb09b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput1/plot_comp1.pdf}
+		\caption{$w$ exact vs. prediction}
+		\label{fig:justb09c}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../fitzhugh_nagumo_res_feature_onlyb_nooutput1/plot_comp_nnb0.pdf}
+		\caption{The NN's prediction in the best epoch}
+		\label{fig:justb09d}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb09}
 \end{figure} 	
 
 

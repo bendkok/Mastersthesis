@@ -14,7 +14,7 @@ from deepxde.backend import tf
 import re
 
 
-def make_plots(path = Path("fitzhugh_nagumo_res")):
+def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
 
     filename0 = "fitzhugh_nagumo.dat"
     filename1 = "fitzhugh_nagumo_pred.dat"
@@ -289,4 +289,4 @@ def get_model_restore_path(savename):
 
 if __name__ == "__main__":
     # make_plots(Path("fitzhugh_nagumo_res_feature_onlyb_2"))
-    make_plots(Path("fitzhugh_nagumo_res_feature_onlyb_5"))
+    make_plots(Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_4"))

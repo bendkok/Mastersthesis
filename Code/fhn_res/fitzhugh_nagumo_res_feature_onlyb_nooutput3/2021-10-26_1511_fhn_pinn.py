@@ -161,7 +161,7 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        return data_y[0] + tf.math.tanh(t/100) * tf.constant([0.1, 0.1]) * y
+        return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
     
     if do_output_transform:    
         net.apply_output_transform(output_transform)
@@ -310,8 +310,7 @@ def pinn(
     model_restore_path = get_model_restore_path(restore, savename)
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, init_weights, k_vals, do_output_transform,
-                           do_t_input_transform)
+                           var_modifier, lr, init_weights, k_vals)
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr
@@ -367,7 +366,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_7")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_nooutput3")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -396,10 +395,10 @@ def main():
         var_trainable=[False, True, False, False], #a, b, tau, Iext
         var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
-        init_weights = [[1, 1], [1e0, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
+        init_weights = [[1, 1], [1e0, 1e0], [1e0, 1e0]], # [[bc], [data], [ode]]
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
-        do_output_transform = True,
+        do_output_transform = False,
         do_t_input_transform = True,
     )
 

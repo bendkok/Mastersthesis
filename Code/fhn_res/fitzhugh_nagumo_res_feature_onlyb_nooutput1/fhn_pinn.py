@@ -11,10 +11,8 @@ import deepxde as dde
 from deepxde.backend import tf
 import os
 import time
-import shutil
 import matplotlib.pyplot as plt
 import json
-import sys
 
 from postprocessing import saveplot
 from make_plots import make_plots
@@ -116,9 +114,7 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
     return data, var_list
 
 
-def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_transform = True, 
-              do_t_input_transform = True):
-    
+def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128):
     # Feed-forward neural networks
     net = dde.maps.FNN(
         # layer_size=[1, 128, 128, 128, 2],
@@ -131,9 +127,7 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     
     def feature_transform(t):
         features = [] # np.zeros(len(k_vals) + 1)
-        if do_t_input_transform:    
-            features.append(t) #[0] = t
-            
+        # features.append(t) #[0] = t
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
         return tf.concat(features, axis=1)
@@ -161,11 +155,9 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        return data_y[0] + tf.math.tanh(t/100) * tf.constant([0.1, 0.1]) * y
-    
-    if do_output_transform:    
-        net.apply_output_transform(output_transform)
-        
+        return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
+
+    # net.apply_output_transform(output_transform)
     return net
 
 
@@ -259,8 +251,6 @@ def create_hyperparam_dict(
     lr,
     init_weights,
     k_vals,
-    do_output_transform,
-    do_t_input_transform,
 ):
     """
     This function creates a dictionary contianing all the hyperparameters, and 
@@ -271,7 +261,7 @@ def create_hyperparam_dict(
         bc_weights=init_weights[0], data_weights=init_weights[1], ode_weights=init_weights[2],
         first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
         var_trainable=var_trainable, var_modifier=var_modifier, 
-        k_vals=k_vals, lr=lr, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform,
+        k_vals=k_vals, lr=lr
     )
     # np.savetxt(os.path.join(savename, "hyperparameters.dat"), dictionary)   
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
@@ -293,13 +283,11 @@ def pinn(
     lr=1e-3,
     init_weights = [[1, 1], [1, 1], [1, 1]],
     k_vals=[0.013],
-    do_output_transform = False,
-    do_t_input_transform = True,
 ):
    
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
 
-    net = create_nn(data_y, k_vals, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform)
+    net = create_nn(data_y, k_vals)
     model = dde.Model(data, net)
     
     #try plotting model.predict(t) 
@@ -310,8 +298,7 @@ def pinn(
     model_restore_path = get_model_restore_path(restore, savename)
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, init_weights, k_vals, do_output_transform,
-                           do_t_input_transform)
+                           var_modifier, lr, init_weights, k_vals)
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr
@@ -351,28 +338,13 @@ def generate_data(savename, true_values, t_vars, noise=0.0):
     return t, y
 
 
-def make_copy_of_program(savename):
-    """
-    From https://stackoverflow.com/questions/23321100/best-way-to-have-a-python-script-copy-itself/49210778    
-    """
-    
-    # generate filename with timestring
-    copied_script_name = time.strftime("%Y-%m-%d_%H%M") + '_' + os.path.basename(__file__)
-    
-    # copy script
-    shutil.copy(__file__, os.path.join( savename, copied_script_name) )
-
-
 def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_7")
+    savename = Path("fitzhugh_nagumo_res_feature_onlyb_nooutput1")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
-    
-    make_copy_of_program(savename)
-
 
     # a, b, tau, Iext
     a = -0.3
@@ -396,11 +368,9 @@ def main():
         var_trainable=[False, True, False, False], #a, b, tau, Iext
         var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
-        init_weights = [[1, 1], [1e0, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
+        init_weights = [[1, 1], [1e1, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
-        do_output_transform = True,
-        do_t_input_transform = True,
     )
 
     # Prediction
