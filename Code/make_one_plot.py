@@ -56,7 +56,7 @@ def make_one_plot(path):
     
     fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
     
-    fig.savefig("full_plot.pdf")
+    fig.savefig(Path.joinpath( path, "full_plot.pdf"))
     plt.show()
     
 
@@ -64,7 +64,7 @@ def make_one_plot(path):
 
 def main():
     
-    make_one_plot("fhn_res/fitzhugh_nagumo_res_feature_onlyb_6")
+    make_one_plot(Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_6"))
     
     
     
