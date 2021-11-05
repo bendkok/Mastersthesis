@@ -58,6 +58,9 @@ def main():
     s = apf.Beats(y=v, t=time)
     beats = s.chop()
     
+    print("Max: {}, min: {}".format(np.max(v**2), np.min(v**2) ))
+    print("Max: {}, min: {}".format(np.max(v), np.min(v) ))
+    
     n = len(time)
     idx = np.random.choice(np.arange(1, n - 1), size=n // 4, replace=False)
     # Add the last point to the list

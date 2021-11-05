@@ -9,14 +9,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
+import seaborn as sea
 
+
+def get_hyperparam_title(path):
+    hyp = np.loadtxt(os.path.join(path, 'hyperparameters.dat'), delimiter='\n', skiprows=0, dtype=str)
+    # print(hyp)
+    
+    weights = "Weights = [{}, {}, {}]".format(hyp[0][12:], hyp[1][14:], hyp[2][13:])
+    # print(weights)
+    
+    inp_tran = "Feature transformation = t -> ["
+    k_vals = hyp[7][9:-1].split(",")
+    # k_vals = "0.01, 0.02".split(", ")
+    inp_tran += "sin(2pi*{}*t)".format(k_vals[0])
+    for k in range(1, len(k_vals)):
+        inp_tran += ", sin(2pi*{}*t)".format(k_vals[k])
+    inp_tran += ']'
+    # print(inp_tran)
+    # print(weights+", "+inp_tran)
+    
+    
+    return weights+", "+inp_tran
+    
 
 def make_one_plot(path):
     
     filename0 = "fitzhugh_nagumo.dat"
     filename1 = "fitzhugh_nagumo_pred.dat"
     filename2 = "neural_net_pred_best.dat"
-    
     
     exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
     pred = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
@@ -47,16 +68,21 @@ def make_one_plot(path):
     axs_falt[3].set_title("ODE prediction of w.")
     
     for i in range(4):
-        axs_falt[i].set_xlabel("Time (s? or ms?)")
+        axs_falt[i].set_xlabel("Time (s)")
         axs_falt[i].set_ylabel("Voltage (mV)")
         # axs_falt[i].grid()
         
     axs_falt[2].set_ylabel("Current (mA)")
     axs_falt[3].set_ylabel("Current (mA)")
     
+    
+    fig.suptitle(get_hyperparam_title(path), fontsize=15)
     fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
     
+    
+    
     fig.savefig(Path.joinpath( path, "full_plot.pdf"))
+    
     plt.show()
     
 
@@ -64,7 +90,7 @@ def make_one_plot(path):
 
 def main():
     
-    make_one_plot(Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_6"))
+    make_one_plot(Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_7"))
     
     
     
