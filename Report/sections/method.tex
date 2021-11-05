@@ -40,14 +40,69 @@ The FitzHugh–Nagumo model is considered one of the simplest cardiac cell model
 %talk about each of the states and variables
 
 
-\begin{align}\label{eq:fhn}
+\begin{align}\label{eq:fhn} %give only one label
     &\dot{v}=v-\frac{v^{3}}{3}-w+R I_{\mathrm{ext}} \\
     &\tau \dot{w}=v+a-b w
 \end{align}
 
 
-\subsubsection{Stiffness of FHN}
+\subsubsection{Analysis of Stiffness for FHN}
 %or instability
+
+The stiffness index is often defined as (from Suyong Kim et al eq. 5):
+\begin{align}
+S = \frac{\operatorname{Re}\left(\lambda_{\max }\right)}{\operatorname{Re}\left(\lambda_{\min }\right)}\left(t_{1}-t_{0}\right),
+\end{align}
+where $\lambda_i$ are the eigenvalues of the Jacobian matrix of the ODE. From equation \ref{eq:fhn} we get the Jacobian
+\begin{align}
+J_f = \begin{pmatrix} %should it be pmatrix or bmatrix?
+	1 - v^2 && -1 \\
+	\frac{1}{\tau} && - \frac{b}{\tau} 
+\end{pmatrix}.\end{align}
+We then find the eigenvalues:
+\begin{align}
+0 &= \det (J_f - \lambda I) 
+= \det \begin{vmatrix}
+	1 - v^2 -\lambda && -1 \\
+	\frac{1}{\tau} && - \frac{b}{\tau} -\lambda
+\end{vmatrix} \\
+&= \left( 1-v^2-\lambda\right)  \left( -\frac{b}{\tau} -\lambda \right) - \frac{1}{\tau} \\
+&= -\frac{b}{\tau} - \lambda + v^2 \frac{b}{\tau} + v^2\lambda + \lambda \frac{b}{\tau} + \lambda^2 - \frac{1}{\tau} \\
+&= \lambda^2 + \lambda \left( -1 + v^2 + \frac{b}{\tau} \right) + v^2\frac{b}{\tau} - \frac{b}{\tau} - \frac{1}{\tau} \\
+&= \lambda^2 + \lambda \left( -1 + v^2 + \frac{b}{\tau} \right) + \frac{1}{\tau} \left(  v^2 b - b - 1 \right).
+\end{align}
+
+We can then use the quadratic formula
+\begin{align}
+\lambda &= \frac{- v^2 - \frac{b}{\tau} + 1}{2} \pm  \sqrt{\frac{ \left( v^2 + \frac{b}{\tau} -1 \right)^2 - \frac{4}{\tau} \left(  v^2 b - b - 1 \right) }{4}} \\
+&= \frac{- v^2 - \frac{b}{\tau} + 1}{2} \pm  \sqrt{\frac{ v^4 + 2v^2 \frac{b}{\tau} - 2v^2 + \frac{b^2}{\tau^2} - 2 \frac{b}{\tau} + 1 - 4v^2 \frac{b}{\tau} + 4\frac{b}{\tau} + \frac{4}{\tau} }{4}} \\
+&= \frac{- v^2 - \frac{b}{\tau} + 1  \pm  \sqrt{ \left(\frac{b}{\tau} - v^2 + 1 \right)^2 + \frac{4}{\tau} }}{2}
+\end{align}
+which gives us two values for $\lambda$. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

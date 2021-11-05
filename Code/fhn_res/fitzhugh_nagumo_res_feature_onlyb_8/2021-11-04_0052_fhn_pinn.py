@@ -161,7 +161,7 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
+        return data_y[0] + tf.math.tanh(t/100) * tf.constant([0.1, 0.1]) * y
     
     if do_output_transform:    
         net.apply_output_transform(output_transform)
@@ -397,7 +397,7 @@ def main():
         var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
         init_weights = [[1, 1], [1e0, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
-        k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
+        k_vals=[0.0173, 0.03], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
         do_output_transform = True,
         do_t_input_transform = True,
