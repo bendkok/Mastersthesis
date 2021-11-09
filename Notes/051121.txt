@@ -1,6 +1,7 @@
 Try minibatches
+	We realised that there weren't any use of minibatching in the simulation. Minibatching can more quickly approach of the optimal values, and is thus generally better to use.
 Try making plot of gradients.
-Reread papers, try to find the trick they use in the code.
+Reread papers, try to find the tricks they use in the code.
 Output transform might be more important than what we've considered.
 Make plots of lambdas.
 Split loss plot.

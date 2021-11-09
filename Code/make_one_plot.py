@@ -31,6 +31,43 @@ def get_hyperparam_title(path):
     
     
     return weights+", "+inp_tran
+
+def plot_losses(path):
+    
+    inp_dat = np.loadtxt(os.path.join(path, 'loss.dat'), delimiter=' ', skiprows=3, dtype=float)
+    
+    
+    epochs = inp_dat[:,0]
+    
+    train_loss = inp_dat[:,1:7]
+    test_loss = inp_dat[:,7:]
+    print(test_loss.shape, train_loss.shape)
+    
+    parts = ['BC', 'Data', 'ODE']
+    
+    # [[bc], [data], [ode]]
+    #should make 4 plots
+    fig, axs = plt.subplots(2, 2, figsize=(14,10))
+    axs_falt = axs.flatten()
+    
+    for i in range(int(train_loss.shape[1]/2)):
+        axs_falt[0].plot(epochs, train_loss[:,i*2] + train_loss[:,i*2+1], '-', label='{} Train'.format(parts[i]))
+        axs_falt[0].plot(epochs, test_loss[:,i*2] + test_loss[:,i*2+1], '--', label='{} Test'.format(parts[i]))
+        
+        axs_falt[i+1].plot(epochs, train_loss[:,i*2] + train_loss[:,i*2+1], '-', label='{} Train'.format(parts[i]))
+        axs_falt[i+1].plot(epochs, test_loss[:,i*2] + test_loss[:,i*2+1], '--', label='{} Test'.format(parts[i]))
+        axs_falt[i+1].legend()
+        axs_falt[i+1].set_title("{} loss history".format(parts[i]))
+        axs_falt[i+1].set_xlabel("Epoch")
+        axs_falt[i+1].set_ylabel("Loss")
+        
+    axs_falt[0].set_yscale('log')
+    axs_falt[0].legend()
+    axs_falt[0].set_title("All loss history")
+    axs_falt[0].set_xlabel("Epoch")
+    axs_falt[0].set_ylabel("Loss")
+    plt.show()
+    
     
 
 def make_one_plot(path):
@@ -60,7 +97,6 @@ def make_one_plot(path):
     
     axs_falt[2].plot(t, w_exe)
     axs_falt[2].plot(t, w_nn, "r--")
-    axs_falt[2].set_title("title")
     axs_falt[2].set_title("NN's prediction of w in the best epoch.")
     
     axs_falt[3].plot(t, w_exe)
@@ -90,7 +126,11 @@ def make_one_plot(path):
 
 def main():
     
-    make_one_plot(Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_7"))
+    path = Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_7")
+    
+    # make_one_plot(path)
+    
+    plot_losses(path)
     
     
     
