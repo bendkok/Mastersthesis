@@ -369,7 +369,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_dataode")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_0")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -402,7 +402,7 @@ def main():
         var_trainable=[False, True, False, False], #a, b, tau, Iext
         var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
-        init_weights = [[0, 0], [1, 1], [1, 1]], # [[bc], [data], [ode]]
+        init_weights = [[1, 1], [1e0, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
         do_output_transform = True,

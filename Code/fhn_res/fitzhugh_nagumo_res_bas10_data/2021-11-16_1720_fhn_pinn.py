@@ -18,12 +18,13 @@ import sys
 
 from postprocessing import saveplot
 from make_plots import make_plots
+from make_one_plot import make_one_plot, plot_losses
 
 np.random.seed(2)
 
 
 def fitzhugh_nagumo_model(
-    t, a=-0.3, b=1.1, tau=20, Iext=0.23, x0 = [0, 0]   # maybe try different init values
+    t, a=-0.3, b=1.1, tau=20, Iext=0.23, x0 = [0.1, 0]   # maybe try different init values
 ):
     def func(x, t):
         #shouldn't v^3 be divided by 3?
@@ -161,7 +162,7 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        return data_y[0] + tf.math.tanh(t/100) * tf.constant([0.1, 0.1]) * y
+        return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
     
     if do_output_transform:    
         net.apply_output_transform(output_transform)
@@ -217,7 +218,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
     # And train
-    model.train(epochs=int(first_num_epochs), display_every=1000)
+    model.train(epochs=int(first_num_epochs), display_every=1000, batch_size=10)
     
     # Now compile the model, but this time include the ode weights
     model.compile(
@@ -234,6 +235,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         callbacks=callbacks,
         disregard_previous_best=True,
         model_restore_path=model_restore_path,
+        batch_size=10,
     )
     return losshistory, train_state
 
@@ -367,7 +369,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_8")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_data")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -383,6 +385,10 @@ def main():
     t_vars = [0, 999, 1000]
 
     t, y = generate_data(savename, true_values, t_vars, noise)
+    
+    # from IPython import embed
+    # embed()
+
 
     # Train
     var_list = pinn(
@@ -396,8 +402,8 @@ def main():
         var_trainable=[False, True, False, False], #a, b, tau, Iext
         var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[bc], [data], [ode]]
-        init_weights = [[1, 1], [1e0, 1e0], [1e-1, 1e-1]], # [[bc], [data], [ode]]
-        k_vals=[0.0173, 0.03], # tf.sin(k * 2*np.pi*t),
+        init_weights = [[0, 0], [1, 1], [0, 0]], # [[bc], [data], [ode]]
+        k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
         do_output_transform = True,
         do_t_input_transform = True,
@@ -434,6 +440,8 @@ def main():
     plt.show()    
     
     make_plots(savename)
+    make_one_plot(savename)
+    plot_losses(savename)
     
 
 
