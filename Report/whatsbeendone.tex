@@ -1,0 +1,261 @@
+\documentclass[a4paper]{article}
+% Import some useful packages
+\usepackage[margin=0.6in]{geometry} % narrow margins
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{amsmath,graphicx,varioref,verbatim,amsfonts,geometry,amssymb,dsfont,blindtext}
+%\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{epstopdf}
+\usepackage{media9}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\hypersetup{colorlinks=true}
+\definecolor{LightGray}{gray}{0.95}
+
+\definecolor{dkgreen}{rgb}{0,0.55,0}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{red}{rgb}{0.8,0,0}
+\definecolor{mygray}{rgb}{0.96,0.96,0.96}
+\definecolor{LightGray}{gray}{0.95}
+\newcommand{\code}[1]{\colorbox{lightgray}{\texttt{#1}}}
+
+\lstset{frame=tb,
+	language=Python,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	otherkeywords={self,np,plt},
+	numberstyle=\tiny\color{mauve},
+	identifierstyle=\color{black},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{red},
+	backgroundcolor=\color{mygray},
+	rulecolor=\color{black},
+	breaklines=true,
+	breakatwhitespace=true,
+	%tabsize=3
+	extendedchars=true,
+	literate=
+	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	{à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+	{À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+	{ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+	{Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+	{â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+	{Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+	{œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+	{ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+	{€}{{\EUR}}1 {£}{{\pounds}}1
+}
+
+
+\title{What's Been Done So Far}
+\author{Bendik Steinsvåg Dalen}
+\renewcommand\thesubsection{\thesection.\alph{subsection}}
+\renewcommand\thesubsubsection{\thesubsection.\roman{subsubsection}}
+
+\begin{document}
+\maketitle
+
+
+\section{The Problem}	
+
+Many models of the action potential in hiPSC exist. We started looking at one of them, the Fitzhugh-Nagumo model
+\begin{align}\label{eq:fhn} %give only one label
+	&\dot{v}=v-\frac{v^{3}}{3}-w+R I_{\mathrm{ext}} \\
+	&\tau \dot{w}=v+a-b w.
+\end{align}
+We want to fit this model to some data. At first we generate some synthetic data from the model directly, and then try to recreate the model from that.
+
+\subsection{The Method}
+
+The methodology we are using to sole this problem is called Systems biology informed neural networks (SBINN), a variation of Physics-informed  neural  networks (PINNs). In PINNs you take a NN and use it to approximate the solution $u(x)$ of an ODE. SBINN includes some feature transform and some output scaling as well. From this we get two supervised loss functions (data and aux) and one unsupervised loss function (ODE), which we try to minimize. I went into detail about this in the \lstinline|understandingcode.pdf| document, so I won't repeat that here. 
+
+
+\section{Start of Project}
+
+At first we took the code from the SBINN-paper, where they tried to fit a Yeast glycolysis model, and changed it instead solve the FHN model. At first we had some issues getting it to run, chiefly with dimensions. But we eventually got it working. The first thing we realised was that it was quite slow, and takes about 30-45 minutes with $10^5$ epochs. It's become a little faster, but is still kinda slow.
+
+\subsection{Initial Hyperparameters and Such}
+
+We started with the target parameters $a= -.3, b = 1.4, \tau = 20, I_{ext} = 0.23$. We used a time frame with \lstinline|t = np.linspace(0, 999, 1000)|. We also decided to try having no noise, and maybe add noise later if we got the model working. 
+
+At this point I also wrote the \lstinline|understandingcode.pdf| document, where I tried to understand exactly what each part of the code does. It probably needs some updating though, since I didn't fully understand everything at that point. 
+
+\subsection{Initial results}
+
+At this point we got results along the lines of figure \ref{plot:all02}. Sometimes it would be kinda close, but other times it would be far of. We also saw that having too many epochs could lead to overflow, and thus getting no results.
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../Code/fhn_res/fitzhugh_nagumo_res_nonoise_1e5/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:all02b}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.47\textwidth}
+		\centering
+		\includegraphics[scale=0.43]{../Code/fhn_res/fitzhugh_nagumo_res0/plot_comp0.pdf}
+		\caption{$v$ exact vs. prediction}
+		\label{fig:all02c}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.4$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ and $9\cdot10^4$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.01 \cdot  t), \sin(0.05 \cdot  t), \sin(0.1 \cdot  t), \sin(0.15 \cdot  t)\right] $, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:all02}
+\end{figure}
+
+Initially I tried using different scaling for the initial guess of the parameters, to see if that would help. However this didn't have much success, so we decided to start changing feature transform and loss weights first. The only thing we managed to conclude was that $a$ should start negative, since the target value is negative.
+
+After some attempts we concluded that a feature transform of $t \rightarrow \left[ t, sin(2 \pi \cdot 0.013 \cdot t) \right]$ worked best for the current target parameters. The weights were still a mystery though. 
+
+We tried changing the weights around to see if could understand how they affected the result. One thing in particular we tried was to only have the weights for one of the loss functions at a time, by setting the others to zero. This wasn't very successful, and we weren't able to consistently get good results. At best we could get middling results, were the network clearly had learned something, but not enough to be useful. We thus decided to take a different approach.
+
+%what have I done actually?
+%started with a problem, fit data to the FHN model
+%started with a method, SBINN
+%adapted glycosis.py to instead sole FHN
+%had some issues making it run, but eventually got it working
+%started with target parameters a, b, tau, Iext = -.3, 1.4, 20, 0.23
+%started with no noise
+%made document describing what the different parts of the code does
+%tried different scailing of first guess for variables, 
+%decided to start trying to change feature transform and weights first
+%concluded sin(2 \pi \cdot 0.013 \cdot t) worked best for the current target parameters
+%tried different wheights, including having just ode, data or bc weights
+%had some issues here, generally didn't work to well, had problems fitting the model
+
+
+\section{Constant Parameters}
+
+\subsection{$I_{ext}$ and $\tau$ Constant}
+
+We decided to try leaving $I_{ext}$ and $\tau$ constant, and thus only fitting $a$ and $b$. This again got some middling results, so we decided to also have $a$ constant.
+
+%\subsection{$a$, $I_{ext}$ and $\tau$ Constant}
+\subsection{Unstable FHN}
+
+With $a$ also constant we started realising more about the model. The first thing was that the FHN model is quite unstable. For example with our current parameters, if we set $b>1.43$ the result will be a flat curve, similar to figure \ref{fig:all02b}. We thus decided to change the target value of $b$ to be 1.1.
+
+It took us a while to realise that we also had to change the feature transform, now making it $t \rightarrow \left[ t, sin(2 \pi \cdot 0.0173 \cdot t) \right]$. 
+
+This gave somewhat better result, but we still got flat curves occasionality. We tried the same trick as earlier, with having only one type of weight at a time. This didn't seem to give more insight, though I guess we might not have discussed it properly. 
+
+\subsection{Plotting NN prediction} %maybe have better title?
+
+At this point I stated saving and plotting the prediction form the neural network, which frankly I should have done from the start. This gave us some insight, and we realised that the NN's prediction often was quite a close fit, even if the end result was bad. 
+
+This might also have been what made us realise we should change the feature transform, can't quite remember.
+
+
+\subsection{Output Transform}
+
+We also tried having no output transform. This didn't seem to do much. The output transform now is \lstinline|data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y|. This might because \lstinline|data_y[0]| is zero and $\tanh(t)$ will be 1 for most of our time domain of $t \in [0, 999]$. Thus all the output transform does is multiply with 0.1. We probably have to look further into the output transformation.
+
+
+\subsection{Better Plots}
+
+At this point I made a document compiling all the result so far, \lstinline|FHN_results.pdf|. This was the best way to display it that I could think of at the time. We then concluded that making some better plots with \lstinline|matplotlib|. One example can be seen in figure \ref{plot:oneplot_exe}.
+
+
+\begin{figure}[H]
+\centering 
+%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+\includegraphics[scale=0.43]{../Code/fhn_res/fitzhugh_nagumo_res_feature_onlyb_6/full_plot.pdf}
+\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$  epochs. With feature transform $t \rightarrow \left[ t, sin(2 \pi \cdot 0.0173 \cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1\right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:oneplot_exe}
+\end{figure}
+
+
+\subsection{Stiffness}
+
+At this point we realised the problem we have might come from stiffness, and we thus did some research into that. I'm still not entirely sure about this part, but it seems like there's precedence for stiff ODE's being hard to solve with PINNs, that FHN is indeed stiff, and that there have been developed methods that make it easier to solve the problems. The problem is that trying to implement and test these methods as well might be too ambitious for a master project. We also think that the output scaling or feature transform might in part be intended to alleviate some of the stiffness. We thus decided not to try to compensate for stiffness directly, and instead write a little about it and that it might be a problem. Though again, I don't fully understand this part.
+
+
+\subsection{Final Parts}
+
+After this I've also implemented mini-batches, which seem to reduce the runtime at least somewhat.
+
+I also made some better, more detailed loss plots. One example can bee seen in figure \ref{plot:lossplot_exe}. We haven't been able to discuss these yet, but I think they might be helpful. In making these I also realised that the order of the weights and the loss outputs are different for some reason. 
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\includegraphics[scale=0.43]{../Code/fhn_res/fitzhugh_nagumo_res_feature_onlyb_6/full_loss.pdf}
+	\caption{Loss plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$  epochs. With feature transform $t \rightarrow \left[ t, sin(2 \pi \cdot 0.0173 \cdot t) \right] $, and weights $\left[ \left[ 1, 1\right], \left[ 10, 1\right], \left[ 0.1, 0.1\right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:lossplot_exe}
+\end{figure}
+
+
+%decided we would try to have I_ext and \tau constant, and only try to fit a and b
+%then decided to have a constant as well
+%realised that the FHN model is quite unastable, e.g. $b>1.43$ will give a flat curve
+%the network was giving theese values too often, decided to try haveing target b=1.1
+%it took a bit, but we realised the feature transform now had to be sin(2 \pi \cdot 0.0173 \cdot t)
+%started saving and plotting the prediction from the neural network
+%tried having no output transform
+%didn't seem to do much, 
+%realised the output transform is basically constant for most of the time frame
+%made document of results
+%made better plot for the results
+%we realised the problem might be stiffness
+%FHN is definitely stiff, but by how much is a bit uncertain. A good definition is hard to find
+%the output scailing or feature transform might be intended to eliviate some of theese problems
+%decided not to try to compensate for siffnes directly, instead write that it might be a problem
+%made plots for the losses
+%implemented minibatches
+%might hace forgotten some parts
+
+
+\section{Closing Thoughts}
+
+This is most of what I've done so far, or at least the parts I could remember/had written down. I've also read several papers which I didn't write anything about. I also have written some of on the thesis, though I should probably have done more of that.
+
+I'm not quite sure what is the best direction to go from here. I think discussing the loss plots, as well as looking closer at the plots with only one of the weights could be useful. I also think we need to look more into the output transform, as it might be more important than we've realised so far. 
+
+Beyond that I think looking into some form of hyperparameter tuning could be useful, especially for the weights. However we would then need some way to quantify how good the fit is, and I don't think we're at the point we can do that yet. Eventually we should also try adding some noise, or even try another model entirely.
+
+I don't think looking further into stiffness compensation would be the best direction to take the project. It is a bit outside the original stated goal, and I think it would be too ambitious to implement both that and SBINN for the FHN when, as far as I can tell, no one has done something like that before. There's also the fact that SBINN might already compensate somewhat for it, and that I wouldn't say I fully understand stiffness either.
+
+One other thought I've had for some time is that I could try emailing the original authors of the SBINN-paper and asking them directly about some parts of the paper. Namely how they decided on some of the hyperparameters for weights and initial guess, how they got the specific output transformations, etc. Do you have any thoughts on this? I'm not really familiar with these sorts of things myself, so I don't know if that's something that's usually done or how one would go about doing that. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+\end{document}
+
