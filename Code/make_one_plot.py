@@ -16,12 +16,26 @@ def get_hyperparam_title(path):
     hyp = np.loadtxt(os.path.join(path, 'hyperparameters.dat'), delimiter='\n', skiprows=0, dtype=str)
     # print(hyp)
     
+    # a_file = open("data.pkl", "rb")
+
+    # output = pickle.load(a_file)
+    
+    # print(output)
+    
     weights = "Weights = [{}, {}, {}]".format(hyp[0][12:], hyp[1][14:], hyp[2][13:])
-    # print(weights)
+    #do_t_input_transform 
     
     inp_tran = "Feature transformation = t -> ["
     k_vals = hyp[7][9:-1].split(",")
     # k_vals = "0.01, 0.02".split(", ")
+    try:    
+        do_t_input_transform = bool(distutils.util.strtobool( hyp[10][22:]))
+        if do_t_input_transform:
+            # print(type(do_t_input_transform), do_t_input_transform)
+            inp_tran += "t, "
+    except:
+        ""
+
     inp_tran += "sin(2pi*{}*t)".format(k_vals[0])
     for k in range(1, len(k_vals)):
         inp_tran += ", sin(2pi*{}*t)".format(k_vals[k])
@@ -39,8 +53,12 @@ def plot_losses(path):
     
     epochs = inp_dat[:,0]
     
-    train_loss = inp_dat[:,1:7]
-    test_loss = inp_dat[:,7:]
+    n_loss = inp_dat.shape[1]//2 +1
+    
+    train_loss = inp_dat[:,1:n_loss]
+    test_loss = inp_dat[:,n_loss:]
+    # train_loss = inp_dat[:,1:7]
+    # test_loss = inp_dat[:,7:]
     print(test_loss.shape, train_loss.shape)
     
     #parts = ['BC', 'Data', 'ODE']
@@ -53,25 +71,28 @@ def plot_losses(path):
     fig, axs = plt.subplots(2, 2, figsize=(14,10))
     axs_falt = axs.flatten()
     
-    for i in range(int(train_loss.shape[1]/2)):
+    # for i in range(int(train_loss.shape[1]/2)):
+    for i in range(len(parts)):
         axs_falt[0].plot(epochs, train_loss[:,i*2] + train_loss[:,i*2+1], '-', label='{} Train'.format(parts[i]))
-        axs_falt[0].plot(epochs, test_loss[:,i*2] + test_loss[:,i*2+1], '--', label='{} Test'.format(parts[i]))
+        if test_loss[:,i*2].all() != 0:    
+            axs_falt[0].plot(epochs, test_loss[:,i*2] + test_loss[:,i*2+1], '--', label='{} Test'.format(parts[i]))
         
         axs_falt[i+1].plot(epochs, train_loss[:,i*2], '-', label='{}-v Train'.format(parts[i]))
         axs_falt[i+1].plot(epochs, train_loss[:,i*2+1], '-', label='{}-w Train'.format(parts[i]))
-        axs_falt[i+1].plot(epochs, test_loss[:,i*2], '--', label='{}-v Test'.format(parts[i]))
-        axs_falt[i+1].plot(epochs, test_loss[:,i*2+1], '--', label='{}-w Test'.format(parts[i]))
-        mean = np.mean((train_loss[:,i*2:i*2+2], test_loss[:,i*2:i*2+2]))
-        axs_falt[i+1].plot(epochs, np.zeros_like(epochs)+mean, '--', label='Mean'.format(parts[i]))
+        if test_loss[:,i*2].all() != 0:            
+            axs_falt[i+1].plot(epochs, test_loss[:,i*2], '--', label='{}-v Test'.format(parts[i]))
+            axs_falt[i+1].plot(epochs, test_loss[:,i*2+1], '--', label='{}-w Test'.format(parts[i]))
+        mean = np.mean(np.mean((train_loss[:,i*2:i*2+2], test_loss[:,i*2:i*2+2]), axis=0), axis=1)
+        axs_falt[i+1].plot(epochs, mean, '--', label='Mean'.format(parts[i]))
         
         axs_falt[i+1].legend()
         axs_falt[i+1].set_yscale('log')
         axs_falt[i+1].set_title("{} loss history".format(parts[i]))
         axs_falt[i+1].set_xlabel("Epoch")
         axs_falt[i+1].set_ylabel("Loss")
-        print(mean)
+        # print(mean)
         
-    mean = np.mean((train_loss, test_loss))
+    mean = np.mean(np.mean((train_loss, test_loss), axis=0), axis=1)
     axs_falt[0].plot(epochs, np.zeros_like(epochs)+mean, '--', label='Mean'.format(parts[i]))
     
     axs_falt[0].set_yscale('log')
@@ -82,11 +103,13 @@ def plot_losses(path):
     fig.savefig(Path.joinpath( path, "full_loss.pdf"))
     plt.show()
     
-    for i in range(int(train_loss.shape[1]/2)):
+    # for i in range(int(train_loss.shape[1]/2)):
+    for i in range(len(parts)):
         diff = [np.min( np.abs( train_loss[:,i*2]/train_loss[:,i*2+1] ))]
         diff.append( np.mean( np.abs( train_loss[:,i*2]/train_loss[:,i*2+1] )) )
         diff.append( np.max( np.abs( train_loss[:,i*2]/train_loss[:,i*2+1] )) )
         print("Mean loss difference {}: {}".format(parts[i], diff))
+    
     
     
     
@@ -137,7 +160,6 @@ def make_one_plot(path):
     fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
     
     
-    
     fig.savefig(Path.joinpath( path, "full_plot.pdf"))
     
     plt.show()
@@ -147,7 +169,8 @@ def make_one_plot(path):
 
 def main():
     
-    path = Path("fhn_res/fitzhugh_nagumo_res_bas10_bc")
+    # path = Path("glycolysis_res")
+    path = Path("fhn_res/fitzhugh_nagumo_res_bas50_1")
     
     make_one_plot(path)
     plot_losses(path)

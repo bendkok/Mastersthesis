@@ -113,10 +113,8 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
         ODE,
         [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
         anchors=data_t,
+        num_test=20,
     )
-    
-    # print("Data: ", len(data.test()), len(data.test()[0]), len(data.test()[0]), len(data.test()[0]))
-    # print(data.test())
     return data, var_list
 
 
@@ -136,7 +134,6 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def feature_transform(t):
         features = [] # np.zeros(len(k_vals) + 1)
         if do_t_input_transform:    
-            # print("here")
             features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
@@ -213,8 +210,7 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
     )
 
 
-def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None, lr=1e-3,
-                batch_size=10):
+def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None, lr=1e-3):
 
     # First compile the model with ode weights set to zero
     model.compile(
@@ -223,7 +219,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
     # And train
-    model.train(epochs=int(first_num_epochs), display_every=1000, batch_size=batch_size)
+    model.train(epochs=int(first_num_epochs), display_every=1000, batch_size=10)
     
     # Now compile the model, but this time include the ode weights
     model.compile(
@@ -240,7 +236,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         callbacks=callbacks,
         disregard_previous_best=True,
         model_restore_path=model_restore_path,
-        batch_size=batch_size,
+        batch_size=10,
     )
     return losshistory, train_state
 
@@ -268,7 +264,6 @@ def create_hyperparam_dict(
     k_vals,
     do_output_transform,
     do_t_input_transform,
-    batch_size,
 ):
     """
     This function creates a dictionary contianing all the hyperparameters, and 
@@ -280,16 +275,12 @@ def create_hyperparam_dict(
         first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
         var_trainable=var_trainable, var_modifier=var_modifier, 
         k_vals=k_vals, lr=lr, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform,
-        batch_size=batch_size,
     )
     # np.savetxt(os.path.join(savename, "hyperparameters.dat"), dictionary)   
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
         for key, value in dictionary.items(): 
             data.write('%s: %s\n' % (key, value))
-    import pickle #try this later
-    a_file = open("hyperparameters.pkl", "wb") 
-    pickle.dump(dictionary, a_file)    
-    a_file.close()
+    
 
 
 def pinn(
@@ -307,7 +298,6 @@ def pinn(
     k_vals=[0.013],
     do_output_transform = False,
     do_t_input_transform = True,
-    batch_size = 10,
 ):
    
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
@@ -324,11 +314,10 @@ def pinn(
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
                            var_modifier, lr, init_weights, k_vals, do_output_transform,
-                           do_t_input_transform, batch_size)
+                           do_t_input_transform)
     
     losshistory, train_state = train_model(
-        model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr, 
-        batch_size=batch_size
+        model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
@@ -381,7 +370,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_bas50_2")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_test")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -418,8 +407,7 @@ def main():
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
         do_output_transform = True,
-        do_t_input_transform = False,
-        batch_size = 50,
+        do_t_input_transform = True,
     )
 
     # Prediction

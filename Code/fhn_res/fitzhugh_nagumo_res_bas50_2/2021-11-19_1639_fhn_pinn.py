@@ -114,9 +114,6 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
         [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
         anchors=data_t,
     )
-    
-    # print("Data: ", len(data.test()), len(data.test()[0]), len(data.test()[0]), len(data.test()[0]))
-    # print(data.test())
     return data, var_list
 
 
@@ -136,7 +133,7 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def feature_transform(t):
         features = [] # np.zeros(len(k_vals) + 1)
         if do_t_input_transform:    
-            # print("here")
+            print("here")
             features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
