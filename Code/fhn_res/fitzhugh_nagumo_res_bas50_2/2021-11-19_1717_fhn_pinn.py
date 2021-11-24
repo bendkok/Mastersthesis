@@ -115,8 +115,7 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
         anchors=data_t,
     )
     
-    # print("Data: ", len(data.test()), len(data.test()[0]), len(data.test()[0]), len(data.test()[0]))
-    # print(data.test())
+    print("Data: ", len(data.test()), len(data.test()[0]))
     return data, var_list
 
 

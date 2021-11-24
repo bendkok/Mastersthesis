@@ -114,9 +114,6 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
         [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
         anchors=data_t,
     )
-    
-    # print("Data: ", len(data.test()), len(data.test()[0]), len(data.test()[0]), len(data.test()[0]))
-    # print(data.test())
     return data, var_list
 
 
@@ -136,7 +133,6 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def feature_transform(t):
         features = [] # np.zeros(len(k_vals) + 1)
         if do_t_input_transform:    
-            # print("here")
             features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
@@ -286,10 +282,7 @@ def create_hyperparam_dict(
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
         for key, value in dictionary.items(): 
             data.write('%s: %s\n' % (key, value))
-    import pickle #try this later
-    a_file = open("hyperparameters.pkl", "wb") 
-    pickle.dump(dictionary, a_file)    
-    a_file.close()
+    
 
 
 def pinn(
@@ -381,7 +374,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_bas50_2")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_bas50_0")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -418,7 +411,7 @@ def main():
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
         do_output_transform = True,
-        do_t_input_transform = False,
+        do_t_input_transform = True,
         batch_size = 50,
     )
 

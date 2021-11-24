@@ -1,0 +1,25 @@
+At begining of thesis compare with current models, both accuracy and compute time
+	try a bit of grid search, see the time and extrapolate to say 1e11
+	grid search might be to coarse for this model, also very slow
+	gradient descent might get stuck in local minima
+	maybe gentic alogotithms
+	global optimization methods
+	nn and sgd hopefully won't
+adaptive weight?
+is the nn prediction periodic or is it just the visualisation?
+could the frequency be learned?
+explain the model, show how the model changes with different parameters
+talk about stiffness
+state how we achived the frequency
+the thesis shouldn't be a story of how I acchived the endpoint, start more from simple problem and then say if this works we can make it more complicated.
+present more result
+try feature transform with only the sin, no t
+stiffness is probably handled in the output transform
+maybe not focus on the output transform
+would expect to have a perfect fit on the nn-prediction
+	focus on that
+mention that fhn is stiff in the thesis, cite relevant papers, but not much more
+data loss and ode loss seem to be competing, which shouldn't happen. Maybe something wrong in the code?
+do a run, act like I try to give myself tips for where to go next/change
+we use the old version of deepxde, shouldn't be a problem
+try no test maybe
