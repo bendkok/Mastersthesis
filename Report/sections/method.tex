@@ -1,13 +1,115 @@
 \chapter{Method}
 \label{sec:method}
 
+
+\subsection{HiPSC}
+
+%brief introduction
+%how they are made
+%theoretical models
+%simulations
+%FHN
+%attempts at fitting
+%including grid search simulation
+%compare runtime
+
+
+
+\subsection{FitzHugh–Nagumo}
+
+The FitzHugh–Nagumo model is considered one of the simplest cardiac cell models. It has two states and four variables.
+%talk about each of the states and variables
+%the development of the model
+%instability
+
+\begin{align}\label{eq:fhn} %give only one label
+	&\dot{v}=v-v^{3}-w+R I_{\mathrm{ext}} \\
+	&\tau \dot{w}=v-a-b w
+%	&\dot{v}=v-\frac{v^{3}}{3}-w+R I_{\mathrm{ext}} \\
+%	&\tau \dot{w}=v-a-b w
+\end{align}
+
+
+
+\subsubsection{Analysis of Stiffness for FHN}
+%or instability
+
+The stiffness index is often defined as (from Suyong Kim et al eq. 5):
+\begin{align}
+	S = \frac{\operatorname{Re}\left(\lambda_{\max }\right)}{\operatorname{Re}\left(\lambda_{\min }\right)}\left(t_{1}-t_{0}\right),
+\end{align}
+where $\lambda_i$ are the eigenvalues of the Jacobian matrix of the ODE. From equation \ref{eq:fhn} we get the Jacobian
+\begin{align}
+	J_f = \begin{pmatrix} %should it be pmatrix or bmatrix?
+		1 - v^2 && -1 \\
+		\frac{1}{\tau} && - \frac{b}{\tau} 
+	\end{pmatrix}.\end{align}
+We then find the eigenvalues:
+\begin{align}
+	0 &= \det (J_f - \lambda I) 
+	= \det \begin{vmatrix}
+		1 - v^2 -\lambda && -1 \\
+		\frac{1}{\tau} && - \frac{b}{\tau} -\lambda
+	\end{vmatrix} \\
+	&= \left( 1-v^2-\lambda\right)  \left( -\frac{b}{\tau} -\lambda \right) - \frac{1}{\tau} \\
+	&= -\frac{b}{\tau} - \lambda + v^2 \frac{b}{\tau} + v^2\lambda + \lambda \frac{b}{\tau} + \lambda^2 - \frac{1}{\tau} \\
+	&= \lambda^2 + \lambda \left( -1 + v^2 + \frac{b}{\tau} \right) + v^2\frac{b}{\tau} - \frac{b}{\tau} - \frac{1}{\tau} \\
+	&= \lambda^2 + \lambda \left( -1 + v^2 + \frac{b}{\tau} \right) + \frac{1}{\tau} \left(  v^2 b - b - 1 \right).
+\end{align}
+
+We can then use the quadratic formula
+\begin{align}
+	\lambda &= \frac{- v^2 - \frac{b}{\tau} + 1}{2} \pm  \sqrt{\frac{ \left( v^2 + \frac{b}{\tau} -1 \right)^2 - \frac{4}{\tau} \left(  v^2 b - b - 1 \right) }{4}} \\
+	&= \frac{- v^2 - \frac{b}{\tau} + 1}{2} \pm  \sqrt{\frac{ v^4 + 2v^2 \frac{b}{\tau} - 2v^2 + \frac{b^2}{\tau^2} - 2 \frac{b}{\tau} + 1 - 4v^2 \frac{b}{\tau} + 4\frac{b}{\tau} + \frac{4}{\tau} }{4}} \\
+	&= \frac{- v^2 - \frac{b}{\tau} + 1  \pm  \sqrt{ \left(\frac{b}{\tau} - v^2 + 1 \right)^2 + \frac{4}{\tau} }}{2}
+\end{align}
+which gives us two values for $\lambda$. 
+
+\subsection{Brief Introduction to Machine Learning?}
+
+%labeled data
+%learning/testing data
+%some model
+%optimizing
+%cost function
+%gradient descent
+%minibatching?
+
+
+\subsection{Neural Networks}
+
+Neural networks (NNs) are a series of machine learning models that are characterised by having a network of nodes that data propagates through. 
+%losely inspired by brain neurons
+%maybe some about their history?
+In this section we will explain NN in their simplest form, known as feed forward neural networks (FNN) or multilayer perceptrons (MLP). 
+%most NN have an extenision/addition on this form
+
+A FNN consists of many nodes that are organized into several layers. First there's the input layer, which consists of the input data the network will process. You also have the output layer, which will consist of the predictions the network makes. There's also some layers in between, called hidden layers. A node in one layer is connected to all the nodes in the next layer, meaning the data will propagate from the input, through the hidden layers, and finally produce some output. 
+(This process is known as the forward pass).
+
+The activation for all the nodes in layer $l$ can be put into a vector $\mathbf{a}^l = (a^l_{0}, a^l_1, ..., a^{l}_{N_l-1})$, where $N_l$ is the amount of nodes in that layer. %note not exponents
+The activation for the entire layer $l$ can then be written as
+\begin{align}
+	\mathbf{a}^l = f(W^l \mathbf{a}^{l-1} + \mathbf{b}^{l}) 
+\end{align}
+where $W^l$ is a $N_l \times N_{l-1}$ matrix know as the weights, $\mathbf{b}^{l}$ is a $N_l$ length vector known as the bias, $f$ is some function known as the activation function, and $\mathbf{a}^{l-1}$ is the activation form the previous layer. $\mathbf{a}^{0}$ will be the same as the input data, and from that the rest of the activations can be found iteratively. The activations for the final layer $\mathbf{a}^L$ will the prediction the network makes.
+%f is f(x)=x in the finall layer
+
+\subsubsection{Training FNN}
+
+%Training FNN involves finding the best combinations of weights and biases.
+
+FNN are trained using a precess know as back propagation. After the FNN makes a prediction $\hat{\mathbf{y}}$ we can compare it to the actual data $\mathbf{y}$ using what is known as a cost function $C(x)$. 	
+
+
+
 \subsection{Physics-Informed Neural Networks}
 
 Physics-informed neural networks (PINN) were introduced by M. Raissi et. al (citation here). 
 They are neural networks designed to solve partial differential equations. 
 Essentially you constrain a neural network using physical laws.
 
-Create a DNN with param $\theta$
+To create a PINN you first create a FNN with param $\theta$.
 Have two training sets, one for the equ and one for BC/IC
 Have a loss function that sums the loss from the pde and the bc
 Find best $\theta$ that minimizes the loss function
@@ -21,11 +123,21 @@ Train by minimizing $M S E=M S E_{u}+M S E_{f}$, where $M S E_{u}=\frac{1}{N_{u}
 To implement PINNs we used the package DeepXDE by Lu Lu et. al (citation here). 
 
 
+
+
+
+
+
+
 \subsection{Systems Biology Informed Deep Learning}
 
 Further complication of a PINN. 
 Adds several layers to the NN: Input-scaling layer, Feature layer, and Output-scaling layer.
 Used to infer the hidden dynamics of experimentally unobserved species as well as the unknown parameters in the system of equations
+
+Based code upon glycolsis.py, changed into functions, etc.
+
+
 
 
 \subsubsection{Importance of Correct Feature Transform}
@@ -34,51 +146,6 @@ Used to infer the hidden dynamics of experimentally unobserved species as well a
 
 
 
-\subsection{FitzHugh–Nagumo}
-
-The FitzHugh–Nagumo model is considered one of the simplest cardiac cell models. It has two states and four variables.
-%talk about each of the states and variables
-
-
-\begin{align}\label{eq:fhn} %give only one label
-    &\dot{v}=v-\frac{v^{3}}{3}-w+R I_{\mathrm{ext}} \\
-    &\tau \dot{w}=v+a-b w
-\end{align}
-
-
-\subsubsection{Analysis of Stiffness for FHN}
-%or instability
-
-The stiffness index is often defined as (from Suyong Kim et al eq. 5):
-\begin{align}
-S = \frac{\operatorname{Re}\left(\lambda_{\max }\right)}{\operatorname{Re}\left(\lambda_{\min }\right)}\left(t_{1}-t_{0}\right),
-\end{align}
-where $\lambda_i$ are the eigenvalues of the Jacobian matrix of the ODE. From equation \ref{eq:fhn} we get the Jacobian
-\begin{align}
-J_f = \begin{pmatrix} %should it be pmatrix or bmatrix?
-	1 - v^2 && -1 \\
-	\frac{1}{\tau} && - \frac{b}{\tau} 
-\end{pmatrix}.\end{align}
-We then find the eigenvalues:
-\begin{align}
-0 &= \det (J_f - \lambda I) 
-= \det \begin{vmatrix}
-	1 - v^2 -\lambda && -1 \\
-	\frac{1}{\tau} && - \frac{b}{\tau} -\lambda
-\end{vmatrix} \\
-&= \left( 1-v^2-\lambda\right)  \left( -\frac{b}{\tau} -\lambda \right) - \frac{1}{\tau} \\
-&= -\frac{b}{\tau} - \lambda + v^2 \frac{b}{\tau} + v^2\lambda + \lambda \frac{b}{\tau} + \lambda^2 - \frac{1}{\tau} \\
-&= \lambda^2 + \lambda \left( -1 + v^2 + \frac{b}{\tau} \right) + v^2\frac{b}{\tau} - \frac{b}{\tau} - \frac{1}{\tau} \\
-&= \lambda^2 + \lambda \left( -1 + v^2 + \frac{b}{\tau} \right) + \frac{1}{\tau} \left(  v^2 b - b - 1 \right).
-\end{align}
-
-We can then use the quadratic formula
-\begin{align}
-\lambda &= \frac{- v^2 - \frac{b}{\tau} + 1}{2} \pm  \sqrt{\frac{ \left( v^2 + \frac{b}{\tau} -1 \right)^2 - \frac{4}{\tau} \left(  v^2 b - b - 1 \right) }{4}} \\
-&= \frac{- v^2 - \frac{b}{\tau} + 1}{2} \pm  \sqrt{\frac{ v^4 + 2v^2 \frac{b}{\tau} - 2v^2 + \frac{b^2}{\tau^2} - 2 \frac{b}{\tau} + 1 - 4v^2 \frac{b}{\tau} + 4\frac{b}{\tau} + \frac{4}{\tau} }{4}} \\
-&= \frac{- v^2 - \frac{b}{\tau} + 1  \pm  \sqrt{ \left(\frac{b}{\tau} - v^2 + 1 \right)^2 + \frac{4}{\tau} }}{2}
-\end{align}
-which gives us two values for $\lambda$. 
 
 
 
@@ -89,7 +156,21 @@ which gives us two values for $\lambda$.
 
 
 
+\subsection{Data}
 
+How the FHN-data was generated.
+uniform, then random selection
+noise, maybe
+
+
+
+
+\subsection{other}
+
+epochs?
+convergence?
+adding understandingcode to appendix?
+we make copy of program.
 
 
 

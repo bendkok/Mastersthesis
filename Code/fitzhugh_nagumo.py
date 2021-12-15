@@ -34,7 +34,8 @@ def fitzhugh_nagumo(t, x, a, b, tau, Iext):
     np.ndarray
         dx/dt - size 2
     """
-    return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
+    return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
+    # return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
 
 
 def main():

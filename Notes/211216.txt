@@ -1,0 +1,29 @@
+Tried running code a bunch of times. Getting meh results.
+
+Found lr is quite important.
+The code seems to get stuck in some local minima, leading to bad results after a few epochs.
+It seems like the nn quite easily finds the first and last points.
+It also cuts of if any periods become larger than the final point.
+
+Maybe trying to change one of the bc will help? Or making that one not important at all.
+Making the weight quite small didn't seem to help.
+Changing bc didn't seem to help either.
+
+Tried changing nn-structure.
+Didn't seem to do much.
+
+Use He instead of Golrot, better for ReLu and probably swish.
+
+
+Look into output scailing. Why was that done again?
+Do they actually do any input scaling? I can't find it.
+They claim to do input transformation, but nothing in the code is equivalent to inp tran.
+Line 43, why?
+
+Adding manual input scailing only made it worse.
+
+Different activation functions didn't work.
+Changing output transform to have sin didn't work.
+first_num_epochs dosen't seem to do much.
+lr dosen't seem to do much, other than say how many epochs we need.
+Changing nn-structure didn't seem to work.
