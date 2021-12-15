@@ -28,7 +28,8 @@ def fitzhugh_nagumo_model(
 ):
     def func(x, t):
         #shouldn't v^3 be divided by 3?
-        return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
+        return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
+        # return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
 
     return odeint(func, x0, t)
 
@@ -64,6 +65,8 @@ def create_observations(data_t, data_y, geom):
 
 def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23]):
     
+    # data_t = data_tt/np.max(data_tt)
+    
     # Define the variables and constants in the model
     var_list = [] # a, b, tau, Iext
     #we want to include the possibility for the variables to be both trainable and constant
@@ -75,18 +78,9 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
         
-    """
-    a = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * - 0.25
-    b = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) 
-    # tau = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 10
-    # Iext = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * 0.18
-    tau = tf.Variable(20, trainable=False, dtype=tf.float32)
-    Iext = tf.Variable(0.23, trainable=False, dtype=tf.float32)
-    var_list = [a, b, tau, Iext]
-    """
 
     def ODE(t, y):
-        v1 = y[:, 0:1] - y[:, 0:1] ** 3 / 3 - y[:, 1:2] + var_list[3]
+        v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
         v2 = (y[:, 0:1] - var_list[0] - var_list[1] * y[:, 1:2]) / var_list[2]
         return [
             tf.gradients(y[:, 0:1], t)[0] - v1,
@@ -100,7 +94,11 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
     # We assume these points are known
     def boundary(x, _):
         return np.isclose(x[0], data_t[-1, 0])
-
+    
+    # exe_point = np.where( np.max(abs(data_y[:,0])) == abs(data_y[:,0]) )[0]
+    # y1 = data_y[exe_point][0]
+    # print("exe_point: ", exe_point)
+    # print("y1: ", y1[0], data_y[-1])
     y1 = data_y[-1]
     # Question: Does it matter which point we choose?
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
@@ -115,6 +113,7 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
         anchors=data_t,
     )
     
+    
     # print("Data: ", len(data.test()), len(data.test()[0]), len(data.test()[0]), len(data.test()[0]))
     # print(data.test())
     return data, var_list
@@ -128,7 +127,10 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
         # layer_size=[1, 128, 128, 128, 2],
         layer_size=[1] + [nn_nodes]*nn_layers + [2],
         activation="swish",
-        kernel_initializer="Glorot normal",
+        # activation="sigmoid",
+        # activation="tanh",
+        # kernel_initializer="Glorot normal",
+        kernel_initializer="He normal",
     )
     
     #try to visualize the output with and without feature_transform
@@ -142,31 +144,15 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
         return tf.concat(features, axis=1)
-    """
-            (
-                # t,
-                # tf.sin(0.01 * t),
-                # tf.sin(0.05 * t),
-                # tf.sin(0.1 * t),
-                # tf.sin(0.15 * t),
-                # tf.sin(0.005*2*np.pi*t),
-                # tf.sin(0.01*2*np.pi*t),
-                tf.sin(0.013*2*np.pi*t),
-                # tf.sin(0.02*2*np.pi*t),
-                # tf.sin(k * t),
-                # tf.sin(0.05*2*np.pi*t),
-                #try f.exs. tf.sin(0.15 * t + 5),
-            ),
-            axis=1,
-        )
-    """
+   
 
     net.apply_feature_transform(feature_transform)
 
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        return data_y[0] + tf.math.tanh(t) * tf.constant([0.1, 0.1]) * y
+        # return data_y[0] + tf.math.tanh(t) * tf.constant([.1, .1]) * y
+        return data_y[0] + tf.sin(k_vals[0] * 2*np.pi*t) * tf.constant([.1, .1]) * y
     
     if do_output_transform:    
         net.apply_output_transform(output_transform)
@@ -182,7 +168,7 @@ def create_callbacks(var_list, savename):
         save_better_only=True,
         period=1000,
     )
-    # Save variables after 1000 ephocs
+    # Save variables after 1000 epochs
     variable = dde.callbacks.VariableValue(
         var_list,
         period=1000,
@@ -222,9 +208,12 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         lr=lr,
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
+    # import IPython
+    # IPython.embed()
     # And train
-    model.train(epochs=int(first_num_epochs), display_every=1000, batch_size=batch_size)
+    model.train(epochs=int(first_num_epochs), display_every=int(first_num_epochs), batch_size=batch_size)
     
+    # IPython.embed()
     # Now compile the model, but this time include the ode weights
     model.compile(
         "adam",
@@ -236,7 +225,7 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
 
     losshistory, train_state = model.train(
         epochs=int(sec_num_epochs),
-        display_every=1000,
+        display_every=100,
         callbacks=callbacks,
         disregard_previous_best=True,
         model_restore_path=model_restore_path,
@@ -302,18 +291,25 @@ def pinn(
     sec_num_epochs=int(1e5),
     var_trainable=[True, True, False, False], 
     var_modifier=[-.25, 1.1, 20, 0.23],
-    lr=1e-3,
+    lr=1e-2,
     init_weights = [[1, 1], [1, 1], [1, 1]],
     k_vals=[0.013],
     do_output_transform = False,
     do_t_input_transform = True,
     batch_size = 10,
+    nn_layers=3,
+    nn_nodes=128,
 ):
    
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
 
-    net = create_nn(data_y, k_vals, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform)
+    net = create_nn(data_y, k_vals, do_output_transform=do_output_transform, 
+                    do_t_input_transform=do_t_input_transform, nn_layers=nn_layers,
+                    nn_nodes=nn_nodes)
     model = dde.Model(data, net)
+    
+    # import IPython
+    # IPython.embed()
     
     #try plotting model.predict(t) 
 
@@ -381,7 +377,7 @@ def main():
     start = time.time()
     noise = 0.0
     # tf.device("gpu")
-    savename = Path("fhn_res/fitzhugh_nagumo_res_bas50_2")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_174")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -394,7 +390,7 @@ def main():
     tau = 20
     Iext = 0.23
     true_values = [a, b, tau, Iext]
-    t_vars = [0, 999, 1000]
+    t_vars = [0, 999, 2000]
 
     t, y = generate_data(savename, true_values, t_vars, noise)
     
@@ -409,17 +405,21 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=1000,
-        sec_num_epochs=int(1e5),
+        first_num_epochs=00,
+        sec_num_epochs=int(8e3),
         var_trainable=[False, True, False, False], #a, b, tau, Iext
-        var_modifier=[-.3, .8, 20, 0.23], #a, b, tau, Iext
+        var_modifier=[-.3, .2, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[1, 1], [0, 0], [0, 0]], # [[ode], [bc], [data]]
-        init_weights = [[1, 1], [1, 1], [1, 1]], # [[ode], [bc], [data]]
+        init_weights = [[.1, 25], [1e2, 1e3], [.06, .1]], # [[ode], [bc], [data]]
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         # lr = 5e4,
         do_output_transform = True,
         do_t_input_transform = False,
         batch_size = 50,
+        lr=1e-3,
+        # lr=None,
+        nn_layers=2,
+        nn_nodes=64,
     )
 
     # Prediction
@@ -431,10 +431,10 @@ def main():
     print("\n\nTotal runtime: {}".format(time.time() - start))
 
     print("Original values: ")
-    print(f"(a, b tau, Iext) = {true_values=}")
+    print(f"(a, b tau, Iext) = {true_values}")
 
     print("Predicted values: ")
-    print(f"(a, b tau, Iext) = {var_list=}\n")
+    print(f"(a, b tau, Iext) = {var_list}\n")
 
     fig, ax = plt.subplots(2, 1, sharex=True)
     ax[0].set_title("$v$")

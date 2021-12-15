@@ -1,0 +1,61 @@
+From the SBINN paper: "we employ the L functions e1(), e2(), . . ., e_L() to construct the L features e1(t/T), e2(t/T), ..., e_L(t/T)" 
+	I first thought L functions was something new, but I realise it migth just be a number.
+fitzhugh_nagumo_res_bas10_2 became really weird for some reason.
+
+Still don't understand why we get ODE test loss. In the formula they use the output from the NN and the exact solution of the ODE with the current p. I can't see why they should get test loss here, but not for the data or aux.
+Unless they specifically slipt up the time domain for the ODE loss.
+
+In train_model() we call model.train which has the function set_data_test().
+The input there is from *self.data.test().
+Which calls: self.test_y = self.soln(self.test_x) if self.soln else None
+Here self.data is a data.pde object.
+We create it with the default solution=None, and self.soln = solution.
+So we should have self.soln = None.
+
+After the data object is created self.soln is None (in create_data, line 111).
+After the model object is created self.soln is still None (in PINN, line 317).
+Up until model.train() is called the second time in train_model soln is still None (line 241).
+I think soln() is a red herring, since it's still None while the program outputs test losses.
+
+The LossHistory class might be better.
+The Model class creates a LossHistory object called self.losshistory.
+_test calls self.losshistory.append(), which adds the different losses.
+It appends from self.train_state, which is an TrainState object that basically stores all the losses.
+self.train_state.set_data_test(*self.data.test())
+But that leads back to self.soln, so I don't know anymore.
+
+_test calls self.train_state.loss_test to self._outputs_losses, with variabels self.train_state.X_test, self.train_state.y_test.
+I belive it calls self.outputs_losses.
+Which calls self.data.losses
+Can't say I understand what that one does though.
+
+
+
+
+
+
+
+
+
+Track down where loss.dat is saved.
+Can use fewer epochs.
+Look into stoping criteria.
+Look into callbacks.
+
+
+So loss.dat is from postprocessing.py which has the input loss_history, which is where we should start looking.
+losshistory is one of the outputs from model.train. It returns self.losshistory.
+self.losshistory is an LossHistory object. It has a append function that is called sometimes.
+It is called by _test().
+What's appended is self.train_state.loss_test.
+The calculation of self.train_state.loss_test depends on the bool uncertainty, which is False.
+It is calculated by calling self.sess.run.
+self.sess.run's first input is [self.losses, self.net.outputs].
+self.sess.run's second input is a feed_dict with self.train_state.X_test, self.train_state.y_test.
+self.losses might be important here.
+
+I think losses_test in data.pde migth be the key.
+
+
+
+

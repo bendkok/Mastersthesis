@@ -1,0 +1,250 @@
+\documentclass[a4paper]{article}
+% Import some useful packages
+\usepackage[margin=0.6in]{geometry} % narrow margins
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{amsmath,graphicx,varioref,verbatim,amsfonts,geometry,amssymb,dsfont,blindtext}
+%\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{epstopdf}
+\usepackage{media9}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\hypersetup{colorlinks=true}
+\definecolor{LightGray}{gray}{0.95}
+
+\definecolor{dkgreen}{rgb}{0,0.55,0}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{red}{rgb}{0.8,0,0}
+\definecolor{mygray}{rgb}{0.96,0.96,0.96}
+\definecolor{LightGray}{gray}{0.95}
+\newcommand{\code}[1]{\colorbox{lightgray}{\texttt{#1}}}
+
+\lstset{frame=tb,
+	language=Python,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	otherkeywords={self,np,plt},
+	numberstyle=\tiny\color{mauve},
+	identifierstyle=\color{black},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{red},
+	backgroundcolor=\color{mygray},
+	rulecolor=\color{black},
+	breaklines=true,
+	breakatwhitespace=true,
+	%tabsize=3
+	extendedchars=true,
+	literate=
+	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	{à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+	{À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+	{ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+	{Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+	{â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+	{Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+	{œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+	{ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+	{€}{{\EUR}}1 {£}{{\pounds}}1
+}
+
+
+%\title{Understanding the Code}
+%\author{Bendik Steinsvåg Dalen}
+\renewcommand\thesubsection{\thesection.\alph{subsection}}
+\renewcommand\thesubsubsection{\thesubsection.\roman{subsubsection}}
+\begin{document}
+	
+%\section{Results}
+
+\subsection{Plain}
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_0/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb06a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_0/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb06b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:justb06}
+\end{figure} 	
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_1/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb015}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_1/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb05b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:justb05}
+\end{figure} 	
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_3/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb01a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_3/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb01b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb01}
+\end{figure} 	
+
+
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_2/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb07a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_2/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb07b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:justb07}
+\end{figure} 	
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_4/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb08a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_4/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb08b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:justb08}
+\end{figure} 	
+
+
+\subsection{ODE}
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_ode/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb02a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_ode/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb02b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+	%Label gjør det enkelt å referere til ulike bilder.
+	\label{plot:justb02}
+\end{figure} 	
+
+
+\subsection{Data}
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_data/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb03a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_data/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb03b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:justb03}
+\end{figure} 	
+
+
+\subsection{Aux}
+
+\begin{figure}[H]
+	\centering 
+	%Scale angir størrelsen på bildet. Bildefilen må ligge i %samme mappe som tex-filen. 
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_bc/full_plot.pdf}
+		\caption{Prediction}
+		\label{fig:justb04a}
+	\end{subfigure}
+	\begin{subfigure}[b]{\textwidth}
+		\centering
+		\includegraphics[scale=0.45]{../fhn_res/fitzhugh_nagumo_res_bas10_bc/full_loss.pdf}
+		\caption{Loss plots}
+		\label{fig:justb04b}
+	\end{subfigure}
+	\caption{Prediction plots when $a=-0.3$, $b=1.1$, $\tau=20$ and $ I_{\text{ext}}=0.23$ after $10^5$ epochs. With feature transform $t \rightarrow \left[ t, \sin(0.0173\cdot t) \right] $.}%, and weights $\left[ \left[ 1, 1\right], \left[ 1, 1\right], \left[ 1, 1 \right]\right]$.}
+%Label gjør det enkelt å referere til ulike bilder.
+\label{plot:justb04}
+\end{figure} 	
+
+
+
+\end{document}
+
