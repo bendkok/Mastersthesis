@@ -292,4 +292,4 @@ def get_model_restore_path(savename):
 
 if __name__ == "__main__":
     # make_plots(Path("fitzhugh_nagumo_res_feature_onlyb_2"))
-    make_plots(Path("fhn_res/fitzhugh_nagumo_res_bas10_2_80"))
+    make_plots(Path("fhn_res/fitzhugh_nagumo_res_bas10_2_50"))
