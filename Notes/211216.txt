@@ -17,7 +17,7 @@ Use He instead of Golrot, better for ReLu and probably swish.
 
 Look into output scailing. Why was that done again?
 Do they actually do any input scaling? I can't find it.
-They claim to do input transformation, but nothing in the code is equivalent to inp tran.
+They claim to do input scailing, but nothing in the code is equivalent to inp scailing. Unless it's the geometry thing.
 Line 43, why?
 
 Adding manual input scailing only made it worse.
@@ -27,3 +27,52 @@ Changing output transform to have sin didn't work.
 first_num_epochs dosen't seem to do much.
 lr dosen't seem to do much, other than say how many epochs we need.
 Changing nn-structure didn't seem to work.
+NN-weight initilization didn't work.
+
+Good example runs:
+50
+62
+120,90
+175
+
+
+
+Things I should write about in Method:
+define FNN breifley
+how you train and test
+PINNs
+SBINNs
+what the differnet transform and weights do
+FHN model
+useful for neural and cardiac
+stiffness of FHN - maybe later
+Problems with PINNs and stiffnes
+how the data was generated
+hiPSC - maybe not
+in silico models of hiPSC
+Historic problems with fitting hiPSC models
+e.g. grid search or gradient descent
+Used the Yeast glycosis model/program as a starting point
+some simple experiments with the nn, maybe without ode
+for example feature transform or no feature transform
+
+
+
+
+Write down what I understand and don't, compare later.
+Don't run more tests until I understand what I'm doing.
+Get a number that describes how good the fit is.
+E.g. norm between nn prediction and ODE prediction.
+An error suited to sin-curves
+Fourier
+Difference between the learned and actual b-value.
+Norm between blue and red curves.
+
+
+
+
+
+
+
+
+
