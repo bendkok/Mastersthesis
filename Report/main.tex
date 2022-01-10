@@ -8,6 +8,16 @@
 \usepackage{style}      % Custom style
 \usepackage{kantlipsum} % Dummy text
 
+\hypersetup{
+	%I think blue works best for the contents section, but red is best for equations and the like.
+	colorlinks  = true, %Colours links instead of ugly boxes
+	urlcolor    = blue, %Colour for external hyperlinks
+	linkcolor   = blue, %Colour of internal links
+	citecolor   = red %Colour of citations
+}
+
+\setsecnumdepth{subsubsection}
+
 \title{Characterization of cardiac cellular dynamics using Physics-Informed Neural Networks}
 % \subtitle{Optional Subtitle}
 \author{Bendik Steinsvåg Dalen}
@@ -44,6 +54,12 @@
     \microtypesetup{protrusion = true}
 
     \mainmatter         % Folios in Arabic numerals, numbered chapters.
+    
+    \hypersetup{
+    	%I think blue works best for the contents section, but red is best for equations and the like.
+    	%I made two differnt ones, but that might be a bit cluncy. 
+    	linkcolor   = red, %Colour of internal links
+    }
 
     \include{sections/introduction}
 
@@ -61,8 +77,8 @@
     \appendix           % "Chapter" is renamed "Appendix"
     \appendixpage       % Similar to \part*{Appendices}, but appears in TOC.
 
-    \include{sections/appendixA}
-    \include{sections/appendixB}
+%    \include{sections/appendixA}
+%    \include{sections/appendixB}
 
     \backmatter         % Folios in Arabic numerals, unnumbered chapters.
 

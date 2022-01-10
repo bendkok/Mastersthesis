@@ -2,7 +2,7 @@
 \label{sec:method}
 
 
-\subsection{\textit{In Silico} Cardiac Models}
+\section{\textit{In Silico} Cardiac Models}
 
 %theoretical models
 %simulations
@@ -13,7 +13,7 @@
 
 
 
-\subsection{FitzHugh–Nagumo}
+\section{FitzHugh–Nagumo}
 
 The FitzHugh–Nagumo model is considered one of the simplest cardiac cell models. It has two states and four variables.
 %talk about each of the states and variables
@@ -29,7 +29,7 @@ The FitzHugh–Nagumo model is considered one of the simplest cardiac cell model
 
 
 
-\subsubsection{Analysis of Stiffness for FHN}
+\subsection{Analysis of Stiffness for FHN}
 %or instability
 
 The stiffness index is often defined as (from Suyong Kim et al eq. 5):
@@ -63,7 +63,7 @@ We can then use the quadratic formula
 \end{align}
 which gives us two values for $\lambda$. 
 
-%\subsection{Brief Introduction to Machine Learning?}
+%\section{Brief Introduction to Machine Learning?}
 
 %probably unnecessary
 
@@ -76,7 +76,7 @@ which gives us two values for $\lambda$.
 %minibatching?
 
 
-\subsection{Neural Networks}
+\section{Neural Networks}
 %might be too much
 
 Neural networks (NNs) are a series of machine learning models that are characterised by having a network of nodes that data propagates through. 
@@ -96,7 +96,7 @@ The activation for the entire layer $l$ can then be written as
 where $W^l$ is a $N_l \times N_{l-1}$ matrix know as the weights, $\mathbf{b}^{l}$ is a $N_l$ length vector known as the bias, $f$ is some function known as the activation function, and $\mathbf{a}^{l-1}$ is the activation form the previous layer. $\mathbf{a}^{0}$ will be the same as the input data, and from that the rest of the activations can be found iteratively. The activations for the final layer $\mathbf{a}^L$ will the prediction the network makes.
 %f is f(x)=x in the finall layer
 
-%\subsubsection{Training FNN}
+%\subsection{Training FNN}
 %
 %%Training FNN involves finding the best combinations of weights and biases.
 %
@@ -104,49 +104,83 @@ where $W^l$ is a $N_l \times N_{l-1}$ matrix know as the weights, $\mathbf{b}^{l
 
 
 
-\subsection{Physics-Informed Neural Networks}
+\section{Physics-Informed Neural Networks}
 
-Physics-informed neural networks (PINN) were introduced by M. Raissi et. al (citation here). 
-They are neural networks designed to solve partial differential equations. 
-Essentially you constrain a neural network using physical laws.
+We have some system or set of systems that can be modelled by a system of ordinary differential equations (ODEs)\footnote{PINNs can also be used to solve partial differential equations, however we will only be using them to solve ODEs, so we won't be discussing PDEs here.} 
+of the form
+\begin{subequations} \label{eq:ode}
+\begin{gather}
+	\frac{d \mathbf{x}}{d t}=\boldsymbol{f}(\mathbf{x}, t ; \mathbf{p}), \label{eq:ode_a} \\
+	\mathbf{x}\left(T_{0}\right)=\mathbf{x}_{0}, \label{eq:ode_b} \\
+	\mathbf{y}=\boldsymbol{h}(\mathbf{x})+\epsilon(t), \quad \epsilon(t) \sim \mathcal{N}\left(0, \sigma^{2}\right), \label{eq:ode_c}
+\end{gather}
+\end{subequations}
+where:
+\begin{itemize} %make the spacing smaller
+	\item $\mathbf{x}$ is a vector of length $S$ representing the value or concentration of different states or species,
+	\item $\mathbf{f}$ is some function,
+	\item $t$ is the time, with $T_0$ the initial time point,\footnote{$t$ could potentially be any input, but we will be using time.}
+%		We will be using time, but it could potentially be any other input parameter, like position.} 
+	\item $\mathbf{p}$ is a vector of length $K$ representing the internal parameters of the ODE (model?)
+	\item $\mathbf{h}$ is a the output function %vector representing the actual values 
+	\item $\mathbf{y}$ is a vector of length $M$ representing the measurable signals, which equals $\mathbf{h}$ plus some potential noise $\epsilon$. \footnote{qgackk}
+\end{itemize}
+We have $S \geq M$, meaning that you can model systems with unmeasurable species. We will however only be dealing with measurable signals, thus having $S=M$. %rephrase
 
-To create a PINN you first create a FNN with param $\theta$.
-Have two training sets, one for the equ and one for BC/IC
-Have a loss function that sums the loss from the pde and the bc
-Find best $\theta$ that minimizes the loss function
-
-Define a PDE problem, 
-\begin{align}
-	u_{t}+\mathcal{N}[u]=0, \\
-	x \in \Omega, 
-	t \in[0, T].
-\end{align}
-Define $f:=u_{t}+\mathcal{N}[u]$
-Approximate $u(t,x)$ with a DNN.
-$f(x,t)$ is thus a PINN. 
-Train by minimizing 
-\begin{align}
-	M S E=M S E_{u}+M S E_{f},
-\end{align} 
-where 
-\begin{align}
-	M S E_{u}=\frac{1}{N_{u}} \sum_{i=1}^{N_{u}}\left|u\left(t_{u}^{i}, x_{u}^{i}\right)-u^{i}\right|^{2}
-\end{align} 
-and 
-\begin{align}
-	M S E_{f}=\frac{1}{N_{f}} \sum_{i=1}^{N_{f}}\left|f\left(t_{f}^{i}, x_{f}^{i}\right)\right|^{2}.
-\end{align}
-
-To implement PINNs we used the package DeepXDE by Lu Lu et. al (citation here). 
+We want to find the values of $\mathbf{p}$ that gives the closest approximation to $\mathbf{y}$. To do this we create a FNN with  input $t$ and parameters $\mathbf{\theta}$, and use it as a surrogate for the solution to the ODE. We can then define a loss-function of the form
+\begin{align*}
+	\mathcal{L}(\boldsymbol{\theta}, \mathbf{p}) 
+	= \mathcal{L}^{\text {data}}(\boldsymbol{\theta}) + \mathcal{L}^{\text {ode}}(\boldsymbol{\theta}, \mathbf{p}) + \mathcal{L}^{\text {aux}}(\boldsymbol{\theta}).
+\end{align*}
+Each loss term is associated with a different part of equation \ref{eq:ode}. %or maybe not. Kinda
+$\mathcal{L}^{\text {data}}$ is the data points in eq. \ref{eq:ode_c}, $\mathcal{L}^{\text {ode}}$ enforces the structure of the ODEs in eq. \ref{eq:ode_a}, 
+and \ref{eq:ode_b} the init. stuff. %though not necessarily
 
 
 
 
+%
+%Physics-informed neural networks (PINN) were introduced by M. Raissi et. al (citation here). 
+%They are neural networks designed to solve partial differential equations. 
+%Essentially you constrain a neural network using physical laws.
+%
+%To create a PINN you first create a FNN with param $\theta$.
+%Have two training sets, one for the equ and one for BC/IC
+%Have a loss function that sums the loss from the pde and the bc
+%Find best $\theta$ that minimizes the loss function
+%
+%Define a PDE problem, 
+%\begin{align}
+%	u_{t}+\mathcal{N}[u]=0, \\
+%	x \in \Omega, 
+%	t \in[0, T].
+%\end{align}
+%Define $f:=u_{t}+\mathcal{N}[u]$
+%Approximate $u(t,x)$ with a DNN.
+%$f(x,t)$ is thus a PINN. 
+%Train by minimizing 
+%\begin{align}
+%	M S E=M S E_{u}+M S E_{f},
+%\end{align} 
+%where 
+%\begin{align}
+%	M S E_{u}=\frac{1}{N_{u}} \sum_{i=1}^{N_{u}}\left|u\left(t_{u}^{i}, x_{u}^{i}\right)-u^{i}\right|^{2}
+%\end{align} 
+%and 
+%\begin{align}
+%	M S E_{f}=\frac{1}{N_{f}} \sum_{i=1}^{N_{f}}\left|f\left(t_{f}^{i}, x_{f}^{i}\right)\right|^{2}.
+%\end{align}
+%
+%To implement PINNs we used the package DeepXDE by Lu Lu et. al (citation here). 
 
 
 
 
-\subsection{Systems Biology Informed Deep Learning}
+
+
+
+
+\section{Systems Biology Informed Deep Learning}
 
 Systems biology informed neural networks (SBINN) were introduced by Yazdani et. al. (insert citation).
 SBINNs are a further complication on PINNs, which aims at...
@@ -168,7 +202,14 @@ Based code upon glycolsis.py, changed into functions, etc.
 
 
 
-\subsubsection{Importance of Correct Feature Transform}
+\subsection{Importance of Correct Feature Transform}
+
+%should probably be in results
+
+
+
+
+\section{Autograd?}
 
 
 
@@ -177,14 +218,7 @@ Based code upon glycolsis.py, changed into functions, etc.
 
 
 
-
-
-
-
-
-
-
-\subsection{Data}
+\section{Data}
 
 How the FHN-data was generated.
 uniform, then random selection
@@ -193,7 +227,7 @@ noise, maybe
 
 
 
-\subsection{other}
+\section{other}
 
 %epochs?
 %convergence?
