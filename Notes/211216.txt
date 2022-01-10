@@ -55,7 +55,12 @@ e.g. grid search or gradient descent
 Used the Yeast glycosis model/program as a starting point
 some simple experiments with the nn, maybe without ode
 for example feature transform or no feature transform
+Autograd functionality?
 
+
+Should I include units for the parameters and states?
+Probably not, the equations dosen't make any sense if we do.
+In the papers they seem to use states and species interchangeably. Is there a difference? So I considerthat difference?
 
 
 
@@ -68,9 +73,22 @@ Fourier
 Difference between the learned and actual b-value.
 Norm between blue and red curves.
 
+I think I've missunderstood what the weights represents, will have to look further into it.
+
+I still don't understand what theese observes are meant to be. Never mind, figured it out.
+Neither what the geometry does. Is it input scailing?
+They only have two data weights because there's only two obserable states (4 and 5).
+Maybe I haven't missunderstod after all.
+
+I don't understand why output_transform() does what they claim it does.
+How do they calculate confidence intervals?
+Fisher-Information-Matrix maybe?
 
 
 
+" Structural non-identifiability arises from a redundant parameteriza-
+tion in the formal solution of y due to insufficient mapping h of internal states x to observables
+y in Eq (1) [15]." What???
 
 
 
