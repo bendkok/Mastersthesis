@@ -89,7 +89,7 @@ Fisher-Information-Matrix maybe?
 " Structural non-identifiability arises from a redundant parameteriza-
 tion in the formal solution of y due to insufficient mapping h of internal states x to observables
 y in Eq (1) [15]." What???
-
+I think I understand. It is non-identifiable due to the specific structure. Not quite sure why though.
 
 
 

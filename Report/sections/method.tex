@@ -13,9 +13,10 @@
 
 
 
-\section{FitzHugh–Nagumo}
+\subsection{FitzHugh–Nagumo}
 
-The FitzHugh–Nagumo model is considered one of the simplest cardiac cell models. It has two states and four variables.
+The FitzHugh–Nagumo model is considered one of the simplest cardiac %and neural
+cell models. It has two states and four variables.
 %talk about each of the states and variables
 %the development of the model
 %instability
@@ -29,8 +30,9 @@ The FitzHugh–Nagumo model is considered one of the simplest cardiac cell model
 
 
 
-\subsection{Analysis of Stiffness for FHN}
+\subsubsection{Analysis of Stiffness for FHN}
 %or instability
+%should probably be moved to appendix
 
 The stiffness index is often defined as (from Suyong Kim et al eq. 5):
 \begin{align}
@@ -65,7 +67,7 @@ which gives us two values for $\lambda$.
 
 %\section{Brief Introduction to Machine Learning?}
 
-%probably unnecessary
+%might be unnecessary
 
 %labeled data
 %learning/testing data
@@ -78,6 +80,7 @@ which gives us two values for $\lambda$.
 
 \section{Neural Networks}
 %might be too much
+%todo: find good citation
 
 Neural networks (NNs) are a series of machine learning models that are characterised by having a network of nodes that data propagates through. 
 %losely inspired by brain neurons
@@ -88,25 +91,52 @@ In this section we will explain NN in their simplest form, known as feed forward
 A FNN consists of many nodes that are organized into several layers. First there's the input layer, which consists of the input data the network will process. You also have the output layer, which will consist of the predictions the network makes. There's also some layers in between, called hidden layers. A node in one layer is connected to all the nodes in the next layer, meaning the data will propagate from the input, through the hidden layers, and finally produce some output. 
 (This process is known as the forward pass).
 
+%might remove this entire paragraph
 The activation for all the nodes in layer $l$ can be put into a vector $\mathbf{a}^l = (a^l_{0}, a^l_1, ..., a^{l}_{N_l-1})$, where $N_l$ is the amount of nodes in that layer. %note not exponents
 The activation for the entire layer $l$ can then be written as
 \begin{align}
+	%I shuold have noted where I fuond this specific formula. Was is 3b1b?
 	\mathbf{a}^l = f(W^l \mathbf{a}^{l-1} + \mathbf{b}^{l}) 
 \end{align}
 where $W^l$ is a $N_l \times N_{l-1}$ matrix know as the weights, $\mathbf{b}^{l}$ is a $N_l$ length vector known as the bias, $f$ is some function known as the activation function, and $\mathbf{a}^{l-1}$ is the activation form the previous layer. $\mathbf{a}^{0}$ will be the same as the input data, and from that the rest of the activations can be found iteratively. The activations for the final layer $\mathbf{a}^L$ will the prediction the network makes.
 %f is f(x)=x in the finall layer
 
 %\subsection{Training FNN}
-%
-%%Training FNN involves finding the best combinations of weights and biases.
-%
-%FNN are trained using a precess know as back propagation. After the FNN makes a prediction $\hat{\mathbf{y}}$ we can compare it to the actual data $\mathbf{y}$ using what is known as a cost function $C(x)$. 	
 
+%Training FNN involves finding the best combinations of weights and biases.
+
+FNN are trained using a process know as back propagation. After the FNN makes a prediction $\mathbf{a}^L$ we can compare it to the actual data $\mathbf{y}$ using some for of cost function $C(\mathbf{y}, \mathbf{a}^L)$. We can then iterate backwards to find the gradient of $C$ for each of the weight and bias variables. 
+We repeat this for all the training data, and then find the mean value of these gradients.
+Finally we use the mean gradients to update the weights and biases. How exactly this is done will depend on the optimisation method used. For example, for regular gradient descent the new weight will be
+\begin{align}
+	%need citation
+	W^{l,\text{new}}_{n,m} = {W^l_{n,m}} - \eta \frac{\partial C}{\partial W^l_{n,m}}
+\end{align}
+and equivalent for the biases.
+%I don't go into much detail about backprop. Is it enough?
+
+
+%this might be a good place to write about minibatching
+
+
+
+%should I explain cost functions?
 
 
 \section{Physics-Informed Neural Networks}
 
-We have some system or set of systems that can be modelled by a system of ordinary differential equations (ODEs)\footnote{PINNs can also be used to solve partial differential equations, however we will only be using them to solve ODEs, so we won't be discussing PDEs here.} 
+%todo: maybe a short introduction/a bit about PINNs history
+
+%Physics-informed neural networks (PINN) were introduced by M. Raissi et. al (citation here). 
+%They are neural networks designed to fit partial differential equations to data. 
+%Essentially you constrain a neural network using physical laws.
+
+%todo: introduce data better
+%might be good enough
+
+%todo: find fitting place to place the figure of the structure from the SBINN-paper
+
+To use a Physics-Informed Neural Network (PINN) we need some system or set of systems that can be modelled by a system of ordinary differential equations (ODEs)\footnote{PINNs can also be used to solve partial differential equations, however we will only be using them to solve ODEs, so we won't be discussing PDEs here.} 
 of the form
 \begin{subequations} \label{eq:ode}
 \begin{gather}
@@ -117,105 +147,129 @@ of the form
 \end{subequations}
 where:
 \begin{itemize} %make the spacing smaller
+	\setlength\itemsep{-.1em}
 	\item $\mathbf{x}$ is a vector of length $S$ representing the value or concentration of different states or species,
 	\item $\mathbf{f}$ is some function,
 	\item $t$ is the time, with $T_0$ the initial time point,\footnote{$t$ could potentially be any input, but we will be using time.}
 %		We will be using time, but it could potentially be any other input parameter, like position.} 
 	\item $\mathbf{p}$ is a vector of length $K$ representing the internal parameters of the ODE (model?)
 	\item $\mathbf{h}$ is a the output function %vector representing the actual values 
-	\item $\mathbf{y}$ is a vector of length $M$ representing the measurable signals, which equals $\mathbf{h}$ plus some potential noise $\epsilon$. \footnote{qgackk}
+	\item $\mathbf{y}$ is a vector of length $M$ representing the measurable signals of the system, which equals $\mathbf{h}$ plus some potential noise $\epsilon$. This represents any data we have. %i think
 \end{itemize}
-We have $S \geq M$, meaning that you can model systems with unmeasurable species. We will however only be dealing with measurable signals, thus having $S=M$. %rephrase
+We have $S \geq M$, meaning that you can model systems with unmeasurable states. We will however only be dealing with measurable signals, so we will set $S=M$ for the rest of the report(paper?). %todo: rephrase
 
-We want to find the values of $\mathbf{p}$ that gives the closest approximation to $\mathbf{y}$. To do this we create a FNN with  input $t$ and parameters $\mathbf{\theta}$, and use it as a surrogate for the solution to the ODE. We can then define a loss-function of the form
-\begin{align*}
+We want to find the values of $\mathbf{p}$ that gives the solution $\mathbf{x}$ which is the closest approximation to $\mathbf{y}$. To do this we create a FNN with input $t$ and parameters $\mathbf{\theta}$, which outputs a vector $\hat{\mathbf{x}}$ %(t ; \boldsymbol{\theta})$ 
+of length $S$, and use it as a surrogate for the solution to the ODE. We can then define a loss-function of the form
+\begin{align}
 	\mathcal{L}(\boldsymbol{\theta}, \mathbf{p}) 
-	= \mathcal{L}^{\text {data}}(\boldsymbol{\theta}) + \mathcal{L}^{\text {ode}}(\boldsymbol{\theta}, \mathbf{p}) + \mathcal{L}^{\text {aux}}(\boldsymbol{\theta}).
-\end{align*}
-Each loss term is associated with a different part of equation \ref{eq:ode}. %or maybe not. Kinda
-$\mathcal{L}^{\text {data}}$ is the data points in eq. \ref{eq:ode_c}, $\mathcal{L}^{\text {ode}}$ enforces the structure of the ODEs in eq. \ref{eq:ode_a}, 
-and \ref{eq:ode_b} the init. stuff. %though not necessarily
+	= \mathcal{L}^{\text {data}}(\boldsymbol{\theta}) + \mathcal{L}^{\text {ode}}(\boldsymbol{\theta}, \mathbf{p}) + \mathcal{L}^{\text {aux}}(\boldsymbol{\theta}). \label{eq:losses}
+\end{align}
+We will now discuss each term individually. %todo: rephrase
 
 
 
+The first term in eq. \ref{eq:losses}, $\mathcal{L}^{\text {data}}$, is called the data-loss, and is associated with the data points in eq. \ref{eq:ode_c}. Its formula is
+\begin{align}
+	\mathcal{L}^{ \text{data}}(\boldsymbol{\theta}) &= \sum_{s=1}^{S} w_{s}^{\text {data}} \mathcal{L}_{s}^{\text {data}} = \sum_{s=1}^{S} w_{s}^{\text {data}} \left[\frac{1}{N^{\text {data}}} \sum_{n=1}^{N^{\text {data}}}\left(y_{s}\left(t_{n}\right) - \hat{x}_{s} \left(t_{n} ; \boldsymbol{\theta}\right)\right)^{2} \right].
+\end{align}
+$\hat{x}_{s} \left(t_{n}; \boldsymbol{\theta}\right)$ is the NNs prediction of state $s$ for the time point $t_n$ with the NN-parameters $\mathbf{\theta}$, %this theta dosen't beccome bold for some reason
+$N^{\text {data}}$ is the total number of data points, and $w_{s}^{\text {data}}$ is a weight value, which determines %todo: find better word
+how much importance is placed on the data-loss from state $s$.
 
-%
-%Physics-informed neural networks (PINN) were introduced by M. Raissi et. al (citation here). 
-%They are neural networks designed to solve partial differential equations. 
-%Essentially you constrain a neural network using physical laws.
-%
-%To create a PINN you first create a FNN with param $\theta$.
-%Have two training sets, one for the equ and one for BC/IC
-%Have a loss function that sums the loss from the pde and the bc
-%Find best $\theta$ that minimizes the loss function
-%
-%Define a PDE problem, 
-%\begin{align}
-%	u_{t}+\mathcal{N}[u]=0, \\
-%	x \in \Omega, 
-%	t \in[0, T].
-%\end{align}
-%Define $f:=u_{t}+\mathcal{N}[u]$
-%Approximate $u(t,x)$ with a DNN.
-%$f(x,t)$ is thus a PINN. 
-%Train by minimizing 
-%\begin{align}
-%	M S E=M S E_{u}+M S E_{f},
-%\end{align} 
-%where 
-%\begin{align}
-%	M S E_{u}=\frac{1}{N_{u}} \sum_{i=1}^{N_{u}}\left|u\left(t_{u}^{i}, x_{u}^{i}\right)-u^{i}\right|^{2}
-%\end{align} 
-%and 
-%\begin{align}
-%	M S E_{f}=\frac{1}{N_{f}} \sum_{i=1}^{N_{f}}\left|f\left(t_{f}^{i}, x_{f}^{i}\right)\right|^{2}.
-%\end{align}
-%
-%To implement PINNs we used the package DeepXDE by Lu Lu et. al (citation here). 
+%the weight values are important for hyperparameter tuning. might be worth mentioning
+%or maybe more discussion on the weights in general
+
+
+The second term in eq. \ref{eq:losses}, $\mathcal{L}^{\text {ode}}$, is called the ODE-loss, and enforces the structure of the ODEs from eq. \ref{eq:ode_a}. Its formula is
+\begin{align}
+	%theese functions are to long for the margin. Need to do something about that.
+	%I think we need to change the margins anyway, so we might not need to change the funtions
+	\mathcal{L}^{\text {ode}}(\boldsymbol{\theta}, \mathbf{p}) &= \sum_{s=1}^{S} w_{s}^{\text {ode}} \mathcal{L}_{s}^{\text {ode}} = \sum_{s=1}^{S} w_{s}^{\text {ode}} \left[\frac{1}{N^{\text {ode}}} \sum_{n=1}^{N^{\text {ode}}}\left(\left.\frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}} - f_{s}\left(\hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)\right)^{2}\right].
+\end{align}
+$f_{s}\left( \hat{x}_{s}\left(\tau_{n} ; \boldsymbol{\theta}\right), \tau_{n} ; \mathbf{p}\right)$ is the $s$-component of the function $\mathbf{f}$ from equation \ref{eq:ode_a}, at the time point $\tau_{n}$, the NN-prediction $\hat{x}_{s}$ for that time point, %maybe the NN-param.
+and with the ODE-parameters $\mathbf{p}$. 
+For the FHN model, $\mathbf{p} = [a, b, \tau, I_{ext}]$. %might be superfluous
+$\left.\frac{d \hat{x}_{s}}{d t}\right|_{\tau_{n}}$ is the derivative of the NN-prediction $\hat{x}_{s}$. It is calculated using automatic differentiation, see section \ref{sec:autodiff} for further details. 
+$N^{\text {ode}}$ is the amount of time points for the ODE, %todo: rephrase $\mathbf{\tau}$
+and $w_{s}^{\text {ode}}$ is the ODE-weight for the state $s$.
+
+You might notice that there are two sets of time points. 
+$\mathbf{t}$ are the time points the data is sampled at, while $\mathbf{\tau}$ are time points where we want to enforce the network to satisfy the ODE. %rephrase
+They have length $N^{\text{data}}$ and $N^{\text{ode}}$ respectively. Take note that these don't have to be equal or be sampled similarly.
+%I think we use all the time points from data_t for the ODE time points, $\tau_{n}$. Might be worth looking into 
+%todo
 
 
 
+The last term in eq. \ref{eq:losses}, $\mathcal{L}^{ \text{aux}}$, is called the auxiliary-loss, or the BC-loss (boundary condition loss). 
+Its formula is
+\begin{align}
+	\mathcal{L}^{ \text{aux} }(\boldsymbol{\theta}) &= \sum_{s=1}^{S} w_{s}^{ \text{aux} } \mathcal{L}_{s}^{ \text{aux} } = \sum_{s=1}^{S} w_{s}^{\text{aux}} \frac{ \left(x_{s} \left( T_{0} \right) - \hat{x}_{s} \left(T_{0} ; \boldsymbol{\theta} \right) \right)^{2} + \left(x_{s} \left(T_{1}\right) - \hat{x}_{s} \left(T_{1} ; \boldsymbol{\theta} \right) \right)^{2}}{2}.
+\end{align}
+The auxiliary-loss is formed from two specific time points where we know the solution $\mathbf{x}$. 
+The first is the initial condition at $T_0$ from eq. \ref{eq:ode_b}. The other is $T_1$, which can be any other time point that isn't too close to $T_0$. 
+$w_{s}^{\text{aux}}$ is the auxiliary-weight for the state $s$.
+$\mathcal{L}^{ \text{aux}}$ could technically be incorporated into $\mathcal{L}^{\text {data}}$... %might be worth saying something about...
+%todo: write something here
+
+
+We can see that we thus have three different loss functions. Two of them, $\mathcal{L}^{\text {data}}$ and $\mathcal{L}^{ \text{aux}}$, are supervised losses, and one of them, $\mathcal{L}^{\text {ode}}$, is unsupervised. We optimize the network by trying to find the values of $\mathbf{p}$ and $\mathbf{\theta}$ that minimizes the loss-function, eq. \ref{eq:losses}. To do this we will use the Adam optimizer, see section \ref{sec:adam} for more details.
 
 
 
-
-
-\section{Systems Biology Informed Deep Learning}
+\subsection{Systems Biology Informed Deep Learning}
 
 Systems biology informed neural networks (SBINN) were introduced by Yazdani et. al. (insert citation).
-SBINNs are a further complication on PINNs, which aims at...
+SBINNs are a further complication on PINNs, which are specifically designed to model biological systems. 
 
-In a SBINN we add three extra layers with the aim of making the network training easier. These are:
+In a SBINN we add three extra layers to the network structure, with the aim of making the network training easier. These are:
 \begin{itemize}
-	\item A input scaling layer. Here we apply a linear scaling function to the input $t$, such that $\tilde{t}=t / T$, where $T$ is the maximum value of $t$.
-	\item Input feature transformation layer. 
-	\item A Output scaling layer.
+	\item A input scaling layer. Here we apply a linear scaling function to the input $t$, such that $\tilde{t}=t / T$, where $T$ is the maximum value of $t$. This is done because the input might span several orders of magnitude.
+	\item Input feature transformation layer. If the data shows some form of pattern, e.g. periodicity, then a feature transformation can be used to help the network easier learn this pattern. If the pattern is periodicity we can use one or more $\sin$-functions. The feature transform can then for example be $\tilde{t} \rightarrow \left[ \sin(2 \pi k \tilde{t}) \right] $,  $\tilde{t} \rightarrow \left[ \tilde{t}, \sin(2 \pi k \tilde{t}) \right] $ or  $\tilde{t} \rightarrow \left[ \tilde{t}, \sin(\pi k \tilde{t}), \sin(2 \pi k \tilde{t}), \sin(4 \pi k \tilde{t}) \right]$. 
+	\item A output scaling layer. The output from the last layer in the FNN might also span several orders of magnitude. The original output $\mathbf{\tilde{x}}$ is transformed to $\mathbf{\hat{x}}$ in such a way that  $\hat{x}_{1}=k_{1} \tilde{x}_{1}, \hat{x}_{2}=k_{2} \tilde{x}_{2} \ldots, \hat{x}_{S}=k_{S} \tilde{x}_{S}$. Here $k_s$ is the mean value of the corresponding ODE solution $x_s$.
 \end{itemize}
+%todo: insert citation here
+%this might be a good place to include figure 1 from the SBINN paper
 
 
-Further complication of a PINN. 
-Adds several layers to the NN: Input-scaling layer, Feature layer, and Output-scaling layer.
-Used to infer the hidden dynamics of experimentally unobserved species as well as the unknown parameters in the system of equations
-
-Based code upon glycolsis.py, changed into functions, etc.
-
-
-
-
-\subsection{Importance of Correct Feature Transform}
-
-%should probably be in results
+% Further complication of a PINN. 
+% Adds several layers to the NN: Input-scaling layer, Feature layer, and Output-scaling layer.
+% Used to infer the hidden dynamics of experimentally unobserved species as well as the unknown parameters in the system of equations
 
 
 
 
-\section{Autograd?}
+\subsubsection{Importance of Correct Feature Transform}
+
+%might fit in results
+
+
+
+
+\subsection{Automatic Differentiation} \label{sec:autodiff}
 
 
 
 
 
+\subsection{Adam Optimizer} \label{sec:adam}
 
+The optimization algorithm we use is the Adam Optimizer. It was introduced by... 
+
+
+
+\subsection{Stiffness?}
+
+
+
+
+\section{Implementation}
+
+%To implement PINNs we used the package DeepXDE by Lu Lu et. al (citation here). 
+%Based code upon glycolsis.py, changed into functions, etc.
+
+%initilization ans such
+%feature transform etc.
 
 
 \section{Data}
