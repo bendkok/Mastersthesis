@@ -1,0 +1,7 @@
+I think we use all the time points from data_t for the ODE time points, $\tau_{n}$. Might be worth looking into.
+Should also look more into the output transformation.
+I can't find the input-scaling layer anywhere in the code.
+Need good source for AD.
+How do you handle where to place citations while writing? Or do you do it afterwards?
+I'm also a bit usure if what I'm writing is too similar to the source.
+
