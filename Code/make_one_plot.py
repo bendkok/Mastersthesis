@@ -14,8 +14,10 @@ import distutils
 
 
 def get_hyperparam_title(path):
+    """
+    Creates the title for the plots. 
+    """
     hyp = np.loadtxt(os.path.join(path, 'hyperparameters.dat'), delimiter='\n', skiprows=0, dtype=str)
-    
     
     weights = "Weights = [{}, {}, {}]".format(hyp[0].partition(" ")[2], hyp[1].partition(" ")[2], hyp[2].partition(" ")[2])
     #do_t_input_transform 
@@ -38,6 +40,9 @@ def get_hyperparam_title(path):
 
 
 def plot_losses(path, do_test_vals=True):
+    """
+    Makes one plot of the losses.
+    """
     
     sns.set_theme()
     
@@ -111,6 +116,9 @@ def plot_losses(path, do_test_vals=True):
     
 
 def make_one_plot(path):
+    """
+    Makes one plot of the prediction.
+    """
     
     sns.set_theme()
     
@@ -153,15 +161,14 @@ def make_one_plot(path):
     axs_falt[2].set_ylabel("Current (mA)")
     axs_falt[3].set_ylabel("Current (mA)")
     
-    
     fig.suptitle(get_hyperparam_title(path), fontsize=15)
     fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
-    
     
     fig.savefig(Path.joinpath( path, "full_plot.pdf"))
     
     plt.show()
     
+
 
 
 
