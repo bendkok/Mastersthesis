@@ -4,4 +4,15 @@ I can't find the input-scaling layer anywhere in the code.
 Need good source for AD.
 How do you handle where to place citations while writing? Or do you do it afterwards?
 I'm also a bit usure if what I'm writing is too similar to the source.
+Should probably include something about notation.
 
+
+
+Consider if I should test another model.
+Beeler Reuter maybe?
+Might include some citations to books.
+Look at cited by at google scholar.
+Better to write more, and then remove later.
+Write about the history in the end.
+Try to think of the paper as a story.
+In classic NN you wouldn't have ode and aux loss terms. Talk about why those are introduced.
