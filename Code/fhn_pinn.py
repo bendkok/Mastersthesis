@@ -24,12 +24,58 @@ np.random.seed(2)
 def fitzhugh_nagumo_model(
     t, a=-0.3, b=1.1, tau=20, Iext=0.23, x0 = [0, 0]   
 ):
+    """
+    Solves the Fitzhugh-Nagumo ODE for the given time input and model parameters.
+        \dot{v}=v-v^{3}-w+R I_{\mathrm{ext}} \\
+        \tau \dot{w}=v-a-b w
+    
+    Parameters
+    ----------
+    t : float
+        Time input. Can also ba an array of floats.
+    a : float, optional
+        Model parameter. The default is -0.3.
+    b : float, optional
+        Model parameter. The default is 1.1.
+    tau : float, optional
+        Model parameter. The default is 20.
+    Iext : float, optional
+        Model parameter. The default is 0.23.
+    x0 : list , optional
+        The initial values. The default is [0, 0].
+
+    Returns
+    -------
+    numpy array
+        Solution.
+    """
     def func(x, t):
         return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
     return odeint(func, x0, t)
 
 
 def create_observations(data_t, data_y, geom):
+    """
+    Generates synthetic data using observations objects. This represents the specific 
+    timepoints where observations/measurements were made.
+
+    Parameters
+    ----------
+    data_t : numpy array
+        Potential timepoints.
+    data_y : numpy array
+        Measurements at those timepoints.
+    geom : deepxde geometry.TimeDomain
+        The geometry of the system.
+
+    Returns
+    -------
+    observe_y0 : deepxde DirichletBC
+        Measurements fot the first state.
+    observe_y1 : deepxde DirichletBC
+        Measurements fot the second state.
+
+    """
 
     n = len(data_t)
     # Create a random array of size n/4 selecting indices between 1 and n-1
@@ -53,8 +99,32 @@ def create_observations(data_t, data_y, geom):
     return observe_y0, observe_y1
 
 
-def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], scale_func = tf.math.softplus):
-        
+def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], 
+                scale_func = tf.math.softplus):
+    """
+    Function that generates all the required data, and sets up all data objects.
+
+    Parameters
+    ----------
+    data_t : numpy array
+        Potential timepoints.
+    data_y : numpy array
+        Measurements at those timepoints.
+    var_trainable : list, optional
+        List of which ODE-parameters should or shouldn't be trainable. The default is [True, True, False, False].
+    var_modifier : list, optional
+        List of modifiers for the ODE-parameters. The default is [-.25, 1.1, 20, 0.23].
+    scale_func : function, optional
+        Function for scailing the trainable parameters. The default is tf.math.softplus.
+
+    Returns
+    -------
+    deepxde data.PDE, list
+        First is a data object to use for all the training.
+        Second is a list of tensorflow variables representing the ODE-params.
+
+    """
+    
     # Define the variables and constants in the model
     var_list = [] # a, b, tau, Iext
     #we want to include the possibility for the variables to be both trainable and constant
@@ -64,7 +134,8 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
-        
+    
+    #the ode in tensorflow syntax
     def ODE(t, y):
         v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
         v2 = (y[:, 0:1] - var_list[0] - var_list[1] * y[:, 1:2]) / var_list[2]
@@ -98,8 +169,35 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
     return data, var_list
 
 
-def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_transform = True, 
-              do_t_input_transform = True, activation = "swish", kernel_initializer="He normal"):
+def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_initializer="He normal", 
+              do_t_input_transform = True, k_vals=[0.0173], do_output_transform = True):
+    """
+    Creates a neural network object. 
+
+    Parameters
+    ----------
+    data_y : numpy array
+        Known measurements.
+    nn_layers : Int, optional
+        Number of layers. The default is 3.
+    nn_nodes : Int, optional
+        Number of nodes in each layer. The default is 128.
+    activation : string, optional
+        The activation function. The default is "swish".
+    kernel_initializer : string, optional
+        The initialization of the nn-parmaeters. The default is "He normal".
+    do_t_input_transform : Bool, optional
+        Wheter we should use t in input transformation. The default is True.
+    k_vals : list, optional
+        Values for the input transformation. The default is [0.0173].
+    do_output_transform : Bool, optional
+        Wheter we should use the output transformation. The default is True.
+
+    Returns
+    -------
+    deepxde maps.FNN
+        An object for a feed forward neural network.
+    """
     
     # Feed-forward neural networks
     net = dde.maps.FNN(
@@ -109,6 +207,9 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     )
     
     def feature_transform(t):
+        """
+        Helper function for the feature transformation.
+        """
         features = [] 
         if do_t_input_transform: #if we want to include unscaled as well
             features.append(t) #[0] = t
@@ -121,6 +222,9 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     net.apply_feature_transform(feature_transform)
 
     def output_transform(t, y):
+        """
+        Helper function for the output transformation.
+        """
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
         return data_y[0] + tf.math.tanh(t) * tf.constant([.1, .1]) * y
@@ -133,6 +237,9 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
 
 
 def create_callbacks(var_list, savename, save_every=100):
+    """
+    Helper function for saving the reults during the training. 
+    """
     # Save model after 100 ephocs
     checkpointer = dde.callbacks.ModelCheckpoint(
         os.path.join(savename, "model/model.ckpt"),
@@ -151,6 +258,22 @@ def create_callbacks(var_list, savename, save_every=100):
 
 
 def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
+    """
+    Makes the weights into a dictionary, and applies scailing if there's noise.
+
+    Parameters
+    ----------
+    noise : float
+        The amount of noise.
+    init_weights : list, optional
+        List of weights before noise is considered. The default is [[1, 1], [1, 1], [1, 1]].
+
+    Returns
+    -------
+    dict
+        Dictionary of the weights.
+
+    """
     #init_weights are the wheights before noise is considered
     bc_weights = init_weights[1] # [1, 1]
     if noise >= 0.1:
@@ -171,9 +294,42 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
     )
 
 
-def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None, lr=1e-3,
+def train_model(model, weights, callbacks, first_num_epochs = int(1e3), 
+                sec_num_epochs = int(1e5), model_restore_path=None, lr=1e-3,
                 batch_size=10, display_every=100):
+    """
+    Function that actually trains the PINN.
 
+    Parameters
+    ----------
+    model : deepxde Model
+        Model object.
+    weights : dict
+        Dictionary of weights.
+    callbacks : list
+        Callbacks.
+    first_num_epochs : int, optional
+        Number of epochs to train without ODE-loss. The default is int(1e3).
+    sec_num_epochs : int, optional
+        Number of epochs to train with ODE-loss. The default is int(1e5).
+    model_restore_path : TYPE, optional
+        DESCRIPTION. The default is None.
+    lr : float, optional
+        The learning rate. The default is 1e-3.
+    batch_size : int, optional
+        Batch size for minibatching. The default is 10.
+    display_every : int, optional
+        How often the result should be displayed/saved. The default is 100.
+
+    Returns
+    -------
+    losshistory : TYPE
+        DESCRIPTION.
+    train_state : TYPE
+        DESCRIPTION.
+
+    """
+    
     # First compile the model with ode weights set to zero
     model.compile(
         "adam",
@@ -205,6 +361,9 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
 
 
 def get_model_restore_path(restore, savename):
+    """
+    Helper function for getting the path for when restoring a previous run.
+    """
     #if you want to restore from a previous run
     if restore:
         #reads form the checkpoint text file
@@ -271,6 +430,54 @@ def pinn(
     nn_nodes=128,
     display_every=100,
 ):
+    """
+    Function for seting up and solving the PINN.
+
+    Parameters
+    ----------
+    data_t : numpy array
+        Timepoints.
+    data_y : numpy array
+        Measurements at those timepoints.
+    noise : float
+        How much noise to add.
+    savename : pathlib Path
+        Path for saving information.
+    restore : Bool, optional
+        Wheter we should restore the NN from a previous run. The default is False.
+    first_num_epochs : int, optional
+        Number of epochs to train without ODE-loss. The default is int(1e3).
+    sec_num_epochs : int, optional
+        Number of epochs to train with ODE-loss. The default is int(1e5).
+    var_trainable : list, optional
+        List of which ODE-parameters should or shouldn't be trainable. The default is [True, True, False, False].
+    var_modifier : list, optional
+        List of modifiers for the ODE-parameters. The default is [-.25, 1.1, 20, 0.23].
+    lr : float, optional
+        The learning rate. The default is 1e-2.
+    init_weights : list, optional
+        List of weights before noise is considered. The default is [[1, 1], [1, 1], [1, 1]].
+    do_t_input_transform : Bool, optional
+        Wheter we should use t in input transformation. The default is True.
+    k_vals : list, optional
+        Values for the input transformation. The default is [0.0173].
+    do_output_transform : Bool, optional
+        Wheter we should use the output transformation. The default is True.
+    batch_size : int, optional
+        Batch size for minibatching. The default is 10.
+    nn_layers : Int, optional
+        Number of layers. The default is 3.
+    nn_nodes : Int, optional
+        Number of nodes in each layer. The default is 128.
+    display_every : int, optional
+        How often the result should be displayed/saved. The default is 100.
+
+    Returns
+    -------
+    var_list : list
+        Prediction of the ODE parameters.
+
+    """
    
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
 
@@ -311,6 +518,28 @@ def pinn(
 
 
 def generate_data(savename, true_values, t_vars, noise=0.0):
+    """
+    Solves the FHN ODE for the given timepoints, and adds noise.
+
+    Parameters
+    ----------
+    savename : pathlib Path
+        Path for saving the input data.
+    true_values : list
+        The true values of the ODE.
+    t_vars : list
+        List of vaiables to create a numpy linspace for the time.
+    noise : float, optional
+        The amount of noise. The default is 0.0.
+
+    Returns
+    -------
+    t : numpy array
+        The timepoints.
+    y : numpy array
+        The solution at the given timepoints.
+
+    """
     # Generate data to be used as observations
     t = np.linspace(*t_vars)[:, None] 
     y = fitzhugh_nagumo_model(np.ravel(t), *true_values)
@@ -337,6 +566,10 @@ def make_copy_of_program(savename):
 
 
 def main():
+    """ 
+    Main function.
+    """
+    
     start = time.time()
     noise = 0.0
     savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_177")
@@ -384,7 +617,8 @@ def main():
         os.path.join(savename, "fitzhugh_nagumo_pred.dat"), np.hstack((t, pred_y))
     )
     
-    print("\n\nTotal runtime: {}".format(time.time() - start))
+    runtime = time.time() - start
+    print("\n\nTotal runtime: {}".format(runtime))
 
     print("Original values: ")
     print(f"(a, b tau, Iext) = {true_values}")

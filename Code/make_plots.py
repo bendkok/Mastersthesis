@@ -9,14 +9,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-import deepxde as dde
-from deepxde.backend import tf
 import re
 import seaborn as sns
 
 
 def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
-
+    """
+    Loads the saved data, and plots them.
+    """
+    
     sns.set_theme()
     
     filename0 = "fitzhugh_nagumo.dat"
@@ -57,6 +58,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
         
     #exact
     def exact():
+        #plots the exact values
         plt.plot(t, v_exe, label="v")
         plt.plot(t, w_exe, label="w")
         plt.legend(loc="best")
@@ -69,6 +71,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
         
     #prediction
     def prediction():
+        #plots the result with the prediction for the ODE-params.
         plt.plot(t, v_pre, label="v")
         plt.plot(t, w_pre, label="w")
         plt.legend(loc="best")
@@ -108,6 +111,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
     #Neural Network
     #prediction
     def nn_prediction():
+        #plots the nn's prediction in the last epoch
         plt.plot(t, v_nn, label="v")
         plt.plot(t, w_nn, label="w")
         plt.legend(loc="best")
@@ -138,6 +142,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
 
     # #prediction
     def nnb_prediction():
+        #plots the nn's prediction in the best epoch
         plt.plot(t, v_nnb, label="v")
         plt.plot(t, w_nnb, label="w")
         plt.legend(loc="best")
@@ -171,6 +176,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
     
     #change in parameters
     def param_change(params = [1], param_names = ["a", "b", "tau", "Iext"]):        
+        #plots the change in the prediction of the ode-params.
         for p in params:
             plt.plot(data4[:,0], data4[:,p+1], label="Aproximation")
             plt.plot(data4[:,0], np.ones(len(data4[:,0]))*1.1, "--", label="Target")
