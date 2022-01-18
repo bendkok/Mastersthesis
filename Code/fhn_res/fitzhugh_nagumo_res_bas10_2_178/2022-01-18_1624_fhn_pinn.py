@@ -481,7 +481,7 @@ def pinn(
    
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
 
-    net = create_nn(data_y, k_vals=k_vals, do_output_transform=do_output_transform, 
+    net = create_nn(data_y, k_vals, do_output_transform=do_output_transform, 
                     do_t_input_transform=do_t_input_transform, nn_layers=nn_layers,
                     nn_nodes=nn_nodes)
     model = dde.Model(data, net)
