@@ -13,8 +13,6 @@ import os
 import time
 import shutil
 import matplotlib.pyplot as plt
-import json
-import sys
 
 from postprocessing import saveplot
 from make_plots import make_plots
@@ -24,13 +22,10 @@ np.random.seed(2)
 
 
 def fitzhugh_nagumo_model(
-    t, a=-0.3, b=1.1, tau=20, Iext=0.23, x0 = [0, 0]   # maybe try different init values
+    t, a=-0.3, b=1.1, tau=20, Iext=0.23, x0 = [0, 0]   
 ):
     def func(x, t):
-        #shouldn't v^3 be divided by 3?
         return np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
-        # return np.array([x[0] - x[0] ** 3 / 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
-
     return odeint(func, x0, t)
 
 
@@ -42,43 +37,34 @@ def create_observations(data_t, data_y, geom):
     # Add the last point to the list
     idx = np.append(idx, [0, n - 1])
 
-    # np.savetxt(
-    #     os.path.join(savename, "input.dat"),
-    #     np.hstack((data_t[idx], data_y[idx, 0:1], data_y[idx, 1:2])),
-    # )
-
     # Turn these timepoints into a set of points
     ptset = dde.bc.PointSet(data_t[idx])
     # Create a function that returns true when a point is part of the point set
     inside = lambda x, _: ptset.inside(x)
 
     # Create the observations by using the point set
-    observe_y4 = dde.DirichletBC(
+    observe_y0 = dde.DirichletBC(
         geom, ptset.values_to_func(data_y[idx, 0:1]), inside, component=0
     )
-    observe_y5 = dde.DirichletBC(
+    observe_y1 = dde.DirichletBC(
         geom, ptset.values_to_func(data_y[idx, 1:2]), inside, component=1
     )
 
-    return observe_y4, observe_y5
+    return observe_y0, observe_y1
 
 
-def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23]):
-    
-    # data_t = data_tt/np.max(data_tt)
-    
+def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], scale_func = tf.math.softplus):
+        
     # Define the variables and constants in the model
     var_list = [] # a, b, tau, Iext
     #we want to include the possibility for the variables to be both trainable and constant
     for i in range(len(var_trainable)):
         if var_trainable[i]:
-            #try having a and b be tanh()
-            var = tf.math.softplus(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
+            var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
         
-
     def ODE(t, y):
         v1 = y[:, 0:1] - y[:, 0:1] ** 3 - y[:, 1:2] + var_list[3]
         v2 = (y[:, 0:1] - var_list[0] - var_list[1] * y[:, 1:2]) / var_list[2]
@@ -95,50 +81,36 @@ def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_mo
     def boundary(x, _):
         return np.isclose(x[0], data_t[-1, 0])
     
-    # exe_point = np.where( np.max(abs(data_y[:,0])) == abs(data_y[:,0]) )[0]
-    # y1 = data_y[exe_point][0]
-    # print("exe_point: ", exe_point)
-    # print("y1: ", y1[0], data_y[-1])
     y1 = data_y[-1]
     # Question: Does it matter which point we choose?
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
 
-    observe_y4, observe_y5 = create_observations(data_t, data_y, geom)
+    observe_y0, observe_y1 = create_observations(data_t, data_y, geom)
     
     data = dde.data.PDE(  
         geom,
         ODE,
-        [bc0, bc1, observe_y4, observe_y5],  # list of boundary conditions
+        [bc0, bc1, observe_y0, observe_y1],  # list of boundary conditions
         anchors=data_t,
     )
-    
-    
-    # print("Data: ", len(data.test()), len(data.test()[0]), len(data.test()[0]), len(data.test()[0]))
-    # print(data.test())
+
     return data, var_list
 
 
 def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_transform = True, 
-              do_t_input_transform = True):
+              do_t_input_transform = True, activation = "swish", kernel_initializer="He normal"):
     
     # Feed-forward neural networks
     net = dde.maps.FNN(
-        # layer_size=[1, 128, 128, 128, 2],
         layer_size=[1] + [nn_nodes]*nn_layers + [2],
-        activation="swish",
-        # activation="sigmoid",
-        # activation="tanh",
-        # kernel_initializer="Glorot normal",
-        kernel_initializer="He normal",
+        activation=activation,
+        kernel_initializer=kernel_initializer,
     )
     
-    #try to visualize the output with and without feature_transform
-    
     def feature_transform(t):
-        features = [] # np.zeros(len(k_vals) + 1)
-        if do_t_input_transform:    
-            # print("here")
+        features = [] 
+        if do_t_input_transform: #if we want to include unscaled as well
             features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
@@ -151,8 +123,8 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     def output_transform(t, y):
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        # return data_y[0] + tf.math.tanh(t) * tf.constant([.1, .1]) * y
-        return data_y[0] + tf.sin(k_vals[0] * 2*np.pi*t) * tf.constant([.1, .1]) * y
+        return data_y[0] + tf.math.tanh(t) * tf.constant([.1, .1]) * y
+        # return data_y[0] + tf.sin(k_vals[0] * 2*np.pi*t) * tf.constant([.1, .1]) * y
     
     if do_output_transform:    
         net.apply_output_transform(output_transform)
@@ -160,18 +132,18 @@ def create_nn(data_y, k_vals=[0.0173], nn_layers=3, nn_nodes=128, do_output_tran
     return net
 
 
-def create_callbacks(var_list, savename):
-    # Save model after 1000 ephocs
+def create_callbacks(var_list, savename, save_every=100):
+    # Save model after 100 ephocs
     checkpointer = dde.callbacks.ModelCheckpoint(
         os.path.join(savename, "model/model.ckpt"),
         verbose=1,
         save_better_only=True,
-        period=1000,
+        period=save_every,
     )
-    # Save variables after 1000 epochs
+    # Save variables after 100 epochs
     variable = dde.callbacks.VariableValue(
         var_list,
-        period=1000,
+        period=save_every,
         filename=os.path.join(savename, "variables.dat"),
         precision=3,
     )
@@ -200,7 +172,7 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
 
 
 def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path=None, lr=1e-3,
-                batch_size=10):
+                batch_size=10, display_every=100):
 
     # First compile the model with ode weights set to zero
     model.compile(
@@ -208,12 +180,9 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         lr=lr,
         loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
-    # import IPython
-    # IPython.embed()
     # And train
     model.train(epochs=int(first_num_epochs), display_every=int(first_num_epochs), batch_size=batch_size)
     
-    # IPython.embed()
     # Now compile the model, but this time include the ode weights
     model.compile(
         "adam",
@@ -222,10 +191,11 @@ def train_model(model, weights, callbacks, first_num_epochs, sec_num_epochs, mod
         + weights["bc_weights"]
         + weights["data_weights"],
     )
-
+    
+    # And train
     losshistory, train_state = model.train(
         epochs=int(sec_num_epochs),
-        display_every=100,
+        display_every=display_every,
         callbacks=callbacks,
         disregard_previous_best=True,
         model_restore_path=model_restore_path,
@@ -271,7 +241,7 @@ def create_hyperparam_dict(
         k_vals=k_vals, lr=lr, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform,
         batch_size=batch_size,
     )
-    # np.savetxt(os.path.join(savename, "hyperparameters.dat"), dictionary)   
+
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
         for key, value in dictionary.items(): 
             data.write('%s: %s\n' % (key, value))
@@ -299,6 +269,7 @@ def pinn(
     batch_size = 10,
     nn_layers=3,
     nn_nodes=128,
+    display_every=100,
 ):
    
     data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
@@ -307,13 +278,8 @@ def pinn(
                     do_t_input_transform=do_t_input_transform, nn_layers=nn_layers,
                     nn_nodes=nn_nodes)
     model = dde.Model(data, net)
-    
-    # import IPython
-    # IPython.embed()
-    
-    #try plotting model.predict(t) 
 
-    callbacks = create_callbacks(var_list, savename)
+    callbacks = create_callbacks(var_list, savename, display_every)
 
     weights = default_weights(noise, init_weights)
     model_restore_path = get_model_restore_path(restore, savename)
@@ -324,13 +290,11 @@ def pinn(
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr, 
-        batch_size=batch_size
+        batch_size=batch_size, display_every=display_every,
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
-    
-    # model.save(os.path.join(savename, "nn_model.dat"))
-    
+        
     var_list = [model.sess.run(v) for v in var_list]
     
     nn_pred = model.predict(data_t) 
@@ -351,6 +315,7 @@ def generate_data(savename, true_values, t_vars, noise=0.0):
     t = np.linspace(*t_vars)[:, None] 
     y = fitzhugh_nagumo_model(np.ravel(t), *true_values)
     np.savetxt(os.path.join(savename, "fitzhugh_nagumo.dat"), np.hstack((t, y)))
+    
     # Add noise
     if noise > 0:
         std = noise * y.std(0)
@@ -365,10 +330,8 @@ def make_copy_of_program(savename):
     """
     From https://stackoverflow.com/questions/23321100/best-way-to-have-a-python-script-copy-itself/49210778    
     """
-    
     # generate filename with timestring
     copied_script_name = time.strftime("%Y-%m-%d_%H%M") + '_' + os.path.basename(__file__)
-    
     # copy script
     shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
@@ -376,7 +339,6 @@ def make_copy_of_program(savename):
 def main():
     start = time.time()
     noise = 0.0
-    # tf.device("gpu")
     savename = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_177")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
@@ -394,10 +356,6 @@ def main():
 
     t, y = generate_data(savename, true_values, t_vars, noise)
     
-    # from IPython import embed
-    # embed()
-
-
     # Train
     var_list = pinn(
         t,
@@ -409,15 +367,13 @@ def main():
         sec_num_epochs=int(8e3),
         var_trainable=[False, True, False, False], #a, b, tau, Iext
         var_modifier=[-.3, .2, 20, 0.23], #a, b, tau, Iext
-        init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
-        # init_weights = [[.1, 3], [1e0, 1e1], [.06, .1]], # [[ode], [bc], [data]]
+        # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
+        init_weights = [[.1, 3], [1e0, 1e1], [.06, .1]], # [[ode], [bc], [data]]
         k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
-        # lr = 5e4,
         do_output_transform = True,
         do_t_input_transform = False,
         batch_size = 50,
         lr=1e-3,
-        # lr=None,
         nn_layers=2,
         nn_nodes=64,
     )
