@@ -231,7 +231,7 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
         # TODO: this might need to change
-        return data_y[0] + tf.math.tanh(t) * tf.constant([.1]*8) * y
+        return data_y[0] + tf.math.tanh(t) * tf.constant([.1, .1]) * y
         # return data_y[0] + tf.sin(k_vals[0] * 2*np.pi*t) * tf.constant([.1, .1]) * y
     
     if do_output_transform:    
@@ -338,7 +338,7 @@ def train_model(model, weights, callbacks, first_num_epochs = int(1e3),
     model.compile(
         "adam",
         lr=lr,
-        loss_weights=[0] * 8 + weights["bc_weights"] + weights["data_weights"],
+        loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
     )
     # And train
     model.train(epochs=int(first_num_epochs), display_every=int(first_num_epochs), batch_size=batch_size)
