@@ -115,15 +115,15 @@ def plot_losses(path, do_test_vals=True):
     print("ODE train-test diff: ", np.mean(diff), np.min(diff), np.max(diff))
     
 
-def make_one_plot(path):
+def make_one_plot(path, model="fitzhugh_nagumo"):
     """
     Makes one plot of the prediction.
     """
     
     sns.set_theme()
     
-    filename0 = "fitzhugh_nagumo.dat"
-    filename1 = "fitzhugh_nagumo_pred.dat"
+    filename0 = model+".dat"
+    filename1 = model+"_pred.dat"
     filename2 = "neural_net_pred_best.dat"
     
     exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)

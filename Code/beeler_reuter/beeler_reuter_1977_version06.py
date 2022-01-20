@@ -299,6 +299,9 @@ def rhs(t, states, parameters, values=None):
         and t >= IstimStart
         else 0
     )
+    # IstimAmplitude=0.5, IstimEnd=50000.0, IstimPeriod=1000.0, 
+    # IstimPulseDuration=1.0, IstimStart=10.0
+
 
     # Expressions for the Membrane component
     values[7] = (-i_K1 - i_Na - i_s - i_x1 + Istim) / C

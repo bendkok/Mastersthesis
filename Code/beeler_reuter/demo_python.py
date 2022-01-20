@@ -10,7 +10,7 @@ def main():
     states = model.init_state_values()
     parameters = model.init_parameter_values()
 
-    num_beats = 1
+    num_beats = 4
     T = num_beats * 1000
     dt = 1.0
     time = np.arange(0, T, dt)

@@ -13,15 +13,15 @@ import re
 import seaborn as sns
 
 
-def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res")):
+def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo"):
     """
     Loads the saved data, and plots them.
     """
     
     sns.set_theme()
     
-    filename0 = "fitzhugh_nagumo.dat"
-    filename1 = "fitzhugh_nagumo_pred.dat"
+    filename0 = model+".dat"
+    filename1 = model+"_pred.dat"
     filename2 = "neural_net_pred_last.dat"
     filename3 = "neural_net_pred_best.dat"
     filename4 = "variables.dat"

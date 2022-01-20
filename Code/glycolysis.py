@@ -88,7 +88,7 @@ def pinn(data_t, data_y, noise, savename):
             tf.gradients(y[:, 1:2], t)[0] - (2 * v1 - v2 - v6),
             tf.gradients(y[:, 2:3], t)[0] - (v2 - v3),
             tf.gradients(y[:, 3:4], t)[0] - (v3 - v4 - J),
-            tf.gradients(y[:, 4:5], t)[0] - (v2 - v4 - v6), #observe_y4 and 5 would equal this and the next line?
+            tf.gradients(y[:, 4:5], t)[0] - (v2 - v4 - v6), 
             tf.gradients(y[:, 5:6], t)[0] - (-2 * v1 + 2 * v3 - v5),
             tf.gradients(y[:, 6:7], t)[0] - (psi * J - v7),
         ]
