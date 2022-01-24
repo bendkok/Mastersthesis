@@ -223,6 +223,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         )
     
         # Expressions for the Stimulus protocol component
+        print( type(t <= IstimEnd), (t <= IstimEnd))
         Istim = tf.zeros_like(t)
         Istim  += tf.cond( (t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod) 
             <= IstimPulseDuration
