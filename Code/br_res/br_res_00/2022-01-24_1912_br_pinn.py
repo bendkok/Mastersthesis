@@ -223,6 +223,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         )
     
         # Expressions for the Stimulus protocol component
+        print( type(t <= IstimEnd), (t <= IstimEnd))
         Istim = tf.zeros_like(t)
         Istim  += tf.cond( (t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod) 
             <= IstimPulseDuration
@@ -230,6 +231,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
             and t >= IstimStart) , 
             lambda: IstimAmplitude, lambda: 0.)
         
+        print("here")
         # (
         #     IstimAmplitude
         #     if t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod)
@@ -243,12 +245,10 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
     
         # Expressions for the Membrane component
         values.append( (-i_K1 - i_Na - i_s - i_x1 + Istim) / C )
-        
-        print(values)
         res = []
         for i in range(len(values)):
-            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])    
-        
+            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])
+    
         # Return results
         return res
     

@@ -132,7 +132,6 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         var_list.append(var)
     
     #the ode in tensorflow syntax
-    @tf.function
     def ODE(t, y):
          
         values = [] #np.zeros((8,), dtype=np.float_)        
@@ -155,6 +154,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         # Expressions for the m gate component
         alpha_m = (-47 - y[:, 7:8]) / (-1 + 0.009095277101695816 * tf.exp(-0.1 * y[:, 7:8]))
         beta_m = 0.7095526727489909 * tf.exp(-0.056 * y[:, 7:8])
+        print(alpha_m.shape, beta_m.shape, y[:, 0:1].shape)
         values.append( (1 - y[:, 0:1]) * alpha_m - beta_m * y[:, 0:1] )
     
         # Expressions for the h gate component
@@ -172,7 +172,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         values.append( (1 - y[:, 2:3]) * alpha_j - beta_j * y[:, 2:3] )
     
         # Expressions for the Slow inward current component
-        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * y[:, 3:4])
+        E_s = -82.3 - 13.0287 * np.log(0.001 * y[:, 3:4])
         i_s = g_s * (-E_s + y[:, 7:8]) * y[:, 4:5] * y[:, 5:6]
         values.append( 7.000000000000001e-06 - 0.07 * y[:, 3:4] - 0.01 * i_s )
     
@@ -223,32 +223,23 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         )
     
         # Expressions for the Stimulus protocol component
-        Istim = tf.zeros_like(t)
-        Istim  += tf.cond( (t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod) 
+        Istim = (
+            IstimAmplitude
+            if t - IstimStart - IstimPeriod * np.floor((t - IstimStart) / IstimPeriod)
             <= IstimPulseDuration
             and t <= IstimEnd
-            and t >= IstimStart) , 
-            lambda: IstimAmplitude, lambda: 0.)
-        
-        # (
-        #     IstimAmplitude
-        #     if t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod)
-        #     <= IstimPulseDuration
-        #     and t <= IstimEnd
-        #     and t >= IstimStart
-        #     else 0
-        # )
+            and t >= IstimStart
+            else 0
+        )
         # IstimAmplitude=0.5, IstimEnd=50000.0, IstimPeriod=1000.0, 
         # IstimPulseDuration=1.0, IstimStart=10.0
     
         # Expressions for the Membrane component
         values.append( (-i_K1 - i_Na - i_s - i_x1 + Istim) / C )
-        
-        print(values)
         res = []
         for i in range(len(values)):
-            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])    
-        
+            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])
+    
         # Return results
         return res
     

@@ -132,10 +132,9 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         var_list.append(var)
     
     #the ode in tensorflow syntax
-    @tf.function
     def ODE(t, y):
          
-        values = [] #np.zeros((8,), dtype=np.float_)        
+        values = np.zeros((8,), dtype=np.float_)        
         (
             E_Na,
             g_Na,
@@ -155,12 +154,13 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         # Expressions for the m gate component
         alpha_m = (-47 - y[:, 7:8]) / (-1 + 0.009095277101695816 * tf.exp(-0.1 * y[:, 7:8]))
         beta_m = 0.7095526727489909 * tf.exp(-0.056 * y[:, 7:8])
-        values.append( (1 - y[:, 0:1]) * alpha_m - beta_m * y[:, 0:1] )
+        print(alpha_m.shape, beta_m.shape, y[:, 0:1].shape)
+        values[0] = (1 - y[:, 0:1]) * alpha_m - beta_m * y[:, 0:1]
     
         # Expressions for the h gate component
         alpha_h = 5.497962438709065e-10 * tf.exp(-0.25 * y[:, 7:8])
         beta_h = 1.7 / (1 + 0.1580253208896478 * tf.exp(-0.082 * y[:, 7:8]))
-        values.append( (1 - y[:, 1:2]) * alpha_h - beta_h * y[:, 1:2] )
+        values[1] = (1 - y[:, 1:2]) * alpha_h - beta_h * y[:, 1:2]
     
         # Expressions for the j gate component
         alpha_j = (
@@ -169,12 +169,12 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
             / (1 + 1.6788275299956603e-07 * tf.exp(-0.2 * y[:, 7:8]))
         )
         beta_j = 0.3 / (1 + 0.040762203978366204 * tf.exp(-0.1 * y[:, 7:8]))
-        values.append( (1 - y[:, 2:3]) * alpha_j - beta_j * y[:, 2:3] )
+        values[2] = (1 - y[:, 2:3]) * alpha_j - beta_j * y[:, 2:3]
     
         # Expressions for the Slow inward current component
-        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * y[:, 3:4])
+        E_s = -82.3 - 13.0287 * np.log(0.001 * y[:, 3:4])
         i_s = g_s * (-E_s + y[:, 7:8]) * y[:, 4:5] * y[:, 5:6]
-        values.append( 7.000000000000001e-06 - 0.07 * y[:, 3:4] - 0.01 * i_s )
+        values[3] = 7.000000000000001e-06 - 0.07 * y[:, 3:4] - 0.01 * i_s
     
         # Expressions for the d gate component
         alpha_d = (
@@ -183,7 +183,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
             / (1 + 1.4332881385696572 * tf.exp(-0.07199424046076314 * y[:, 7:8]))
         )
         beta_d = 0.07 * tf.exp(-44 / 59 - y[:, 7:8] / 59) / (1 + tf.exp(11 / 5 + y[:, 7:8] / 20))
-        values.append( (1 - y[:, 4:5]) * alpha_d - beta_d * y[:, 4:5] )
+        values[4] = (1 - y[:, 4:5]) * alpha_d - beta_d * y[:, 4:5]
     
         # Expressions for the f gate component
         alpha_f = (
@@ -192,7 +192,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
             / (1 + 66.5465065250986 * tf.exp(0.14992503748125938 * y[:, 7:8]))
         )
         beta_f = 0.0065 * tf.exp(-3 / 5 - y[:, 7:8] / 50) / (1 + tf.exp(-6 - y[:, 7:8] / 5))
-        values.append( (1 - y[:, 5:6]) * alpha_f - beta_f * y[:, 5:6] )
+        values[5] = (1 - y[:, 5:6]) * alpha_f - beta_f * y[:, 5:6]
     
         # Expressions for the Time dependent outward current component
         i_x1 = (
@@ -213,7 +213,7 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
             * tf.exp(-0.05998800239952009 * y[:, 7:8])
             / (1 + tf.exp(-4 / 5 - y[:, 7:8] / 25))
         )
-        values.append( (1 - y[:, 6:7]) * alpha_x1 - beta_x1 * y[:, 6:7] )
+        values[6] = (1 - y[:, 6:7]) * alpha_x1 - beta_x1 * y[:, 6:7]
     
         # Expressions for the Time independent outward current component
         i_K1 = 0.0035 * (4.6000000000000005 + 0.2 * y[:, 7:8]) / (
@@ -223,32 +223,23 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
         )
     
         # Expressions for the Stimulus protocol component
-        Istim = tf.zeros_like(t)
-        Istim  += tf.cond( (t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod) 
+        Istim = (
+            IstimAmplitude
+            if t - IstimStart - IstimPeriod * np.floor((t - IstimStart) / IstimPeriod)
             <= IstimPulseDuration
             and t <= IstimEnd
-            and t >= IstimStart) , 
-            lambda: IstimAmplitude, lambda: 0.)
-        
-        # (
-        #     IstimAmplitude
-        #     if t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod)
-        #     <= IstimPulseDuration
-        #     and t <= IstimEnd
-        #     and t >= IstimStart
-        #     else 0
-        # )
+            and t >= IstimStart
+            else 0
+        )
         # IstimAmplitude=0.5, IstimEnd=50000.0, IstimPeriod=1000.0, 
         # IstimPulseDuration=1.0, IstimStart=10.0
     
         # Expressions for the Membrane component
-        values.append( (-i_K1 - i_Na - i_s - i_x1 + Istim) / C )
-        
-        print(values)
+        values[7] = (-i_K1 - i_Na - i_s - i_x1 + Istim) / C
         res = []
         for i in range(len(values)):
-            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])    
-        
+            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])
+    
         # Return results
         return res
     
