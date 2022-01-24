@@ -229,6 +229,14 @@ def create_data(data_t, data_y, var_trainable, var_modifier,
             and t >= IstimStart) , 
             lambda: IstimAmplitude, lambda: 0.)
         
+        # (
+        #     IstimAmplitude
+        #     if t - IstimStart - IstimPeriod * tf.math.floor((t - IstimStart) / IstimPeriod)
+        #     <= IstimPulseDuration
+        #     and t <= IstimEnd
+        #     and t >= IstimStart
+        #     else 0
+        # )
         # IstimAmplitude=0.5, IstimEnd=50000.0, IstimPeriod=1000.0, 
         # IstimPulseDuration=1.0, IstimStart=10.0
     
