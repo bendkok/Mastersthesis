@@ -3,3 +3,4 @@ numpy
 scipy
 matplotlib
 ap_features
+seaborn
