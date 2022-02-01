@@ -50,7 +50,7 @@ def beeler_reuter_model(t, params, x0=br_model.init_state_values()):
             t, x, params
         )  # np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
 
-    return odeint(func, x0, t)
+    return odeint(func, [1e-8]*8, t)
 
 
 def create_observations(data_t, data_y, geom):
@@ -156,6 +156,8 @@ def create_data(
             C,
         ) = var_list
         
+        # import IPython
+        # IPython.embed()
 
         # Expressions for the Sodium current component
         i_Na = (
@@ -171,7 +173,7 @@ def create_data(
         # Expressions for the h gate component
         alpha_h = 5.497962438709065e-10 * tf.exp(-0.25 * y[:, 7:8])
         beta_h = 1.7 / (1 + 0.1580253208896478 * tf.exp(-0.082 * y[:, 7:8]))
-        values.append((1 - y[:, 1:2]) * alpha_h - beta_h * y[:, 1:2]) #something here is giving nan
+        values.append((1 - y[:, 1:2]) * alpha_h - beta_h * y[:, 1:2])
 
         # Expressions for the j gate component
         alpha_j = (
@@ -183,10 +185,20 @@ def create_data(
         values.append((1 - y[:, 2:3]) * alpha_j - beta_j * y[:, 2:3])
 
         # Expressions for the Slow inward current component
-        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * y[:, 3:4]) # I think this one is making the nans
+        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * y[:, 3:4])
         i_s = g_s * (-E_s + y[:, 7:8]) * y[:, 4:5] * y[:, 5:6]
         values.append(7.000000000000001e-06 - 0.07 * y[:, 3:4] - 0.01 * i_s)
         
+        
+        # print(values, "\n")
+        # thing = tf.Session().run(values[-1], feed_dict={"Placeholder_4:0": np.array(1.7).reshape(1,1) })
+        # print(thing)
+        
+        # tf.cond
+        
+        # if np.isnan(values[-1].eval(session=tf.compat.v1.Session())):
+        #     print("v is NaN")
+        #     raise
             
         # Expressions for the d gate component
         alpha_d = (
@@ -242,6 +254,7 @@ def create_data(
         )        
             
         # Expressions for the Stimulus protocol component
+        # breakpoint()
         Istim = (
             IstimAmplitude
             * tf.cast(
@@ -259,6 +272,7 @@ def create_data(
         # Expressions for the Membrane component
         values.append((-i_K1 - i_Na - i_s - i_x1 + Istim) / C)
         
+        # var_list = [model.sess.run(v) for v in values]
         
         res = []
         for i in range(len(values)):
@@ -472,9 +486,6 @@ def train_model(
         lr=lr,
         loss_weights=[0] * 8 + weights["bc_weights"] + weights["data_weights"],
     )
-    # model.sess = tf_debug.LocalCLIDebugWrapperSession(model.sess)
-    # model.sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
-    
     # And train
     model.train(
         epochs=int(first_num_epochs),
@@ -647,6 +658,8 @@ def pinn(
     )
     model = dde.Model(data, net)
     
+    # model.sess = tf_debug.LocalCLIDebugWrapperSession(model.sess)
+    # model.sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
 
     callbacks = create_callbacks(var_list, savename, display_every)
 
@@ -778,16 +791,16 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=1,
-        sec_num_epochs=int(10),
+        first_num_epochs=10,
+        sec_num_epochs=int(1000),
         # E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod,
         # IstimPulseDuration, IstimStart, C
         var_trainable=[False, True, True, True, False, False, False, False, False, False],
         var_modifier=[50.0, 0.01, 1e-05, 0.0001, 0.5, 50000.0, 1000.0, 1.0, 10.0, 0.01],
         #m, h, j, Cai, d, f, x1, V
-        ode_weights=[1]*8,# [1e-2, 0.1, 1e-2, 10e-2, 1e-2, 1e-2, 0.1, 0.1],
-        bc_weights=[1]*8,# [1, 1, 1, 10, 1, 1, 1, 10],
-        data_weights=[1]*8,# [1, 1, 1, 100, 1, 1, 1, 100],
+        ode_weights=[1e-2, 1e-2, 1e-2, 10e-2, 1e-2, 1e-2, 1e-2, 10e-2],
+        bc_weights=[1, 1, 1, 10, 1, 1, 1, 10],
+        data_weights=[1, 1, 1, 100, 1, 1, 1, 100],
         k_vals=[.5e-3, 1e-3, 1.5e-3], # tf.sin(k * 2*np.pi*t),
         do_output_transform=False,
         do_t_input_transform=True,
@@ -795,7 +808,7 @@ def main():
         lr=1e-3,
         nn_layers=3,
         nn_nodes=128,
-        display_every=1,
+        display_every=100,
     )
 
     # Prediction

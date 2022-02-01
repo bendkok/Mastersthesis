@@ -1,9 +1,2 @@
-I'm not familiar with the term: optimal control problem
-Or this: \|_{L^2(0,T)}^2
-Don't think we use Monte Carlo integration.
-What was Ansatz again?
-The notation is different, but I think I understand eq. 3.
-Not sure what "multi-objective optimization" means.
-Pareto-front?
-
+Might need to change the output transformation.
 
