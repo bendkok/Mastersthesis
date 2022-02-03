@@ -134,25 +134,22 @@ def create_data(
             )
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
+
         var_list.append(var)
 
     # the ode in tensorflow syntax
     # @tf.function
     def ODE(t, y):
 
+        E_Na = 50.0
+        IstimAmplitude = 0.5
+        IstimEnd = 50000.0
+        IstimPeriod = 1000.0
+        IstimPulseDuration = 2.0
+        IstimStart = 10.0
+        C = 0.01
         values = []  # np.zeros((8,), dtype=np.float_)
-        (
-            E_Na,
-            g_Na,
-            g_Nac,
-            g_s,
-            IstimAmplitude,
-            IstimEnd,
-            IstimPeriod,
-            IstimPulseDuration,
-            IstimStart,
-            C,
-        ) = var_list
+        g_Na, g_Nac, g_s = var_list
 
         # Expressions for the Sodium current component
         i_Na = (
@@ -181,7 +178,7 @@ def create_data(
         values.append((1 - y[:, 2:3]) * alpha_j - beta_j * y[:, 2:3])
 
         # Expressions for the Slow inward current component
-        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * y[:, 3:4])
+        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * tf.abs(y[:, 3:4]))
         i_s = g_s * (-E_s + y[:, 7:8]) * y[:, 4:5] * y[:, 5:6]
         values.append(7.000000000000001e-06 - 0.07 * y[:, 3:4] - 0.01 * i_s)
 
@@ -295,7 +292,7 @@ def create_nn(
     activation="swish",
     kernel_initializer="He normal",
     do_t_input_transform=True,
-    k_vals=[0.0173],
+    k_vals=[1.0 / 1000.0],
     do_output_transform=True,
 ):
     """
@@ -563,8 +560,8 @@ def pinn(
     restore=False,
     first_num_epochs=int(1e3),
     sec_num_epochs=int(1e5),
-    var_trainable=[False, True, True, True, False, False, False, False, False, False],
-    var_modifier=[50.0, 0.01, 1e-05, 0.0001, 0.5, 50000.0, 1000.0, 1.0, 10.0, 0.01],
+    var_trainable=[True, True, True],
+    var_modifier=[0.01, 1e-05, 0.0001],
     lr=1e-2,
     ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
     bc_weights=[1] * 8,  # [1, 1, 1, 1, 1, 1, 1, 1],
@@ -752,7 +749,7 @@ def main():
     make_copy_of_program(savename)
 
     true_values = br_model.init_parameter_values()
-    t_vars = [0, 999, 2000]
+    t_vars = [0, 1999, 2000]
 
     t, y = generate_data(savename, true_values, t_vars, noise)
 
@@ -768,22 +765,15 @@ def main():
         # E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod,
         # IstimPulseDuration, IstimStart, C
         var_trainable=[
-            False,
             True,
             True,
             True,
-            False,
-            False,
-            False,
-            False,
-            False,
-            False,
         ],
-        var_modifier=[50.0, 0.01, 1e-05, 0.0001, 0.5, 50000.0, 1000.0, 1.0, 10.0, 0.01],
+        var_modifier=[0.01, 1e-05, 0.0001],
         ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
         bc_weights=[1, 1, 1, 1, 1, 1, 1, 1],
         data_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-        k_vals=[1],  # [0.0173], # tf.sin(k * 2*np.pi*t),
+        k_vals=[1 / 1000],  # [0.0173], # tf.sin(k * 2*np.pi*t),
         do_output_transform=True,
         do_t_input_transform=False,
         batch_size=50,
@@ -832,19 +822,20 @@ def main():
 
 def plot_features():
 
-    t = np.linspace(0, 999, 1000)
+    t = np.linspace(0, 1999, 2000)
     params = br_model.init_parameter_values()
     y = beeler_reuter_model(t, params)
     fig, ax = plt.subplots()
-    ax.plot(t, y[:, 0])
-    # ax.plot(t, np.sin(0.01 * t))
+    ax.plot(t, y[:, -1])
+    ax.twinx().plot(t, np.sin(2 * np.pi * (1 / 1000) * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
     # ax.plot(t, np.sin(0.0173 * 2 * np.pi * t))
     # ax.plot(t, np.sin(0.015*2*np.pi*t))
     # ax.plot(t, np.sin(0.012*2*np.pi*t))
 
-    plt.show()
+    # plt.show()
+    fig.savefig("br_fig.png")
 
 
 if __name__ == "__main__":
