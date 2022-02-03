@@ -52,7 +52,7 @@ def init_parameter_values(**values):
     # IstimEnd=50000.0, IstimPeriod=1000.0, IstimPulseDuration=1.0,
     # IstimStart=10.0, C=0.01
     init_values = np.array(
-        [50.0, 0.04, 3e-05, 0.0009, 0.5, 50000.0, 1000.0, 1.0, 10.0, 0.01],
+        [50.0, 0.04, 3e-05, 0.0009, 0.5, 50000.0, 1000.0, 2.0, 10.0, 0.01],
         dtype=np.float_,
     )
 
