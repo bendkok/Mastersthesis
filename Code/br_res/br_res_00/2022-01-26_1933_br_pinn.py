@@ -14,8 +14,6 @@ import time
 import shutil
 import matplotlib.pyplot as plt
 
-from tensorflow.python import debug as tf_debug
-
 import beeler_reuter.beeler_reuter_1977_version06 as br_model
 
 from postprocessing import saveplot
@@ -136,39 +134,42 @@ def create_data(
             )
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
-
         var_list.append(var)
 
     # the ode in tensorflow syntax
     # @tf.function
     def ODE(t, y):
 
-        E_Na = 50.0
-        IstimAmplitude = 0.5
-        IstimEnd = 50000.0
-        IstimPeriod = 1000.0
-        IstimPulseDuration = 2.0
-        IstimStart = 10.0
-        C = 0.01
         values = []  # np.zeros((8,), dtype=np.float_)
-
-        g_Na, g_Nac, g_s = var_list
+        (
+            E_Na,
+            g_Na,
+            g_Nac,
+            g_s,
+            IstimAmplitude,
+            IstimEnd,
+            IstimPeriod,
+            IstimPulseDuration,
+            IstimStart,
+            C,
+        ) = var_list
 
         # Expressions for the Sodium current component
         i_Na = (
             g_Nac + g_Na * (y[:, 0:1] * y[:, 0:1] * y[:, 0:1]) * y[:, 1:2] * y[:, 2:3]
         ) * (-E_Na + y[:, 7:8])
-        
+
         # Expressions for the m gate component
-        alpha_m = ((-47 - y[:, 7:8]) / 
-                   (-1 + 0.009095277101695816 * tf.exp(-0.1 * y[:, 7:8])))
+        alpha_m = (-47 - y[:, 7:8]) / (
+            -1 + 0.009095277101695816 * tf.exp(-0.1 * y[:, 7:8])
+        )
         beta_m = 0.7095526727489909 * tf.exp(-0.056 * y[:, 7:8])
         values.append((1 - y[:, 0:1]) * alpha_m - beta_m * y[:, 0:1])
 
         # Expressions for the h gate component
         alpha_h = 5.497962438709065e-10 * tf.exp(-0.25 * y[:, 7:8])
         beta_h = 1.7 / (1 + 0.1580253208896478 * tf.exp(-0.082 * y[:, 7:8]))
-        values.append((1 - y[:, 1:2]) * alpha_h - beta_h * y[:, 1:2]) #something here is giving nan
+        values.append((1 - y[:, 1:2]) * alpha_h - beta_h * y[:, 1:2])
 
         # Expressions for the j gate component
         alpha_j = (
@@ -180,12 +181,10 @@ def create_data(
         values.append((1 - y[:, 2:3]) * alpha_j - beta_j * y[:, 2:3])
 
         # Expressions for the Slow inward current component
-
-        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * tf.abs(y[:, 3:4]))
+        E_s = -82.3 - 13.0287 * tf.math.log(0.001 * y[:, 3:4])
         i_s = g_s * (-E_s + y[:, 7:8]) * y[:, 4:5] * y[:, 5:6]
         values.append(7.000000000000001e-06 - 0.07 * y[:, 3:4] - 0.01 * i_s)
-        
-            
+
         # Expressions for the d gate component
         alpha_d = (
             0.095
@@ -237,9 +236,9 @@ def create_data(
         ) + 0.0035 * (-4 + 119.85640018958804 * tf.exp(0.04 * y[:, 7:8])) / (
             8.331137487687693 * tf.exp(0.04 * y[:, 7:8])
             + 69.4078518387552 * tf.exp(0.08 * y[:, 7:8])
-        )        
-            
+        )
         # Expressions for the Stimulus protocol component
+        # breakpoint()
         Istim = (
             IstimAmplitude
             * tf.cast(
@@ -256,11 +255,10 @@ def create_data(
 
         # Expressions for the Membrane component
         values.append((-i_K1 - i_Na - i_s - i_x1 + Istim) / C)
-        
-        
+
         res = []
         for i in range(len(values)):
-            res.append(tf.gradients(y[:, i:i+1], t)[0] - values[i])
+            res.append(tf.gradients(y[:, i : i + 1], t)[0] - values[i])
 
         # Return results
         return res
@@ -296,7 +294,7 @@ def create_nn(
     activation="swish",
     kernel_initializer="He normal",
     do_t_input_transform=True,
-    k_vals=[1.0 / 1000.0],
+    k_vals=[0.0173],
     do_output_transform=True,
 ):
     """
@@ -345,7 +343,7 @@ def create_nn(
             features.append(tf.sin(k_vals[k] * 2 * np.pi * t))
         return tf.concat(features, axis=1)
 
-    net.apply_feature_transform(feature_transform)
+    # net.apply_feature_transform(feature_transform)
 
     def output_transform(t, y):
         """
@@ -470,9 +468,6 @@ def train_model(
         lr=lr,
         loss_weights=[0] * 8 + weights["bc_weights"] + weights["data_weights"],
     )
-    # model.sess = tf_debug.LocalCLIDebugWrapperSession(model.sess)
-    # model.sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
-    
     # And train
     model.train(
         epochs=int(first_num_epochs),
@@ -567,8 +562,8 @@ def pinn(
     restore=False,
     first_num_epochs=int(1e3),
     sec_num_epochs=int(1e5),
-    var_trainable=[True, True, True],
-    var_modifier=[0.01, 1e-05, 0.0001],
+    var_trainable=[False, True, True, True, False, False, False, False, False, False],
+    var_modifier=[50.0, 0.01, 1e-05, 0.0001, 0.5, 50000.0, 1000.0, 1.0, 10.0, 0.01],
     lr=1e-2,
     ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
     bc_weights=[1] * 8,  # [1, 1, 1, 1, 1, 1, 1, 1],
@@ -644,7 +639,6 @@ def pinn(
         nn_nodes=nn_nodes,
     )
     model = dde.Model(data, net)
-    
 
     callbacks = create_callbacks(var_list, savename, display_every)
 
@@ -664,9 +658,6 @@ def pinn(
         do_t_input_transform,
         batch_size,
     )
-    
-    # sess = tf_debug.LocalCLIDebugWrapperSession(tf.Session())
-    # sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
 
     losshistory, train_state = train_model(
         model,
@@ -684,9 +675,8 @@ def pinn(
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
     # If the pinn for some reason can't find any states (all predictions get nan) this will return 
     # an error because best_y will be None. Don't think that's a big issue.
-    # It also returns an error because the model/checkpoint folder isn't created.
-    
-    
+    # It also returns an error because the model folder isn't created.
+
     var_list = [model.sess.run(v) for v in var_list]
 
     nn_pred = model.predict(data_t)
@@ -758,14 +748,14 @@ def main():
 
     start = time.time()
     noise = 0.0
-    savename = Path("br_res/br_res_01")
+    savename = Path("br_res/br_res_00")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
     make_copy_of_program(savename)
 
     true_values = br_model.init_parameter_values()
-    t_vars = [0, 1999, 2000]
+    t_vars = [0, 999, 1000]
 
     t, y = generate_data(savename, true_values, t_vars, noise)
 
@@ -776,28 +766,24 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=1,
-        sec_num_epochs=int(10),
+        first_num_epochs=0,
+        sec_num_epochs=int(100),
         # E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod,
         # IstimPulseDuration, IstimStart, C
-        var_trainable=[
-            True,
-            True,
-            True,
-        ],
-        var_modifier=[0.01, 1e-05, 0.0001],
-        ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-        bc_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-        data_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-        k_vals=[1 / 1000],  # [0.0173], # tf.sin(k * 2*np.pi*t),
-        do_output_transform=True,
-        do_t_input_transform=False,
-        batch_size=50,
-
-        lr=1e-3,
+        var_trainable=[False, True, True, True, False, False, False, False, False, False],
+        var_modifier=[1]*10,#[50.0, 0.01, 1e-05, 0.0001, 0.5, 50000.0, 1000.0, 1.0, 10.0, 0.01],
+        #m, h, j, Cai, d, f, x1, V
+        ode_weights=[0]*8,#[1, 1, 1, 0, 1, 1, 1, 0],
+        bc_weights=[0]*8,#[1, 1, 1, 1, 1, 1, 1, 1],
+        data_weights=[0]*8,#[1, 1, 1, 1, 1, 1, 1, 1],
+        k_vals=[1e-3], # tf.sin(k * 2*np.pi*t),
+        do_output_transform=False,
+        do_t_input_transform=True,
+        batch_size=None, #not sure if this actually works
+        lr=1e-4,
         nn_layers=3,
         nn_nodes=128,
-        display_every=1,
+        display_every=100,
     )
 
     # Prediction
@@ -834,27 +820,26 @@ def main():
     plt.show()
 
     make_plots(savename, "beeler_reuter") #todo: update
-    make_one_plot(savename, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
-    plot_losses(savename, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
+    make_one_plot(savename, "beeler_reuter")
+    plot_losses(savename)
     make_state_plot(savename)
 
 
 def plot_features():
 
-    t = np.linspace(0, 1999, 2000)
+    t = np.linspace(0, 999, 1000)
     params = br_model.init_parameter_values()
     y = beeler_reuter_model(t, params)
     fig, ax = plt.subplots()
-    ax.plot(t, y[:, -1])
-    ax.twinx().plot(t, np.sin(2 * np.pi * (1 / 1000) * t))
+    ax.plot(t, y[:, 0])
+    # ax.plot(t, np.sin(0.01 * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
     # ax.plot(t, np.sin(0.0173 * 2 * np.pi * t))
     # ax.plot(t, np.sin(0.015*2*np.pi*t))
     # ax.plot(t, np.sin(0.012*2*np.pi*t))
 
-    # plt.show()
-    fig.savefig("br_fig.png")
+    plt.show()
 
 
 if __name__ == "__main__":
