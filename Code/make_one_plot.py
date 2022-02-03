@@ -22,7 +22,7 @@ def get_hyperparam_title(path):
     weights = "Weights = [{}, {}, {}]".format(hyp[0].partition(" ")[2], hyp[1].partition(" ")[2], hyp[2].partition(" ")[2])
     #do_t_input_transform 
     
-    inp_tran = "Feature transformation = t -> ["
+    inp_tran = "\nFeature transformation = t -> ["
     k_vals = hyp[7][9:-1].split(",")
     try:    
         do_t_input_transform = bool(distutils.util.strtobool( hyp[10][22:]))
@@ -39,16 +39,19 @@ def get_hyperparam_title(path):
     return weights+", "+inp_tran
 
 
-def plot_losses(path, do_test_vals=True):
+def plot_losses(path, 
+                do_test_vals=True,
+                states = ["v", "w"],
+                skiprows=3,
+    ):
     """
     Makes one plot of the losses.
     """
     
     sns.set_theme()
     
-    inp_dat = np.loadtxt(os.path.join(path, 'loss.dat'), delimiter=' ', skiprows=3, dtype=float)
-    
-    
+    inp_dat = np.loadtxt(os.path.join(path, 'loss.dat'), delimiter=' ', skiprows=skiprows, dtype=float)
+        
     epochs = inp_dat[:,0]
     
     n_loss = inp_dat.shape[1]//2 +1
@@ -57,6 +60,7 @@ def plot_losses(path, do_test_vals=True):
     test_loss = inp_dat[:,n_loss:]
     
     parts = ['ODE', 'BC', 'Data']
+    print(states)
     
     #should make 4 plots
     fig, axs = plt.subplots(2, 2, figsize=(14,10))
@@ -68,14 +72,15 @@ def plot_losses(path, do_test_vals=True):
             if test_loss[:,i*2].all() != 0:    
                 axs_falt[0].plot(epochs, test_loss[:,i*2] + test_loss[:,i*2+1], '--', label='{} Test'.format(parts[i]))
         
-        
-        axs_falt[i+1].plot(epochs, train_loss[:,i*2], '-', label='{}-v'.format(parts[i]))
-        axs_falt[i+1].plot(epochs, train_loss[:,i*2+1], '-', label='{}-w'.format(parts[i]))
+        for s in range(len(states)):    
+            axs_falt[i+1].plot(epochs, train_loss[:,i*2+s], '-', label='{}'.format(states[s]))
+        # axs_falt[i+1].plot(epochs, train_loss[:,i*2+1], '-', label='{}-w'.format(parts[i]))
         
         if do_test_vals:
-            if test_loss[:,i*2].all() != 0:            
-                axs_falt[i+1].plot(epochs, test_loss[:,i*2], '--', label='{}-v Test'.format(parts[i]))
-                axs_falt[i+1].plot(epochs, test_loss[:,i*2+1], '--', label='{}-w Test'.format(parts[i]))
+            if test_loss[:,i*2].all() != 0:   
+                for s in range(len(states)):    
+                   axs_falt[i+1].plot(epochs, test_loss[:,i*2+s], '--', label='{} Test'.format(states[s]))
+                # axs_falt[i+1].plot(epochs, test_loss[:,i*2+1], '--', label='{}-w Test'.format(parts[i]))
         
         mean = np.mean((train_loss[:,i*2:i*2+2]), axis=1) 
         axs_falt[i+1].plot(epochs, mean, '--', label='Mean')
@@ -115,7 +120,7 @@ def plot_losses(path, do_test_vals=True):
     print("ODE train-test diff: ", np.mean(diff), np.min(diff), np.max(diff))
     
 
-def make_one_plot(path, model="fitzhugh_nagumo"):
+def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"]):
     """
     Makes one plot of the prediction.
     """
@@ -130,33 +135,33 @@ def make_one_plot(path, model="fitzhugh_nagumo"):
     pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
     nn    = np.loadtxt(os.path.join(path, filename2), delimiter=' ', skiprows=0, dtype=float)
     
-    t, v_exe, w_exe = exact[:,0], exact[:,1], exact[:,2]
-    v_pre, w_pre    = pred[:,1], pred[:,2]
-    v_nn, w_nn      = nn[:,1], nn[:,2]
+    t, v_exe, w_exe = exact[:,0], exact[:,states[0]], exact[:,states[1]]
+    v_pre, w_pre    = pred[:,states[0]], pred[:,states[1]]
+    v_nn, w_nn      = nn[:,states[0]], nn[:,states[1]]
     
     fig, axs = plt.subplots(2, 2, figsize=(14,10))
     axs_falt = axs.flatten()
     
     l1, = axs_falt[0].plot(t, v_exe)
     l2, = axs_falt[0].plot(t, v_nn, "r--")
-    axs_falt[0].set_title("NN's prediction of v in the best epoch.")
+    axs_falt[0].set_title(f"NN's prediction of {state_names[0]} in the best epoch.")
     
     axs_falt[1].plot(t, v_exe)
     axs_falt[1].plot(t, v_pre, "r--")
-    axs_falt[1].set_title("ODE prediction of v.")
+    axs_falt[1].set_title(f"ODE prediction of {state_names[0]}.")
     
     axs_falt[2].plot(t, w_exe)
     axs_falt[2].plot(t, w_nn, "r--")
-    axs_falt[2].set_title("NN's prediction of w in the best epoch.")
+    axs_falt[2].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
     
     axs_falt[3].plot(t, w_exe)
     axs_falt[3].plot(t, w_pre, "r--")
-    axs_falt[3].set_title("ODE prediction of w.")
+    axs_falt[3].set_title(f"ODE prediction of {state_names[1]}.")
     
     for i in range(4):
         axs_falt[i].set_xlabel("Time (ms)")
         axs_falt[i].set_ylabel("Voltage (mV)")
-        axs_falt[i].grid()
+        # axs_falt[i].grid()
         
     axs_falt[2].set_ylabel("Current (mA)")
     axs_falt[3].set_ylabel("Current (mA)")
@@ -169,17 +174,59 @@ def make_one_plot(path, model="fitzhugh_nagumo"):
     plt.show()
     
 
-
+def make_state_plot(path, model="beeler_reuter"):
+    """
+    Makes one plot of the prediction.
+    """
+    
+    sns.set_theme()
+    
+    states = "m, h, j, Cai, d, f, x1, V".split(", ")
+    
+    
+    filename0 = model+".dat"
+    filename1 = model+"_pred.dat"
+    
+    exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
+    pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
+    
+    
+    fig, axs = plt.subplots(4, 2, figsize=(18,25))
+    axs_falt = axs.flatten()
+    
+    # l1, = axs_falt[0].plot(exact[:,0], exact[:,1])
+    # l2, = axs_falt[0].plot(pred[:,0], pred[:,1], "r--")
+    # axs_falt[0].set_title(f"ODE prediction of {states[1]}.")
+    # axs_falt[0].set_xlabel("Time (ms)")
+    # axs_falt[0].set_ylabel("Voltage (mV)") #change
+    
+    for s in range(0,len(states)):
+        l1, = axs_falt[s].plot(exact[:,0], exact[:,s+1])
+        l2, = axs_falt[s].plot(pred[:,0], pred[:,s+1], "r--")
+        axs_falt[s].set_title(f"ODE prediction of {states[s]}.")
+        axs_falt[s].set_xlabel("Time (ms)")
+        axs_falt[s].set_ylabel("Voltage (mV)") #change
+    
+    fig.suptitle(get_hyperparam_title(path), fontsize=15)
+    fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
+    
+    fig.savefig(Path.joinpath( path, "full_states.pdf"))
+    
+    plt.show()
 
 
 def main():
     
-    # path = Path("glycolysis_res")
-    path = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_170")
-    
-    sns.set_theme()
+    path = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_178")
     make_one_plot(path)
     plot_losses(path)
+    path = Path("br_res/br_res_00")
+    
+    sns.set_theme()
+    make_one_plot(path, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
+    plot_losses(path, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
+    
+    make_state_plot(path)
     
     
     

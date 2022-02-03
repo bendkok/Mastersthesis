@@ -191,7 +191,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
     # prediction()
     # nn_prediction()
     # nnb_prediction()
-    param_change()   
+    # param_change()   
 
 
 if __name__ == "__main__":
