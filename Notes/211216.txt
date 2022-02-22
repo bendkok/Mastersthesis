@@ -66,6 +66,7 @@ In the papers they seem to use states and species interchangeably. Is there a di
 
 Write down what I understand and don't, compare later.
 Don't run more tests until I understand what I'm doing.
+
 Get a number that describes how good the fit is.
 E.g. norm between nn prediction and ODE prediction.
 An error suited to sin-curves

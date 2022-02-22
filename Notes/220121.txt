@@ -1,2 +1,70 @@
-Might need to change the output transformation.
+I'm not familiar with the term: optimal control problem
+Or this: \|_{L^2(0,T)}^2
+Don't think we use Monte Carlo integration.
+What was Ansatz again?
+The notation is different, but I think I understand eq. 3.
+Not sure what "multi-objective optimization" means.
+Pareto-front?
+
+
+Added abs to log in ODE.
+Read:
+1.1
+1.2
+2.6
+3?
+5.1
+5.2
+12.2.3
+Figure 5.1?
+
+
+I don't know why br somethimes gives only one beat, not two.
+I think there's to many states to plot all of them togheter. Maybe I shuold ask about that.
+
+
+Need to fix axis labels for plots.
+What are the units for Beeler-Reuter?
+"The Beeler–Reuter model of the cardiac cell proposed by Beeler and Reuter in 1977 [1] is estab-
+lished by eight equations (see Equations (1)) defining the time derivatives of transmembrane potential
+Vm in mV, intracellular Ca2+ concentration [Ca]i in mole/l, and six dimensionless gating variables
+x1, m, h, j, d, and f"
+What should I put for the dimensionless variables?
+
+
+Should try moving the legends in the loss-plots.
+Not getting very good results for BR so far.
+	Might be because of output transform?
+
+
+No output transformation gives nans in first epoch. Could be interesting.
+Need to find good values there, but not sure how.
+lr of 1e-3 usually gives nans after a while. 1e-4 dosen't, but is slow.
+
+For FHN, should probably write why we have v^3 and such.
+Need to be consistent with use of hypens.
+After 2.2.1, before the introduction to NNs, might be a good place to talk about the problems with fitting cardiac models.
+
+Set up the cluster.
+ArubaOS VIA VPN?
+
+References/Letters of recommendation
+
+
+Write plan.
+try lr with decay
+	Implemented, but need to find good params
+	Rigth now we only have deacy for 2. run (with ODE)
+Try fitting a for FHN
+Fix scaling in ot
+	For FHN: [1., .1]
+	For BR: [.1, 1., 1., .001, .1, 1., .1, 100]
+
+
+"In FEM, the solution is approximated by a piecewise
+polynomial with unknown point values, while in PINNs, the surrogate model
+is a neural network with weights and biases. Moreover, FEM usually requires
+a mesh generation, whereas PINN, being mesh-free, can employ a grid or
+random points. Finally, PINN approximates the function and its derivatives
+nonlinearly, whereas FEM does it linearly." - Cuomo et. al
 
