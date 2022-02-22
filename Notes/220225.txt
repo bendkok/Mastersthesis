@@ -1,0 +1,4 @@
+In SBINN 2 they explicitly set t = 0.01*t.
+	Tested it out, didn't turn out too well, though that was expected.
+They also have w_aux=0 in the first number of steps.
+

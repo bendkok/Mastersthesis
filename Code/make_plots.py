@@ -175,11 +175,11 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
     
     
     #change in parameters
-    def param_change(params = [1], param_names = ["a", "b", "tau", "Iext"]):        
+    def param_change(params = [0], param_names = ["a", "b", "tau", "Iext"]):        
         #plots the change in the prediction of the ode-params.
         for p in params:
             plt.plot(data4[:,0], data4[:,p+1], label="Aproximation")
-            plt.plot(data4[:,0], np.ones(len(data4[:,0]))*1.1, "--", label="Target")
+            plt.plot(data4[:,0], np.ones(len(data4[:,0]))*-.3, "--", label="Target")
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Value")
@@ -191,9 +191,9 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
     # prediction()
     # nn_prediction()
     # nnb_prediction()
-    # param_change()   
+    param_change()   
 
 
 if __name__ == "__main__":
     # make_plots(Path("fitzhugh_nagumo_res_feature_onlyb_2"))
-    make_plots(Path("fhn_res/fitzhugh_nagumo_res_bas10_2_50"))
+    make_plots(Path("fhn_res/fitzhugh_nagumo_res_a_00"))

@@ -48,8 +48,7 @@ def beeler_reuter_model(t, params, x0=br_model.init_state_values()):
     def func(x, t):
         return br_model.rhs(
             t, x, params
-        )  # np.array([x[0] - x[0] ** 3 - x[1] + Iext, (x[0] - a - b * x[1]) / tau])
-
+        )
     return odeint(func, x0, t)
 
 
@@ -354,7 +353,7 @@ def create_nn(
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
         # TODO: this might need to change
-        return data_y[0] + tf.math.tanh(t) * tf.constant([0.1] * 8) * y
+        return data_y[0] + tf.math.tanh(t) * tf.constant([.1, 1., 1., .001, .1, 1., .1, 100]) * y
         # return data_y[0] + tf.sin(k_vals[0] * 2*np.pi*t) * tf.constant([.1, .1]) * y
 
     if do_output_transform:
@@ -554,7 +553,7 @@ def create_hyperparam_dict(
             data.write("%s: %s\n" % (key, value))
     import pickle  # try this later
 
-    a_file = open("hyperparameters.pkl", "wb")
+    a_file = open( os.path.join(savename, "hyperparameters.pkl"), "wb")
     pickle.dump(dictionary, a_file)
     a_file.close()
 
@@ -758,7 +757,7 @@ def main():
 
     start = time.time()
     noise = 0.0
-    savename = Path("br_res/br_res_01")
+    savename = Path("br_res/br_res_12")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
@@ -776,8 +775,8 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=1,
-        sec_num_epochs=int(10),
+        first_num_epochs=1000,
+        sec_num_epochs=int(1e5),
         # E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod,
         # IstimPulseDuration, IstimStart, C
         var_trainable=[
@@ -786,22 +785,24 @@ def main():
             True,
         ],
         var_modifier=[0.01, 1e-05, 0.0001],
-        ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-        bc_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-        data_weights=[1, 1, 1, 1, 1, 1, 1, 1],
+        #m, h, j, Cai, d, f, x1, V
+        ode_weights=[1e-1, 1e-1, 1e-1, 1e-1, 1, 1, 1e-1, 1e-1],
+        bc_weights=[1e-4, 1, 1e2, 1e0, 1e-4, 1e2, 1e3, 1e3],
+        data_weights=[1e1, 1e0, 1e0, 1e0, 1e-1, 1e0, 1e0, 1e-3],
         k_vals=[1 / 1000],  # [0.0173], # tf.sin(k * 2*np.pi*t),
         do_output_transform=True,
         do_t_input_transform=False,
-        batch_size=50,
-
-        lr=1e-3,
+        # batch_size=50,
+        lr=1e-4,
         nn_layers=3,
         nn_nodes=128,
-        display_every=1,
+        display_every=int(1e3),
     )
 
+    params = [true_values[0]] + var_list + true_values[4:].tolist() #[0.5, 50000.0,1000.0,2.0,10.0, 0.01]
+    
     # Prediction
-    pred_y = beeler_reuter_model(np.ravel(t), var_list)
+    pred_y = beeler_reuter_model(np.ravel(t), params)
     np.savetxt(os.path.join(savename, "beeler_reuter_pred.dat"), np.hstack((t, pred_y)))
 
     runtime = time.time() - start
@@ -809,34 +810,35 @@ def main():
 
     print("Original values: ")
     print(
-        f"(E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod, IstimPulseDuration, IstimStart, C) = {true_values}"
+        f"(g_Na, g_Nac, g_s) = {true_values[1:4]}"
     )
 
     print("Predicted values: ")
     print(
-        f"(E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod, IstimPulseDuration, IstimStart, C) = {var_list}\n"
+        f"(g_Na, g_Nac, g_s) = {var_list}\n"
     )
 
-    fig, ax = plt.subplots(2, 1, sharex=True)
-    ax[0].set_title("$v$")
-    ax[0].plot(t, y.T[0], label="True")
-    ax[0].plot(t, pred_y.T[0], label="Predicted")
+    # fig, ax = plt.subplots(2, 1, sharex=True)
+    # ax[0].set_title("$v$")
+    # ax[0].plot(t, y.T[0], label="True")
+    # ax[0].plot(t, pred_y.T[0], label="Predicted")
 
-    ax[1].set_title("$w$")
-    ax[1].plot(t, y.T[1], label="True")
-    ax[1].plot(t, pred_y.T[1], label="Predicted")
+    # ax[1].set_title("$w$")
+    # ax[1].plot(t, y.T[1], label="True")
+    # ax[1].plot(t, pred_y.T[1], label="Predicted")
 
-    for axi in ax:
-        axi.legend()
-        axi.grid()
+    # for axi in ax:
+    #     axi.legend()
+    #     axi.grid()
 
-    fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
-    plt.show()
+    # fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
+    # plt.show()
 
     make_plots(savename, "beeler_reuter") #todo: update
     make_one_plot(savename, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
     plot_losses(savename, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
     make_state_plot(savename)
+    make_state_plot(savename, use_nn=True)
 
 
 def plot_features():
@@ -846,17 +848,21 @@ def plot_features():
     y = beeler_reuter_model(t, params)
     fig, ax = plt.subplots()
     ax.plot(t, y[:, -1])
-    ax.twinx().plot(t, np.sin(2 * np.pi * (1 / 1000) * t))
+    # ax.twinx().plot(t, np.sin(2 * np.pi * (1 / 1000) * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
     # ax.plot(t, np.sin(0.0173 * 2 * np.pi * t))
     # ax.plot(t, np.sin(0.015*2*np.pi*t))
     # ax.plot(t, np.sin(0.012*2*np.pi*t))
 
-    # plt.show()
-    fig.savefig("br_fig.png")
-
+    plt.show()
+    # fig.savefig("br_fig.png")
+    
+    out = []
+    for i in range(8):        
+        out.append(np.mean(np.abs(y[:,i])))
+    print(out)
 
 if __name__ == "__main__":
-    main()
-    # plot_features()
+    # main()
+    plot_features()
