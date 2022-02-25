@@ -1,13 +1,13 @@
-# import Pkg; Pkg.add("DifferentialEquations")
-# import Pkg; Pkg.add("ForwardDiff")
-# import Pkg; Pkg.add("DiffResults")
-# import Pkg; Pkg.add("DiffEqSensitivity")
-# import Pkg; Pkg.add("DataFrames")
-# import Pkg; Pkg.add("CSV")
-# import Pkg; Pkg.add("Dierckx")
-# import Pkg; Pkg.add("StatsPlots")
-# import Pkg; Pkg.add("LaTeXStrings")
-# import Pkg; Pkg.add("Plots")
+#import Pkg; Pkg.add("DifferentialEquations")
+#import Pkg; Pkg.add("ForwardDiff")
+#import Pkg; Pkg.add("DiffResults")
+#import Pkg; Pkg.add("DiffEqSensitivity")
+#import Pkg; Pkg.add("DataFrames")
+#import Pkg; Pkg.add("CSV")
+#import Pkg; Pkg.add("Dierckx")
+#import Pkg; Pkg.add("StatsPlots")
+#import Pkg; Pkg.add("LaTeXStrings")
+#import Pkg; Pkg.add("Plots")
 
 using DifferentialEquations
 using ForwardDiff
@@ -83,7 +83,7 @@ for i in perm
     for j = 2:Nparam
         S = hcat(S, reshape(dp[j][:,i], (Nstate,1)))
     end
-    global F += S[cols,:]' * inv(cov_ϵ) * S[cols,:]
+    F += S[cols,:]' * inv(cov_ϵ) * S[cols,:]
 end
 
 C = inv(F)
