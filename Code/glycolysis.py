@@ -182,7 +182,7 @@ def pinn(data_t, data_y, noise, savename):
         ode_weights = [10 * w for w in ode_weights]
     model.compile("adam", lr=1e-3, loss_weights=ode_weights + bc_weights + data_weights)
     losshistory, train_state = model.train(
-        epochs=int(5e4) if noise == 0 else 2000000,
+        epochs=int(9e4) if noise == 0 else 2000000,
         display_every=1000,
         callbacks=callbacks,
         disregard_previous_best=True,

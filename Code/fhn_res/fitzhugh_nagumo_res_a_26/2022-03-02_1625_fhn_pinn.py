@@ -103,13 +103,7 @@ def create_observations(data_t, data_y, geom, savename):
 
     return observe_y0, observe_y1
 
-def get_variable(v, var):
-    low, up = v * 0.2, v * 1.8
-    l = (up - low) / 2
-    v1 = l * tf.tanh(var) + l + low
-    return v1
-    
-    
+
 def create_data(data_t, data_y, savename, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], 
                 scale_func = tf.math.softplus):
     """
@@ -141,9 +135,7 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     #we want to include the possibility for the variables to be both trainable and constant
     for i in range(len(var_trainable)):
         if var_trainable[i]:
-            # var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
-            var = tf.Variable(0, trainable=True, dtype=tf.float32)
-            get_variable(var_modifier[i], var)
+            var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
@@ -226,7 +218,7 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
         # t *= 1/999 #new: test if this does anything
         features = [] 
         if do_t_input_transform: #if we want to include unscaled as well
-            features.append(t/999) #[0] = t
+            features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
@@ -399,7 +391,6 @@ def create_hyperparam_dict(
     var_trainable, 
     var_modifier,
     lr,
-    lr_decay,
     init_weights,
     k_vals,
     do_output_transform,
@@ -416,8 +407,8 @@ def create_hyperparam_dict(
         ode_weights=init_weights[0], bc_weights=init_weights[1], data_weights=init_weights[2],
         first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
         var_trainable=var_trainable, var_modifier=var_modifier, true_values=true_values,
-        k_vals=k_vals, lr=lr, lr_decay=lr_decay, do_output_transform=do_output_transform,
-        do_t_input_transform=do_t_input_transform, batch_size=batch_size,
+        k_vals=k_vals, lr=lr, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform,
+        batch_size=batch_size,
     )
 
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
@@ -513,9 +504,8 @@ def pinn(
     model_restore_path = get_model_restore_path(restore, savename)
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, decay_amount, init_weights, k_vals, 
-                           do_output_transform, do_t_input_transform, batch_size, 
-                           true_values)
+                           var_modifier, lr, init_weights, k_vals, do_output_transform,
+                           do_t_input_transform, batch_size, true_values)
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr, 
@@ -594,7 +584,7 @@ def main():
     
     start = time.time()
     noise = 0.0
-    savename = Path("fhn_res/fitzhugh_nagumo_res_a_32")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_a_26")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -618,16 +608,16 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=2000,
-        sec_num_epochs=int(3e5),
+        first_num_epochs=1000,
+        sec_num_epochs=int(5e4),
         var_trainable=[True, False, False, False], #a, b, tau, Iext 
-        var_modifier=[-.3, 1.1, 20, 0.23], #a, b, tau, Iext
+        var_modifier=[-.1, 1.1, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
-        init_weights = [[20., 20.], [10., 10.], [5., 10.]], # [[ode], [bc], [data]]
+        init_weights = [[10., 10.], [100., 1.], [1., 1.]], # [[ode], [bc], [data]]
         # k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
-        k_vals=[.005, .01, .015, .02, .025],
+        k_vals=[.001, .0015, .002],
         do_output_transform = True,
-        do_t_input_transform = True,
+        do_t_input_transform = False,
         batch_size = 50,
         lr=1e-2,
         decay_amount=1e2,

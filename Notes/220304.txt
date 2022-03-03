@@ -1,0 +1,11 @@
+How does Figure 7 in sbinn2 limit the search range of parameters?
+
+Should I have an explenation of how the algorithm for finding identifiability works?
+How should I include a citation to text books?
+Need to ask about citations for sec. 2.2.
+How to use citations when it's information I remember about a topic, and not from a specific source?
+Loss or cost?
+
+
+Changed t to t/999 in do_t_input_transform. Seems to have helped. I think it's because of input scaling.
+
