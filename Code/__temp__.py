@@ -13,19 +13,34 @@ import os
 
 learning_rate = 1e-2
 decay_rate = 1e2
-decay_step = 2e4
-global_step = np.linspace(0, 2e4, 1000)
+decay_step = 1e4
+global_step = np.linspace(0, 1e4, 1000)
 
 decayed_learning_rate = learning_rate / (1 + decay_rate * global_step /
 decay_step)
 
 
 plt.plot(global_step, decayed_learning_rate)
-plt.plot(global_step, [1e-2/(1+1e3)]*1000)
-
+plt.plot(global_step, [1e-2/(1+1e2)]*1000)
 plt.yscale("log")
+plt.show()
 
-path = Path("fhn_res/fitzhugh_nagumo_res_a_12")
+learning_rate = 1e-2
+decay_rate = .01
+decay_step = 1.
+global_step = np.linspace(0, 1e4, 1000)
+
+decayed_learning_rate = learning_rate / (1 + decay_rate * global_step /
+decay_step)
+
+
+plt.plot(global_step, decayed_learning_rate)
+plt.plot(global_step, [1e-2/(1+1e2)]*1000)
+plt.yscale("log")
+plt.show()
+
+
+path = Path("fhn_res/fitzhugh_nagumo_res_a_23")
 
 with open(os.path.join(path, "evaluation.pkl"), "rb") as a_file:
     data = pickle.load(a_file)

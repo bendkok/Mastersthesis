@@ -54,7 +54,7 @@ def evaluate(path, model="fitzhugh_nagumo", states=[1,2], true_param = [-0.3, 1.
     #finds the MSE for the fitted parameters
     ind = np.where(found_param!=true_param)[0]
     param_mae = mean_absolute_error(np.array(true_param)[ind], np.array(found_param)[ind])
-    print("Actual parameters:   {}. \nInffered parameters: {}. \nParameter MSE: {}.\n".format(true_param, found_param.tolist(), param_mae))
+    print("Actual parameters:   {}. \nInffered parameters: {}. \nParameter MAE: {}.\n".format(true_param, found_param.tolist(), param_mae))
     
     #regular mse
     ode_mse = mean_squared_error(exact, pred)
@@ -109,7 +109,7 @@ def evaluate(path, model="fitzhugh_nagumo", states=[1,2], true_param = [-0.3, 1.
 
 if __name__ == "__main__":
     
-    evaluate(path = Path("fhn_res/fitzhugh_nagumo_res_a_12"))
+    evaluate(path = Path("fhn_res/fitzhugh_nagumo_res_a_22"))
     
     
     

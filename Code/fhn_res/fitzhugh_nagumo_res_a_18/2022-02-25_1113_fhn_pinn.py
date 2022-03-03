@@ -55,7 +55,7 @@ def fitzhugh_nagumo_model(
     return odeint(func, x0, t)
 
 
-def create_observations(data_t, data_y, geom, savename):
+def create_observations(data_t, data_y, geom):
     """
     Generates synthetic data using observations objects. This represents the specific 
     timepoints where observations/measurements were made.
@@ -83,10 +83,6 @@ def create_observations(data_t, data_y, geom, savename):
     idx = np.random.choice(np.arange(1, n - 1), size=n // 4, replace=False)
     # Add the last point to the list
     idx = np.append(idx, [0, n - 1])
-        
-    np.savetxt(
-        os.path.join(savename, "fitzhugh_nagumo_pred.dat"), np.hstack((idx, data_t[idx].ravel(), data_y[idx,0], data_y[idx,1]))
-    )
 
     # Turn these timepoints into a set of points
     ptset = dde.bc.PointSet(data_t[idx])
@@ -103,14 +99,8 @@ def create_observations(data_t, data_y, geom, savename):
 
     return observe_y0, observe_y1
 
-def get_variable(v, var):
-    low, up = v * 0.2, v * 1.8
-    l = (up - low) / 2
-    v1 = l * tf.tanh(var) + l + low
-    return v1
-    
-    
-def create_data(data_t, data_y, savename, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], 
+
+def create_data(data_t, data_y, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], 
                 scale_func = tf.math.softplus):
     """
     Function that generates all the required data, and sets up all data objects.
@@ -141,9 +131,7 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     #we want to include the possibility for the variables to be both trainable and constant
     for i in range(len(var_trainable)):
         if var_trainable[i]:
-            # var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
-            var = tf.Variable(0, trainable=True, dtype=tf.float32)
-            get_variable(var_modifier[i], var)
+            var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
@@ -170,7 +158,7 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
 
-    observe_y0, observe_y1 = create_observations(data_t, data_y, geom, savename)
+    observe_y0, observe_y1 = create_observations(data_t, data_y, geom)
     
     data = dde.data.PDE(  
         geom,
@@ -226,7 +214,7 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
         # t *= 1/999 #new: test if this does anything
         features = [] 
         if do_t_input_transform: #if we want to include unscaled as well
-            features.append(t/999) #[0] = t
+            features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
@@ -310,7 +298,7 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
 
 def train_model(model, weights, callbacks, first_num_epochs = int(1e3), 
                 sec_num_epochs = int(1e5), model_restore_path=None, lr=1e-3,
-                batch_size=10, display_every=100, decay_amount=1e3):
+                batch_size=10, display_every=100):
     """
     Function that actually trains the PINN.
 
@@ -362,7 +350,7 @@ def train_model(model, weights, callbacks, first_num_epochs = int(1e3),
         loss_weights=weights["ode_weights"]
         + weights["bc_weights"]
         + weights["data_weights"],
-        decay=("inverse time", int(sec_num_epochs), decay_amount),
+        decay=("inverse time", int(sec_num_epochs), 1e2),
     )
     
     # And train
@@ -399,7 +387,6 @@ def create_hyperparam_dict(
     var_trainable, 
     var_modifier,
     lr,
-    lr_decay,
     init_weights,
     k_vals,
     do_output_transform,
@@ -416,8 +403,8 @@ def create_hyperparam_dict(
         ode_weights=init_weights[0], bc_weights=init_weights[1], data_weights=init_weights[2],
         first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
         var_trainable=var_trainable, var_modifier=var_modifier, true_values=true_values,
-        k_vals=k_vals, lr=lr, lr_decay=lr_decay, do_output_transform=do_output_transform,
-        do_t_input_transform=do_t_input_transform, batch_size=batch_size,
+        k_vals=k_vals, lr=lr, do_output_transform=do_output_transform, do_t_input_transform=do_t_input_transform,
+        batch_size=batch_size,
     )
 
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
@@ -449,7 +436,6 @@ def pinn(
     nn_nodes=128,
     display_every=100,
     true_values=[-.3,1.1,20,.23],
-    decay_amount=1e3,
 ):
     """
     Function for seting up and solving the PINN.
@@ -500,7 +486,7 @@ def pinn(
 
     """
    
-    data, var_list = create_data(data_t, data_y, savename, var_trainable, var_modifier)
+    data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
 
     net = create_nn(data_y, k_vals=k_vals, do_output_transform=do_output_transform, 
                     do_t_input_transform=do_t_input_transform, nn_layers=nn_layers,
@@ -513,13 +499,12 @@ def pinn(
     model_restore_path = get_model_restore_path(restore, savename)
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, decay_amount, init_weights, k_vals, 
-                           do_output_transform, do_t_input_transform, batch_size, 
-                           true_values)
+                           var_modifier, lr, init_weights, k_vals, do_output_transform,
+                           do_t_input_transform, batch_size, true_values)
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr, 
-        batch_size=batch_size, display_every=display_every, decay_amount=decay_amount,
+        batch_size=batch_size, display_every=display_every,
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
@@ -594,7 +579,7 @@ def main():
     
     start = time.time()
     noise = 0.0
-    savename = Path("fhn_res/fitzhugh_nagumo_res_a_32")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_a_18")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -618,23 +603,21 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=2000,
-        sec_num_epochs=int(3e5),
+        first_num_epochs=100,
+        sec_num_epochs=int(1e4),
         var_trainable=[True, False, False, False], #a, b, tau, Iext 
-        var_modifier=[-.3, 1.1, 20, 0.23], #a, b, tau, Iext
+        var_modifier=[-.1, 1.1, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
-        init_weights = [[20., 20.], [10., 10.], [5., 10.]], # [[ode], [bc], [data]]
+        init_weights = [[10., 10.], [10., .1], [1., 1.]], # [[ode], [bc], [data]]
         # k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
-        k_vals=[.005, .01, .015, .02, .025],
+        k_vals=[.001, .0015, .002],
         do_output_transform = True,
-        do_t_input_transform = True,
+        do_t_input_transform = False,
         batch_size = 50,
         lr=1e-2,
-        decay_amount=1e2,
-        nn_layers=3,
+        nn_layers=2,
         nn_nodes=64,
         true_values=true_values,
-        display_every=1000,
     )
 
     # Prediction
@@ -685,15 +668,13 @@ def plot_features():
     # for i in np.linspace(-.1, -.5, 9):
     #     y = fitzhugh_nagumo_model(t, a=i)
     #     ax.plot(t, y[:,0], label=i)
-    # ax.plot(t, y[:,1])
+    ax.plot(t, y[:,1])
     # ax.plot(t, np.sin(0.01 * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
-    ax.plot(t, np.sin(0.0173*2*np.pi*t))
-    ax.plot(t, np.sin(0.01*2*np.pi*t))
-    ax.plot(t, np.sin(0.015*2*np.pi*t))
-    ax.plot(t, np.sin(0.02*2*np.pi*t))
-    # .001, .0015, .002
+    # ax.plot(t, np.sin(0.0173*2*np.pi*t))
+    # ax.plot(t, np.sin(0.015*2*np.pi*t))
+    # ax.plot(t, np.sin(0.012*2*np.pi*t))
     
     ax.legend()
     plt.show()

@@ -23,11 +23,12 @@ def get_hyperparam_title(path):
     #do_t_input_transform 
     
     inp_tran = "\nFeature transformation = t -> ["
-    k_vals = hyp[7][9:-1].split(",")
+    k_vals = hyp[8][9:-1].split(",")
+    print( hyp[-2])
     try:    
-        do_t_input_transform = bool(distutils.util.strtobool( hyp[10][22:]))
+        do_t_input_transform = bool(distutils.util.strtobool( hyp[-2][22:]))
         if do_t_input_transform:
-            inp_tran += "t, "
+            inp_tran += "t/T, "
     except:
         ""
 
@@ -225,14 +226,14 @@ def make_state_plot(path, model="beeler_reuter", use_nn = False):
 
 def main():
     
-    path = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_178")
-    # make_one_plot(path)
-    # plot_losses(path)
-    path = Path("br_res/br_res_09")
+    path = Path("fhn_res/fitzhugh_nagumo_res_a_32")
+    make_one_plot(path)
+    plot_losses(path)
+    # path = Path("br_res/br_res_09")
     
-    sns.set_theme()
+    # sns.set_theme()
     # make_one_plot(path, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
-    plot_losses(path, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
+    # plot_losses(path, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
     
     # make_state_plot(path)
     # make_state_plot(path, use_nn=True)

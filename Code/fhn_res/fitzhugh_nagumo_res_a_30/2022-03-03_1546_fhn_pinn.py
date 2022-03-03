@@ -226,7 +226,7 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
         # t *= 1/999 #new: test if this does anything
         features = [] 
         if do_t_input_transform: #if we want to include unscaled as well
-            features.append(t/999) #[0] = t
+            features.append(t) #[0] = t
             
         for k in range(len(k_vals)):
             features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
@@ -594,7 +594,7 @@ def main():
     
     start = time.time()
     noise = 0.0
-    savename = Path("fhn_res/fitzhugh_nagumo_res_a_32")
+    savename = Path("fhn_res/fitzhugh_nagumo_res_a_30")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -618,8 +618,8 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=2000,
-        sec_num_epochs=int(3e5),
+        first_num_epochs=1000,
+        sec_num_epochs=int(1e5),
         var_trainable=[True, False, False, False], #a, b, tau, Iext 
         var_modifier=[-.3, 1.1, 20, 0.23], #a, b, tau, Iext
         # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
@@ -627,7 +627,7 @@ def main():
         # k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         k_vals=[.005, .01, .015, .02, .025],
         do_output_transform = True,
-        do_t_input_transform = True,
+        do_t_input_transform = False,
         batch_size = 50,
         lr=1e-2,
         decay_amount=1e2,
