@@ -433,6 +433,7 @@ TSWLatexianTemp*
 *.png
 *.index
 *.meta
+*.pkl
 *.ckpt*
 model.ckpt*
 
