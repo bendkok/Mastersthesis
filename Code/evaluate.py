@@ -18,7 +18,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 # from julia import base
 
 
-def evaluate(path, model="fitzhugh_nagumo", states=[1,2], true_param = [-0.3, 1.1, 20, 0.23], runtime=None):
+def evaluate(path, model="fitzhugh_nagumo", states=[1,2], true_param = [-0.3, 1.1, 20, 0.23], runtime=6273.53030538559):
     """
     Evaluates the results. 
     """
@@ -77,6 +77,9 @@ def evaluate(path, model="fitzhugh_nagumo", states=[1,2], true_param = [-0.3, 1.
     pickle.dump(results, a_file)    
     a_file.close()
     
+    with open(os.path.join(path, "evaluation.dat"),'w') as data: 
+        for key, value in results.items(): 
+            data.write('%s: %s\n' % (key, value))
     
     
     # ff_exe = fft.rfft(exact[:,2])
@@ -109,7 +112,7 @@ def evaluate(path, model="fitzhugh_nagumo", states=[1,2], true_param = [-0.3, 1.
 
 if __name__ == "__main__":
     
-    evaluate(path = Path("fhn_res/fitzhugh_nagumo_res_a_22"))
+    evaluate(path = Path("fhn_res/fitzhugh_nagumo_res_ab_00"))
     
     
     

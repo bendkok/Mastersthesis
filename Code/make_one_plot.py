@@ -11,22 +11,30 @@ import os
 from pathlib import Path
 import seaborn as sns
 import distutils
+import pickle
 
 
-def get_hyperparam_title(path):
+def get_hyperparam_title(path, param_names=["a","b","tau","Iext"]):
     """
     Creates the title for the plots. 
     """
-    hyp = np.loadtxt(os.path.join(path, 'hyperparameters.dat'), delimiter='\n', skiprows=0, dtype=str)
+    # hyp = np.loadtxt(os.path.join(path, 'hyperparameters.dat'), delimiter='\n', skiprows=0, dtype=str)
     
-    weights = "Weights = [{}, {}, {}]".format(hyp[0].partition(" ")[2], hyp[1].partition(" ")[2], hyp[2].partition(" ")[2])
+    with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
+        hyp0 = pickle.load(a_file)
+    # print(hyp0)
+    
+    # weights = "Weights = [{}, {}, {}]".format(hyp[0].partition(" ")[2], hyp[1].partition(" ")[2], hyp[2].partition(" ")[2])
+    weights = "Weights = [{}, {}, {}],  ".format(hyp0['ode_weights'], hyp0['bc_weights'], hyp0['data_weights'])
     #do_t_input_transform 
     
+    para = "Fitted parameters = {},  ".format(np.array(param_names)[np.where(hyp0['var_trainable'])])
+    
     inp_tran = "\nFeature transformation = t -> ["
-    k_vals = hyp[8][9:-1].split(",")
-    print( hyp[-2])
+    k_vals = hyp0['k_vals'] #hyp[8][9:-1].split(",")
+    # print( hyp[-2])
     try:    
-        do_t_input_transform = bool(distutils.util.strtobool( hyp[-2][22:]))
+        do_t_input_transform = hyp0['do_t_input_transform'] #bool(distutils.util.strtobool( hyp[-2][22:]))
         if do_t_input_transform:
             inp_tran += "t/T, "
     except:
@@ -37,7 +45,11 @@ def get_hyperparam_title(path):
         inp_tran += ", sin(2pi*{}*t)".format(k_vals[k])
     inp_tran += ']'    
     
-    return weights+", "+inp_tran
+    try:    
+        noise = "Noise = {}%,".format(hyp0['noise']*100)
+        return weights+para+noise+inp_tran
+    except:
+        return weights+para+inp_tran
 
 
 def plot_losses(path, 
@@ -60,7 +72,7 @@ def plot_losses(path,
     train_loss = inp_dat[:,1:n_loss]
     test_loss = inp_dat[:,n_loss:]
         
-    parts = ['ODE', 'BC', 'Data']
+    parts = ['ODE ', 'BC  ', 'Data']
     # print(states)
     
     #should make 4 plots
@@ -118,10 +130,13 @@ def plot_losses(path,
         diff.append( np.max( np.abs( train_loss[:,i*2]/train_loss[:,i*2+1] )) )
         # print("Mean loss difference {}: {}".format(parts[i], diff))
         print("Mean loss {}: {}, {}".format(parts[i], np.mean(train_loss[:,i*2]), np.mean(train_loss[:,i*2+1])))
-    
+    print("")
+    for i in range(len(parts)):
+        print("Min  loss {}: {}, {}".format(parts[i], np.min(train_loss[:,i*2]), np.min(train_loss[:,i*2+1])))
+        
     
     diff = np.abs(train_loss[:2] - test_loss[:2])
-    print("ODE train-test diff: ", np.mean(diff), np.min(diff), np.max(diff))
+    print("\nODE train-test diff: ", np.mean(diff), np.min(diff), np.max(diff))
     
 
 def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"]):
@@ -180,9 +195,69 @@ def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v
     plt.show()
     
 
+def make_samp_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"]):
+    """
+    Makes one plot of the prediction vs. sampled points.
+    """
+    
+    sns.set_theme()
+    
+    filename0 = model+"_samp.dat"
+    filename1 = model+"_pred.dat"
+    filename2 = "neural_net_pred_best.dat"
+    
+    exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
+    pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
+    nn    = np.loadtxt(os.path.join(path, filename2), delimiter=' ', skiprows=0, dtype=float)
+    
+    length = len(exact)//(2+len(states))
+    
+    t_s, v_exe, w_exe = exact[length:2*length], exact[2*length:3*length], exact[3*length:]
+    t, v_pre, w_pre   = pred[:,0], pred[:,states[0]], pred[:,states[1]]
+    v_nn, w_nn        = nn[:,states[0]], nn[:,states[1]]
+    
+    fig, axs = plt.subplots(2, 2, figsize=(14,10))
+    axs_falt = axs.flatten()
+    
+    # print(t.shape)
+    
+    l1, = axs_falt[0].plot(t_s, v_exe, "o")
+    l2, = axs_falt[0].plot(t, v_nn, "r")
+    axs_falt[0].set_title(f"NN's prediction of {state_names[0]} in the best epoch.")
+    
+    axs_falt[1].plot(t_s, v_exe, "o")
+    axs_falt[1].plot(t, v_pre, "r")
+    axs_falt[1].set_title(f"ODE prediction of {state_names[0]}.")
+    
+    axs_falt[2].plot(t_s, w_exe, "o")
+    axs_falt[2].plot(t, w_nn, "r")
+    axs_falt[2].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
+    
+    axs_falt[3].plot(t_s, w_exe, "o")
+    axs_falt[3].plot(t, w_pre, "r")
+    axs_falt[3].set_title(f"ODE prediction of {state_names[1]}.")
+    
+    for i in range(4):
+        axs_falt[i].set_xlabel("Time (ms)")
+        axs_falt[i].set_ylabel("Potential (mV)")
+        # axs_falt[i].grid()
+        
+    axs_falt[2].set_ylabel("Current (mA)")
+    axs_falt[3].set_ylabel("Current (mA)")
+    
+    tit = get_hyperparam_title(path)
+    
+    fig.suptitle(tit, fontsize=15)
+    fig.legend((l1,l2), ("Sampled", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
+    
+    fig.savefig(Path.joinpath( path, "full_samp.pdf"))
+    
+    plt.show()
+    
+
 def make_state_plot(path, model="beeler_reuter", use_nn = False):
     """
-    Makes one plot of the prediction.
+    Makes one plot of all the predictions.
     """
     
     sns.set_theme()
@@ -226,9 +301,10 @@ def make_state_plot(path, model="beeler_reuter", use_nn = False):
 
 def main():
     
-    path = Path("fhn_res/fitzhugh_nagumo_res_a_32")
+    path = Path("fhn_res/fitzhugh_nagumo_res_ab_06")
     make_one_plot(path)
     plot_losses(path)
+    make_samp_plot(path)
     # path = Path("br_res/br_res_09")
     
     # sns.set_theme()

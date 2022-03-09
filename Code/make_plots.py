@@ -13,7 +13,7 @@ import re
 import seaborn as sns
 
 
-def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo"):
+def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo", if_noise=False, params=[0,1]):
     """
     Loads the saved data, and plots them.
     """
@@ -67,6 +67,70 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
         plt.title("Input data")
         plt.savefig(Path.joinpath( path, "plot_exe.pdf"))
         plt.show()
+    
+    #nosie
+    def noise():
+        filename5 = model+"_noise.dat"
+        data5 = np.loadtxt(os.path.join(path, filename5), delimiter=' ', skiprows=0, dtype=float)
+        v_noi = data5[:,1]
+        w_noi = data5[:,2]
+        
+        plt.plot(t, v_noi, label="v")
+        plt.plot(t, w_noi, label="w")
+        plt.legend(loc="best")
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Voltage (mV)")
+        plt.title("Noisy input data")
+        plt.savefig(Path.joinpath( path, "plot_noi0.pdf"))
+        plt.show()
+        
+        plt.plot(t, v_noi, "o", label="Noisy")
+        plt.plot(t, v_exe, "r", label="Exact")
+        plt.legend(loc="best")
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Voltage (mV)")
+        plt.title("Exact vs. Noisy data v")
+        plt.savefig(Path.joinpath( path, "plot_noi1.pdf"))
+        plt.show()
+    
+        plt.plot(t, w_noi, "o", label="Sampled Input")
+        plt.plot(t, w_exe, "r", label="Exact")
+        plt.legend(loc="best")
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Current (mA)")
+        plt.title("Exact vs. Noisy data w")
+        plt.savefig(Path.joinpath( path, "plot_noi2.pdf"))
+        plt.show()
+    
+    #sampled
+    def sampled(n_states=2):
+        filename6 = model+"_samp.dat"
+        data6 = np.loadtxt(os.path.join(path, filename6), delimiter=' ', skiprows=0, dtype=float)
+        
+        length = len(data6)//(2+n_states)
+        idx = np.array(data6[:length]).astype(int)
+        t_s = np.array(data6[length:2*length])
+        v_s = np.array(data6[2*length:3*length])
+        w_s = np.array(data6[3*length:])
+        
+        plt.plot(t_s, v_s, "o", label="Noisy")
+        plt.plot(t, v_exe, "r", label="Exact")
+        plt.legend(loc="best")
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Voltage (mV)")
+        plt.title("Exact vs. Sampled data v")
+        plt.savefig(Path.joinpath( path, "plot_samp0.pdf"))
+        plt.show()
+    
+        plt.plot(t_s, w_s, "o", label="Sampled Input")
+        plt.plot(t, w_exe, "r", label="Exact")
+        plt.legend(loc="best")
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Current (mA)")
+        plt.title("Exact vs. Sampled data w")
+        plt.savefig(Path.joinpath( path, "plot_samp1.pdf"))
+        plt.show()
+        
         
         
     #prediction
@@ -175,25 +239,46 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
     
     
     #change in parameters
-    def param_change(params = [0], param_names = ["a", "b", "tau", "Iext"]):        
+    def param_change(params = params, param_names = ["a","b","tau","Iext"], tar=[-.3, 1.1, 20, 0.23]):       
         #plots the change in the prediction of the ode-params.
         for p in params:
-            plt.plot(data4[:,0], data4[:,p+1], label="Aproximation")
-            plt.plot(data4[:,0], np.ones(len(data4[:,0]))*-.3, "--", label="Target")
+            plt.plot(data4[1:,0], data4[1:,p+1], label="Inff. {}".format(param_names[p]))
+            plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Value")
             plt.title("Change in {}".format(param_names[p]))
             plt.savefig(Path.joinpath( path, "plot_varchange_{}.pdf".format(param_names[p])))
-            plt.show()    
+            plt.show()   
+            
+        #plots the change in the prediction of the ode-params.
+        for p in params:
+            plt.plot(data4[1:,0], data4[1:,p+1], label="Inff. {}".format(param_names[p]))
+            plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
+            plt.legend(loc="best")
+            plt.xlabel("Epoch")
+            plt.ylabel("Value")
+        plt.title("Change in paramteers")
+        plt.yscale("symlog")
+        plt.savefig(Path.joinpath( path, "plot_varchange.pdf"))
+        plt.show()   
     
     # exact()
     # prediction()
     # nn_prediction()
     # nnb_prediction()
     param_change()   
+    try:
+        noise()
+    except:
+        ""
+    try:
+        sampled()
+    except:
+        ""
+    
 
 
 if __name__ == "__main__":
     # make_plots(Path("fitzhugh_nagumo_res_feature_onlyb_2"))
-    make_plots(Path("fhn_res/fitzhugh_nagumo_res_a_00"))
+    make_plots(Path("fhn_res/fitzhugh_nagumo_res_all_01"), if_noise=True, params=[0,1,2,3])
