@@ -9,3 +9,40 @@ Loss or cost?
 
 Changed t to t/999 in do_t_input_transform. Seems to have helped. I think it's because of input scaling.
 
+
+identifiability 
+
+
+Parameter ranges
+
+
+
+
+Try with b, both, noise
+have some assesment of feature transform
+number of epochs was critical for making it work
+Is t in feature transform needed?
+do BR at the end if there's time
+need to define e.g. lr before I use the term
+
+include nr. 32
+discuss a bit about which feature transforms are important
+what happens with bad ft, etc.
+
+can do own analysis of fhn-variables
+
+
+
+Maybe say that model can refeer to different things.
+legg inn noise % i plottet.
+Need to explain/make clear what a good result and a bad result will look like.
+
+
+var = tf.Variable(0, trainable=True, dtype=tf.float32) didn't seem to work well with fitting all FHN.
+Due to divide by zero. 1e-10 didn't work. Does 1e-4 work?
+Kinda works. A different startpoint might be better.
+
+How much shuold I wirte about physiology vs. ML?
+Should I explain what a capacitor is?
+
+
