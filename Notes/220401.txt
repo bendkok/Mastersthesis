@@ -1,0 +1,12 @@
+Had to increase precision for some of the experiments because I got 0 RE.
+Should I rerun all of them with higher precision?
+
+I've used both aux and BC in the text, but only BC in the plots. I think aux might be better, so I might change that.
+
+Need to update the varchange plots to not have Inff. but Inf. Or something else.
+Need to also actually do practical identifiability analysis.
+
+Make bar plot not have MRE when there's only one RE.
+
+Change titles for multi-plots. Include states, remove h.p.
+

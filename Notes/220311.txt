@@ -1,0 +1,38 @@
+Relative error, abs(differnce)/true value
+	take mean of that
+use table or historgam plot
+might do several runs, take mean + variance
+	barplot error bars
+
+something about why models are important/useful
++ some refrences
+look at other thesis for inspiration
+can still focus on ML part
+a section about DeepXDE
+
+needs to find external sensor
+I should ask the addministration about organizing the defence/finding external advisor
+
+might find good/high level explenation of identifiability in a text book or something
+seacrh lecture notes identifiability
+masters thesis maybe
+
+
+for experiments focus on importance of input/feature transform
+can make a list of hyperpara that can be tuned 
+
+need to fix var change plots
+look at what plots different papers have
+
+
+scailing time in f.t., several features, running for longer
+
+can see how well the model fits outside the timedomain
+can be a disscussion in the thesis
+can we just use the nn?
+
+discussion about wheights
+
+
+try to finnish writing about fhn results by the end of March
+

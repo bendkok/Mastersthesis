@@ -56,7 +56,7 @@ def fitzhugh_nagumo_model(
     return odeint(func, x0, t)
 
 
-def create_observations(data_t, data_y, geom, savename, observed_states=[0,1]):
+def create_observations(data_t, data_y, geom, savename):
     """
     Generates synthetic data using observations objects. This represents the specific 
     timepoints where observations/measurements were made.
@@ -84,12 +84,10 @@ def create_observations(data_t, data_y, geom, savename, observed_states=[0,1]):
     idx = np.random.choice(np.arange(1, n - 1), size=n // 4, replace=False)
     # Add the last point to the list
     idx = np.append(idx, [0, n - 1])
-    
-    #select the points and states from y we sampled
-    observalbe_states=np.array(observed_states)
-    samp_y = data_y[idx][:,observalbe_states]
+        
+    print((idx.shape, data_t[idx].ravel().shape, data_y[idx,0].shape, data_y[idx,1].shape))
     np.savetxt(
-        os.path.join(savename, "fitzhugh_nagumo_samp.dat"), np.hstack((idx, data_t[idx].ravel(), samp_y.ravel()))
+        os.path.join(savename, "fitzhugh_nagumo_samp.dat"), np.hstack((idx, data_t[idx].ravel(), data_y[idx,0], data_y[idx,1]))
     )
     
     # Turn these timepoints into a set of points
@@ -115,7 +113,7 @@ def get_variable(v, var):
     
     
 def create_data(data_t, data_y, savename, var_trainable=[True, True, False, False], var_modifier=[-.25, 1.1, 20, 0.23], 
-                scale_func = tf.math.softplus, observed_states=[0,1]):
+                scale_func = tf.math.softplus):
     """
     Function that generates all the required data, and sets up all data objects.
 
@@ -175,7 +173,7 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
     bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
 
-    observe_y0, observe_y1 = create_observations(data_t, data_y, geom, savename, observed_states=observed_states)
+    observe_y0, observe_y1 = create_observations(data_t, data_y, geom, savename)
     
     data = dde.data.PDE(  
         geom,
@@ -271,7 +269,7 @@ def create_callbacks(var_list, savename, save_every=100):
         var_list,
         period=save_every,
         filename=os.path.join(savename, "variables.dat"),
-        precision=3, #this might be too low, increase if necessary
+        precision=3,
     )
     return [checkpointer, variable]
 
@@ -412,7 +410,6 @@ def create_hyperparam_dict(
     batch_size,
     true_values,
     noise,
-    observed_states,
 ):
     """
     This function creates a dictionary contianing all the hyperparameters, and 
@@ -425,7 +422,6 @@ def create_hyperparam_dict(
         var_trainable=var_trainable, var_modifier=var_modifier, true_values=true_values,
         k_vals=k_vals, lr=lr, lr_decay=lr_decay, do_output_transform=do_output_transform,
         do_t_input_transform=do_t_input_transform, batch_size=batch_size, noise=noise,
-        observed_states=observed_states,
     )
 
     with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
@@ -458,7 +454,6 @@ def pinn(
     display_every=100,
     true_values=[-.3,1.1,20,.23],
     decay_amount=1e3,
-    observed_states=[0,1],
 ):
     """
     Function for seting up and solving the PINN.
@@ -509,7 +504,7 @@ def pinn(
 
     """
    
-    data, var_list = create_data(data_t, data_y, savename, var_trainable, var_modifier, observed_states=observed_states)
+    data, var_list = create_data(data_t, data_y, savename, var_trainable, var_modifier)
 
     net = create_nn(data_y, k_vals=k_vals, do_output_transform=do_output_transform, 
                     do_t_input_transform=do_t_input_transform, nn_layers=nn_layers,
@@ -524,7 +519,7 @@ def pinn(
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
                            var_modifier, lr, decay_amount, init_weights, k_vals, 
                            do_output_transform, do_t_input_transform, batch_size, 
-                           true_values, noise, observed_states)
+                           true_values, noise)
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr, 
@@ -596,23 +591,14 @@ def make_copy_of_program(savename):
     shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
 
-def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0.01):
+def main():
     """ 
     Main function.
     """
     
     start = time.time()
-    
-    st = ''.join(str(i) for i in states)
-    va = np.array(['a', 'b', 't', 'I'])[np.where(var)]
-    va = ''.join(str(i) for i in va)
-    no = str(int(noise*100))    
-    ep = str(int(epochs/1e4))
-    # print(va, st, no, ep)
-    # print("s-{}_v-{}_n{}_e{}e4".format(st, va, no, ep))
-    
-    # savename = Path("fhn_res/fitzhugh_nagumo_res_test")
-    savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
+    noise = 0.1
+    savename = Path("fhn_res/fitzhugh_nagumo_res_all_05")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -629,6 +615,7 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
 
     t, y = generate_data(savename, true_values, t_vars, noise)
     
+    var_trainable=[True, True, True, True] #a, b, tau, Iext
     
     # Train
     var_list = pinn(
@@ -638,8 +625,8 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
         savename,
         restore=False,
         first_num_epochs=2000,
-        sec_num_epochs=int(epochs),
-        var_trainable=var, #a, b, tau, Iext 
+        sec_num_epochs=int(9e5),
+        var_trainable=var_trainable, #a, b, tau, Iext 
         var_modifier=[-.3, 1.1, 20., 0.23], #a, b, tau, Iext
         # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
         init_weights = [[20., 20.], [10., 10.], [5., 10.]], # [[ode], [bc], [data]]
@@ -654,7 +641,6 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
         nn_nodes=64,
         true_values=true_values,
         display_every=1000,
-        observed_states=states,
     )
 
     # Prediction
@@ -689,25 +675,14 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     plt.show()    
     
     if noise>0:    
-        make_plots(savename, if_noise=True, params=np.where(var)[0])
+        make_plots(savename, if_noise=True, params=np.where(var_trainable)[0])
     else:
-        make_plots(savename, if_noise=False, params=np.where(var)[0])
+        make_plots(savename, if_noise=False, params=np.where(var_trainable)[0])
     make_one_plot(savename)
     make_samp_plot(savename)
     plot_losses(savename, do_test_vals=False)
-    eva_res = evaluate(savename, runtime=runtime)
+    evaluate(savename, runtime=runtime)
     
-    return eva_res
-    
-
-def main():
-    
-    noises  = [.00,.01,.02,.05,.10]
-    eps     = [1e5,2e5,2e5,3e5,6e5]
-    varses  = [[True,False,False,False], [True,True,False,False], [True,True,True,True]]
-    for varr in range(len(varses)):
-        for nos in range(len(noises)):
-            run_pinn(states=[0,1], var=varses[varr], epochs=eps[nos], noise=noises[nos])
 
 
 def plot_features():

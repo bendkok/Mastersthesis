@@ -6,6 +6,7 @@ Created on Thu Sep  9 14:13:48 2021
 """
 
 from pathlib import Path
+from turtle import st
 import numpy as np
 from scipy.integrate import odeint
 import deepxde as dde
@@ -271,7 +272,7 @@ def create_callbacks(var_list, savename, save_every=100):
         var_list,
         period=save_every,
         filename=os.path.join(savename, "variables.dat"),
-        precision=3, #this might be too low, increase if necessary
+        precision=3,
     )
     return [checkpointer, variable]
 
@@ -596,23 +597,14 @@ def make_copy_of_program(savename):
     shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
 
-def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0.01):
+def main():
     """ 
     Main function.
     """
     
     start = time.time()
-    
-    st = ''.join(str(i) for i in states)
-    va = np.array(['a', 'b', 't', 'I'])[np.where(var)]
-    va = ''.join(str(i) for i in va)
-    no = str(int(noise*100))    
-    ep = str(int(epochs/1e4))
-    # print(va, st, no, ep)
-    # print("s-{}_v-{}_n{}_e{}e4".format(st, va, no, ep))
-    
-    # savename = Path("fhn_res/fitzhugh_nagumo_res_test")
-    savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
+    noise = 0.0
+    savename = Path("fhn_res/fitzhugh_nagumo_res_v_bt_02")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -629,6 +621,7 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
 
     t, y = generate_data(savename, true_values, t_vars, noise)
     
+    var_trainable=[False, True, True, False] #a, b, tau, Iext
     
     # Train
     var_list = pinn(
@@ -638,8 +631,8 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
         savename,
         restore=False,
         first_num_epochs=2000,
-        sec_num_epochs=int(epochs),
-        var_trainable=var, #a, b, tau, Iext 
+        sec_num_epochs=int(2e5),
+        var_trainable=var_trainable, #a, b, tau, Iext 
         var_modifier=[-.3, 1.1, 20., 0.23], #a, b, tau, Iext
         # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
         init_weights = [[20., 20.], [10., 10.], [5., 10.]], # [[ode], [bc], [data]]
@@ -654,7 +647,7 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
         nn_nodes=64,
         true_values=true_values,
         display_every=1000,
-        observed_states=states,
+        observed_states=[0],
     )
 
     # Prediction
@@ -689,25 +682,14 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     plt.show()    
     
     if noise>0:    
-        make_plots(savename, if_noise=True, params=np.where(var)[0])
+        make_plots(savename, if_noise=True, params=np.where(var_trainable)[0])
     else:
-        make_plots(savename, if_noise=False, params=np.where(var)[0])
+        make_plots(savename, if_noise=False, params=np.where(var_trainable)[0])
     make_one_plot(savename)
     make_samp_plot(savename)
     plot_losses(savename, do_test_vals=False)
-    eva_res = evaluate(savename, runtime=runtime)
+    evaluate(savename, runtime=runtime)
     
-    return eva_res
-    
-
-def main():
-    
-    noises  = [.00,.01,.02,.05,.10]
-    eps     = [1e5,2e5,2e5,3e5,6e5]
-    varses  = [[True,False,False,False], [True,True,False,False], [True,True,True,True]]
-    for varr in range(len(varses)):
-        for nos in range(len(noises)):
-            run_pinn(states=[0,1], var=varses[varr], epochs=eps[nos], noise=noises[nos])
 
 
 def plot_features():
