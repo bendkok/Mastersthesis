@@ -689,9 +689,9 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     plt.show()    
     
     if noise>0:    
-        make_plots(savename, if_noise=True, params=np.where(var)[0])
+        make_plots(savename, params=np.where(var)[0])
     else:
-        make_plots(savename, if_noise=False, params=np.where(var)[0])
+        make_plots(savename, params=np.where(var)[0])
     make_one_plot(savename)
     make_samp_plot(savename)
     plot_losses(savename, do_test_vals=False)
@@ -701,13 +701,72 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     
 
 def main():
+
+    # cur_res = run_pinn(states=[0,1], var=[True,False,False,False], epochs=1.5e5, noise=0.)
+    # if cur_res>.01:
+    #     run_pinn(states=[0,1], var=[True,False,False,False], epochs=2e5, noise=0.)
+
+    # cur_res = run_pinn(states=[0,1], var=[True,False,False,False], epochs=4e5, noise=0.05)
+    # if cur_res>.01 and cur_res<.03:
+    #     run_pinn(states=[0,1], var=[True,False,False,False], epochs=6e5, noise=0.05)
+
+
+    # cur_res = run_pinn(states=[0], var=[False,True,True,False], epochs=2e5, noise=0.)
+    # if cur_res>.01 and cur_res<.03:
+    #     run_pinn(states=[0], var=[False,True,True,False], epochs=4e5, noise=0.)
+
+    # cur_res = run_pinn(states=[0], var=[False,True,True,False], epochs=9e5, noise=0.10)
+    # if cur_res>.01 and cur_res<.03:
+    #     run_pinn(states=[0], var=[False,True,True,False], epochs=12e5, noise=0.10)
+
+
+    # cur_res = run_pinn(states=[0], var=[True,True,True,False], epochs=8e5, noise=0.01)
+    # if cur_res>.01 and cur_res<.03:
+    #     run_pinn(states=[0], var=[True,True,True,False], epochs=10e5, noise=0.01)
+
+    # cur_res = run_pinn(states=[0], var=[True,True,True,False], epochs=9e5, noise=0.05)
+    # if cur_res>.01 and cur_res<.03:
+    #     run_pinn(states=[0], var=[True,True,True,False], epochs=11e5, noise=0.05)
+
+    # cur_res = run_pinn(states=[0], var=[True,True,True,False], epochs=10e5, noise=0.10)
+    # if cur_res>.01 and cur_res<.03:
+    #     run_pinn(states=[0], var=[True,True,True,False], epochs=15e5, noise=0.10)
+
     
-    noises  = [.00,.01,.02,.05,.10]
-    eps     = [1e5,2e5,2e5,3e5,6e5]
-    varses  = [[True,False,False,False], [True,True,False,False], [True,True,True,True]]
-    for varr in range(len(varses)):
-        for nos in range(len(noises)):
-            run_pinn(states=[0,1], var=varses[varr], epochs=eps[nos], noise=noises[nos])
+    # cur_res = run_pinn(states=[0,1], var=[True,True,True,True], epochs=5e5, noise=0.02)
+
+    cur_res = run_pinn(states=[0,1], var=[True,True,True,True], epochs=8e5, noise=0.05)
+    if cur_res>.01 and cur_res<.03:
+        run_pinn(states=[0,1], var=[True,True,True,True], epochs=12e5, noise=0.05)
+
+    cur_res = run_pinn(states=[0,1], var=[True,True,True,True], epochs=11e5, noise=0.10)
+    if cur_res>.01 and cur_res<.03:
+        cur_res = run_pinn(states=[0,1], var=[True,True,True,True], epochs=15e5, noise=0.10)
+
+    # noises  = [.00,.01,.02,.05,.10]
+    # eps     = [1.5e5,2e5,2e5,3e5,6e5]
+    # varses  = [True,True,True,True]
+    # # for varr in range(len(varses)):
+    # atts = 0
+    # # for nos in range(len(noises[2:4])):
+    # #     cur_res = run_pinn(states=[0,1], var=varses, epochs=eps[nos], noise=noises[nos])
+    # #     while cur_res:
+    # #         cur_res = run_pinn(states=[0,1], var=varses, epochs=eps[nos]*(1.5+atts), noise=noises[nos])
+    # #         atts+=1
+    
+    # eps0     = [1.5e5,2e5,2e5,3e5,6e5]
+    # varses0  = [[False,True,False,False], [False,True,True,False], [True,True,True,False]]
+    # # # for varr in range(len(varses)):
+    # # atts = 0
+    # # for varr in range(len(varses0)):
+    # #     for nos in range(len(noises)):
+    # #         cur_res = run_pinn(states=[0], var=varses0[varr], epochs=eps0[nos], noise=noises[nos])
+    # #         while cur_res and (eps0[nos]*(1.5+atts) < 1e6):
+    # #             cur_res = run_pinn(states=[0], var=varses0[varr], epochs=eps0[nos]*(1.5+atts), noise=noises[nos])
+    # #             atts+=1
+    # cur_res = run_pinn(states=[0], var=[True,True,True,True], epochs=eps0[-1], noise=noises[0])
+
+
 
 
 def plot_features():

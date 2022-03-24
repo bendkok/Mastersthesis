@@ -271,7 +271,7 @@ def create_callbacks(var_list, savename, save_every=100):
         var_list,
         period=save_every,
         filename=os.path.join(savename, "variables.dat"),
-        precision=3, #this might be too low, increase if necessary
+        precision=3,
     )
     return [checkpointer, variable]
 

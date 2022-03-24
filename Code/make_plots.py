@@ -11,9 +11,10 @@ import os
 from pathlib import Path
 import re
 import seaborn as sns
+import pickle
 
 
-def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo", if_noise=False, params=[0,1]):
+def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo", params=[0,1]):
     """
     Loads the saved data, and plots them.
     """
@@ -39,8 +40,8 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
         l = lines[i].split(" ")
         l = [re.sub("\[|\]|,", "", a ) for a in l]
         li.append(l)
-        
-    data4 = np.asarray(li, dtype=np.float64, order='C')
+    
+    data4 = np.asarray(li[:-1], dtype=np.float64, order='C')
     
     t = data0[:,0]
     v_exe = data0[:,1]
@@ -108,10 +109,11 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
         data6 = np.loadtxt(os.path.join(path, filename6), delimiter=' ', skiprows=0, dtype=float)
         
         length = len(data6)//(2+n_states)
-        idx = np.array(data6[:length]).astype(int)
-        t_s = np.array(data6[length:2*length])
-        v_s = np.array(data6[2*length:3*length])
-        w_s = np.array(data6[3*length:])
+        # idx = np.array(data6[:length]).astype(int)
+        t_s, v_s, w_s = data6[length:2*length], data6[2*length::2], data6[2*length+1::2]
+        # t_s = np.array(data6[length:2*length])
+        # v_s = np.array(data6[2*length:3*length])
+        # w_s = np.array(data6[3*length:])
         
         plt.plot(t_s, v_s, "o", label="Noisy")
         plt.plot(t, v_exe, "r", label="Exact")
@@ -242,7 +244,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
     def param_change(params = params, param_names = ["a","b","tau","Iext"], tar=[-.3, 1.1, 20, 0.23]):       
         #plots the change in the prediction of the ode-params.
         for p in params:
-            plt.plot(data4[1:,0], data4[1:,p+1], label="Inff. {}".format(param_names[p]))
+            plt.plot(data4[1:,0], data4[1:,p+1], label="Inf. {}".format(param_names[p]))
             plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
             plt.legend(loc="best")
             plt.xlabel("Epoch")
@@ -253,7 +255,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
             
         #plots the change in the prediction of the ode-params.
         for p in params:
-            plt.plot(data4[1:,0], data4[1:,p+1], label="Inff. {}".format(param_names[p]))
+            plt.plot(data4[1:,0], data4[1:,p+1], label="Inf. {}".format(param_names[p]))
             plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
             plt.legend(loc="best")
             plt.xlabel("Epoch")
@@ -263,11 +265,40 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
         plt.savefig(Path.joinpath( path, "plot_varchange.pdf"))
         plt.show()   
     
+    
+    #change in relative error
+    def re_change(params = params, param_names = ["a","b","tau","Iext"], tar=[-.3, 1.1, 20, 0.23]):       
+        #plots the change in the prediction of the ode-params.
+        for p in params:
+            plt.plot(data4[1:,0], np.abs((data4[1:,p+1]-tar[p])/tar[p]), label="RE {}".format(param_names[p]))
+            # plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
+            plt.legend(loc="best")
+            plt.xlabel("Epoch")
+            plt.ylabel("Relative Error")
+            plt.yscale("log")
+            plt.title("Change in Relative Error for {}".format(param_names[p]))
+            plt.savefig(Path.joinpath( path, "plot_rechange_{}.pdf".format(param_names[p])))
+            plt.show()   
+            
+        #plots the change in the prediction of the ode-params.
+        for p in params:
+            plt.plot(data4[1:,0], np.abs((data4[1:,p+1]-tar[p])/tar[p]), label="RE {}".format(param_names[p]))
+            # plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
+            plt.legend(loc="best")
+            plt.xlabel("Epoch")
+            plt.ylabel("Relative Error")
+        plt.title("Change in Relative Error")
+        plt.yscale("log")
+        plt.savefig(Path.joinpath( path, "plot_rechange.pdf"))
+        plt.show()  
+    
+    plt.clf()
     # exact()
     # prediction()
     # nn_prediction()
     # nnb_prediction()
     param_change()   
+    # re_change()
     try:
         noise()
     except:
@@ -280,5 +311,13 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
 
 
 if __name__ == "__main__":
-    # make_plots(Path("fitzhugh_nagumo_res_feature_onlyb_2"))
-    make_plots(Path("fhn_res/fitzhugh_nagumo_res_all_01"), if_noise=True, params=[0,1,2,3])
+    # make_plots(Path("fhn_res/fhn_res_clus/fhn_res_s-01_v-abtI_n1_e50"), params=[0,1,2,3])
+    
+    for dir in os.listdir('./fhn_res/fhn_res_clus'):
+        path = Path("fhn_res/fhn_res_clus/{}".format(dir))
+        with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
+            data = pickle.load(a_file)
+        params = np.where(data['var_trainable'])[0]
+        
+        make_plots(path = path, params=params)
+    # make_plots(Path("fhn_res/fitzhugh_nagumo_res_all_01"), if_noise=True, params=[0,1,2,3])

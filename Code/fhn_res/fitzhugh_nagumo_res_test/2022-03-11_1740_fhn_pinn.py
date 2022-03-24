@@ -271,7 +271,7 @@ def create_callbacks(var_list, savename, save_every=100):
         var_list,
         period=save_every,
         filename=os.path.join(savename, "variables.dat"),
-        precision=3, #this might be too low, increase if necessary
+        precision=3,
     )
     return [checkpointer, variable]
 
@@ -596,25 +596,23 @@ def make_copy_of_program(savename):
     shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
 
-def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0.01):
+def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(1e5), noise=0.0):
     """ 
     Main function.
     """
     
     start = time.time()
     
-    st = ''.join(str(i) for i in states)
+    st = ""
+    st = [st + str(states[i]) for i in range(len(states))]
     va = np.array(['a', 'b', 't', 'I'])[np.where(var)]
-    va = ''.join(str(i) for i in va)
-    no = str(int(noise*100))    
-    ep = str(int(epochs/1e4))
-    # print(va, st, no, ep)
-    # print("s-{}_v-{}_n{}_e{}e4".format(st, va, no, ep))
+    print(va, st)
     
-    # savename = Path("fhn_res/fitzhugh_nagumo_res_test")
-    savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
+    savename = Path("fhn_res/fitzhugh_nagumo_res_test")
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
+    
+    exit()
     
     make_copy_of_program(savename)
 
@@ -638,7 +636,7 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
         savename,
         restore=False,
         first_num_epochs=2000,
-        sec_num_epochs=int(epochs),
+        sec_num_epochs=epochs,
         var_trainable=var, #a, b, tau, Iext 
         var_modifier=[-.3, 1.1, 20., 0.23], #a, b, tau, Iext
         # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
@@ -701,13 +699,7 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     
 
 def main():
-    
-    noises  = [.00,.01,.02,.05,.10]
-    eps     = [1e5,2e5,2e5,3e5,6e5]
-    varses  = [[True,False,False,False], [True,True,False,False], [True,True,True,True]]
-    for varr in range(len(varses)):
-        for nos in range(len(noises)):
-            run_pinn(states=[0,1], var=varses[varr], epochs=eps[nos], noise=noises[nos])
+    run_pinn()
 
 
 def plot_features():

@@ -202,48 +202,64 @@ def make_samp_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["
     
     sns.set_theme()
     
-    filename0 = model+"_samp.dat"
+    # filename0 = model+".dat"
     filename1 = model+"_pred.dat"
     filename2 = "neural_net_pred_best.dat"
+    filename3 = model+"_samp.dat"
     
-    exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
+    # exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
     pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
     nn    = np.loadtxt(os.path.join(path, filename2), delimiter=' ', skiprows=0, dtype=float)
+    samp  = np.loadtxt(os.path.join(path, filename3), delimiter=' ', skiprows=0, dtype=float)
     
-    length = len(exact)//(2+len(states))
+    s_samp = len(samp)//(2+len(states))
     
-    t_s, v_exe, w_exe = exact[length:2*length], exact[2*length:3*length], exact[3*length:]
-    t, v_pre, w_pre   = pred[:,0], pred[:,states[0]], pred[:,states[1]]
-    v_nn, w_nn        = nn[:,states[0]], nn[:,states[1]]
+    # t_s, w_exe, v_exe = exact[s_samp:2*s_samp], exact[2*s_samp:3*s_samp], exact[3*s_samp:]
+    # t, v_exe, w_exe = exact[:,0], exact[:,states[0]], exact[:,states[1]]
+    t, v_pre = pred[:,0], pred[:,states[0]]
+    v_nn      = nn[:,states[0]]
     
-    fig, axs = plt.subplots(2, 2, figsize=(14,10))
+    if len(states)>1:
+        w_pre = pred[:,states[1]]
+        w_nn  = nn[:,states[1]]
+        t_s, v_s, w_s   = samp[s_samp:2*s_samp], samp[2*s_samp::2], samp[2*s_samp+1::2]
+    else:
+        t_s, v_s        = samp[s_samp:2*s_samp], samp[2*s_samp:]
+    
+    
+    if len(states)>1:
+        fig, axs = plt.subplots(2, 2, figsize=(14,10))
+    else:
+        fig, axs = plt.subplots(1, 2, figsize=(17,7))
     axs_falt = axs.flatten()
     
     # print(t.shape)
     
-    l1, = axs_falt[0].plot(t_s, v_exe, "o")
+    l1, = axs_falt[0].plot(t_s, v_s, "o")
     l2, = axs_falt[0].plot(t, v_nn, "r")
     axs_falt[0].set_title(f"NN's prediction of {state_names[0]} in the best epoch.")
     
-    axs_falt[1].plot(t_s, v_exe, "o")
+    axs_falt[1].plot(t_s, v_s, "o")
     axs_falt[1].plot(t, v_pre, "r")
     axs_falt[1].set_title(f"ODE prediction of {state_names[0]}.")
     
-    axs_falt[2].plot(t_s, w_exe, "o")
-    axs_falt[2].plot(t, w_nn, "r")
-    axs_falt[2].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
+    if len(states)>1:
+        axs_falt[2].plot(t_s, w_s, "o")
+        axs_falt[2].plot(t, w_nn, "r")
+        axs_falt[2].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
+        
+        axs_falt[3].plot(t_s, w_s, "o")
+        axs_falt[3].plot(t, w_pre, "r")
+        axs_falt[3].set_title(f"ODE prediction of {state_names[1]}.")
     
-    axs_falt[3].plot(t_s, w_exe, "o")
-    axs_falt[3].plot(t, w_pre, "r")
-    axs_falt[3].set_title(f"ODE prediction of {state_names[1]}.")
-    
-    for i in range(4):
+    for i in range(2*len(states)):
         axs_falt[i].set_xlabel("Time (ms)")
         axs_falt[i].set_ylabel("Potential (mV)")
         # axs_falt[i].grid()
-        
-    axs_falt[2].set_ylabel("Current (mA)")
-    axs_falt[3].set_ylabel("Current (mA)")
+    
+    if len(states)>1:
+        axs_falt[2].set_ylabel("Current (mA)")
+        axs_falt[3].set_ylabel("Current (mA)")
     
     tit = get_hyperparam_title(path)
     
@@ -301,10 +317,26 @@ def make_state_plot(path, model="beeler_reuter", use_nn = False):
 
 def main():
     
-    path = Path("fhn_res/fitzhugh_nagumo_res_ab_06")
-    make_one_plot(path)
-    plot_losses(path)
-    make_samp_plot(path)
+    # path = Path("fhn_res/fhn_res_clus/fhn_res_s-01_v-a_n0_e20")
+    # make_one_plot(path)
+    # plot_losses(path)
+    # plot_losses(path, do_test_vals=False)
+    # make_samp_plot(path, states=[1,2])
+    for dir in os.listdir('./fhn_res/fhn_res_clus'):
+        path = Path("fhn_res/fhn_res_clus/{}".format(dir))
+        with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
+            data = pickle.load(a_file)
+        states = data['observed_states']
+        states = [s+1 for s in states]
+        
+        # make_one_plot(path, states=states)
+        make_one_plot(path)
+        plot_losses(path, do_test_vals=False)
+        make_samp_plot(path, states=states)
+        # make_samp_plot(path)
+    
+    
+    
     # path = Path("br_res/br_res_09")
     
     # sns.set_theme()
