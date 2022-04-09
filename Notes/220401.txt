@@ -1,12 +1,48 @@
 Had to increase precision for some of the experiments because I got 0 RE.
 Should I rerun all of them with higher precision?
+	Done.
 
 I've used both aux and BC in the text, but only BC in the plots. I think aux might be better, so I might change that.
 
 Need to update the varchange plots to not have Inff. but Inf. Or something else.
+	Done.
 Need to also actually do practical identifiability analysis.
+	Done.
 
 Make bar plot not have MRE when there's only one RE.
+	Done.
 
 Change titles for multi-plots. Include states, remove h.p.
+	Done.
 
+I've used τ in both FHN and in ode loss. Need a good alternative. 
+Can use t^o and t^d for example.
+	Used \mathcal{T} for ode loss.
+
+I think I've accidentally run the just v experiments with v and w...
+	Fixed.
+
+
+Don't have p.i. as error bars.
+Run every experiment with the same number of epochs.
+Could write about how the noise was applied.
+Could remove MRE fomr bar-plots. Can mention it in the text.
+
+Make it clear that the results are good, but that it took a lot of tuning as well.
+Can have bad results in the appendix.
+Can remove title from plots, instead write in caption.
+
+Make a script that recreates the figures used in text.
+Can change NN and ODE plots to be three lines in the same plot.
+Also plot the diff. between true value, and NN and ODE.
+
+
+Looking at HH-model could be useful. 
+
+Can mention hiPSC, but not too important.
+Can be used for drug screening, etc.
+Write some about these applications.
+
+
+
+rsync -chavzP bendiksd@srl-login1.ex3.simula.no:~/PINN/fhn_res/ C:\\Users\\benda\\Documents
