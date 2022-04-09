@@ -52,7 +52,7 @@ import pandas as pd
 # print(hyp)
 
 # #print losses from make_one_plot
-# parts = ['ODE ', 'BC  ', 'Data']
+# parts = ['ODE ', 'Aux  ', 'Data']
 
 
 # inp_dat = np.loadtxt(os.path.join(path, 'loss.dat'), delimiter=' ', skiprows=3, dtype=float)

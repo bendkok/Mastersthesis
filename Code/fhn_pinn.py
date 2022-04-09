@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 from postprocessing import saveplot
 from make_plots import make_plots
-from make_one_plot import make_one_plot, plot_losses, make_samp_plot
+from make_one_plot import make_one_plot, plot_losses, make_samp_plot, make_comb_plot
 from evaluate import evaluate
 
 np.random.seed(2)
@@ -98,14 +98,14 @@ def create_observations(data_t, data_y, geom, savename, observed_states=[0,1]):
     inside = lambda x, _: ptset.inside(x)
 
     # Create the observations by using the point set
-    observe_y0 = dde.DirichletBC(
-        geom, ptset.values_to_func(data_y[idx, 0:1]), inside, component=0
-    )
-    observe_y1 = dde.DirichletBC(
-        geom, ptset.values_to_func(data_y[idx, 1:2]), inside, component=1
-    )
+    observes = []
+    for s in observed_states:    
+        obs = dde.DirichletBC(
+            geom, ptset.values_to_func(data_y[idx, s:s+1]), inside, component=s
+        )
+        observes.append(obs)
 
-    return observe_y0, observe_y1
+    return observes
 
 def get_variable(v, var):
     low, up = v * 0.2, v * 1.8
@@ -172,16 +172,16 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     
     y1 = data_y[-1]
     # Question: Does it matter which point we choose?
-    bc0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
-    bc1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
+    aux0 = dde.DirichletBC(geom, lambda X: y1[0], boundary, component=0)
+    aux1 = dde.DirichletBC(geom, lambda X: y1[1], boundary, component=1)
 
-    observe_y0, observe_y1 = create_observations(data_t, data_y, geom, savename, observed_states=observed_states)
+    observes = create_observations(data_t, data_y, geom, savename, observed_states=observed_states)
     
     data = dde.data.PDE(  
         geom,
         ODE,
-        [bc0, bc1, observe_y0, observe_y1],  # list of boundary conditions
-        anchors=data_t,
+        [aux0, aux1, *observes],  # list of boundary conditions
+        anchors=data_t, #τ technically
     )
 
     return data, var_list
@@ -271,7 +271,7 @@ def create_callbacks(var_list, savename, save_every=100):
         var_list,
         period=save_every,
         filename=os.path.join(savename, "variables.dat"),
-        precision=3, #this might be too low, increase if necessary
+        precision=6, #this might be too low, increase if necessary
     )
     return [checkpointer, variable]
 
@@ -294,9 +294,9 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
 
     """
     #init_weights are the wheights before noise is considered
-    bc_weights = init_weights[1] # [1, 1]
+    aux_weights = init_weights[1] # [1, 1]
     if noise >= 0.1:
-        bc_weights = [w * 10 for w in bc_weights]
+        aux_weights = [w * 10 for w in aux_weights]
 
     data_weights = init_weights[2] # [1, 1]  
     # Large noise requires small data_weights
@@ -309,7 +309,7 @@ def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
         ode_weights = [10 * w for w in ode_weights]
 
     return dict(
-        bc_weights=bc_weights, data_weights=data_weights, ode_weights=ode_weights
+        aux_weights=aux_weights, data_weights=data_weights, ode_weights=ode_weights
     )
 
 
@@ -353,7 +353,7 @@ def train_model(model, weights, callbacks, first_num_epochs = int(1e3),
     model.compile(
         "adam",
         lr=lr, 
-        loss_weights=[0] * 2 + weights["bc_weights"] + weights["data_weights"],
+        loss_weights=[0] * 2 + weights["aux_weights"] + weights["data_weights"],
         # loss_weights=[0] * 4 + weights["data_weights"], #try out no aux as well
         # decay=("inverse time", 10, .1),
     )
@@ -365,9 +365,9 @@ def train_model(model, weights, callbacks, first_num_epochs = int(1e3),
         "adam",
         lr=lr,
         loss_weights=weights["ode_weights"]
-        + weights["bc_weights"]
+        + weights["aux_weights"]
         + weights["data_weights"],
-        decay=("inverse time", int(sec_num_epochs), decay_amount),
+        decay=("inverse time", 1, decay_amount),
     )
     
     # And train
@@ -406,6 +406,7 @@ def create_hyperparam_dict(
     lr,
     lr_decay,
     init_weights,
+    weights,
     k_vals,
     do_output_transform,
     do_t_input_transform,
@@ -420,7 +421,8 @@ def create_hyperparam_dict(
     """
     
     dictionary = dict(
-        ode_weights=init_weights[0], bc_weights=init_weights[1], data_weights=init_weights[2],
+        ode_weights=init_weights[0], aux_weights=init_weights[1], data_weights=init_weights[2],
+        weights=weights,
         first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
         var_trainable=var_trainable, var_modifier=var_modifier, true_values=true_values,
         k_vals=k_vals, lr=lr, lr_decay=lr_decay, do_output_transform=do_output_transform,
@@ -522,7 +524,7 @@ def pinn(
     model_restore_path = get_model_restore_path(restore, savename)
     
     create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, decay_amount, init_weights, k_vals, 
+                           var_modifier, lr, decay_amount, init_weights, weights, k_vals, #should propably have sent in weights here
                            do_output_transform, do_t_input_transform, batch_size, 
                            true_values, noise, observed_states)
     
@@ -596,7 +598,7 @@ def make_copy_of_program(savename):
     shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
 
-def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0.01):
+def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0.01, expe_n=0):
     """ 
     Main function.
     """
@@ -611,8 +613,8 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     # print(va, st, no, ep)
     # print("s-{}_v-{}_n{}_e{}e4".format(st, va, no, ep))
     
-    # savename = Path("fhn_res/fitzhugh_nagumo_res_test")
-    savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
+    savename = Path("fhn_res/fitzhugh_nagumo_res_test")
+    # savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -629,6 +631,7 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
 
     t, y = generate_data(savename, true_values, t_vars, noise)
     
+    d_w = np.array([5., 10.])[np.array(states)].tolist()
     
     # Train
     var_list = pinn(
@@ -641,15 +644,15 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
         sec_num_epochs=int(epochs),
         var_trainable=var, #a, b, tau, Iext 
         var_modifier=[-.3, 1.1, 20., 0.23], #a, b, tau, Iext
-        # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [bc], [data]]
-        init_weights = [[20., 20.], [10., 10.], [5., 10.]], # [[ode], [bc], [data]]
+        # init_weights = [[0, 0], [0, 0], [1, 1]], # [[ode], [aux], [data]]
+        init_weights = [[20., 20.], [10., 10.], d_w], # [[ode], [aux], [data]]
         # k_vals=[0.0173], # tf.sin(k * 2*np.pi*t),
         k_vals=[.005, .01, .015, .02, .025],
         do_output_transform = True,
         do_t_input_transform = True,
         batch_size = 50,
         lr=1e-2,
-        decay_amount=1e1,
+        decay_amount=2.5e-4,
         nn_layers=3,
         nn_nodes=64,
         true_values=true_values,
@@ -688,13 +691,11 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
     plt.show()    
     
-    if noise>0:    
-        make_plots(savename, if_noise=True, params=np.where(var)[0])
-    else:
-        make_plots(savename, if_noise=False, params=np.where(var)[0])
-    make_one_plot(savename)
-    make_samp_plot(savename)
-    plot_losses(savename, do_test_vals=False)
+    # make_plots(savename, params=np.where(var)[0])
+    # make_one_plot(savename)
+    # make_samp_plot(savename, states=[s+1 for s in states])
+    # plot_losses(savename, do_test_vals=False, states=states)
+    make_comb_plot(savename)
     eva_res = evaluate(savename, runtime=runtime)
     
     return eva_res
@@ -702,9 +703,9 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
 
 def main():
     
-    noises  = [.00,.01,.02,.05,.10]
-    eps     = [1e5,2e5,2e5,3e5,6e5]
-    varses  = [[True,False,False,False], [True,True,False,False], [True,True,True,True]]
+    noises  = [.10]
+    eps     = [3e3]
+    varses  = [[False,True,False,False]]
     for varr in range(len(varses)):
         for nos in range(len(noises)):
             run_pinn(states=[0,1], var=varses[varr], epochs=eps[nos], noise=noises[nos])
@@ -713,10 +714,10 @@ def main():
 def plot_features():
 
     t = np.linspace(0, 999, 1000)
-    y = fitzhugh_nagumo_model(t, a = np.log(1+np.exp(0))*-.2)
+    y = fitzhugh_nagumo_model(t)
     print(np.log(1+np.exp(0))*-.2)
     fig, ax = plt.subplots()
-    ax.plot(t, y[:,0])
+    ax.plot(t, y[:,0], label='v')
     # for i in np.linspace(-.1, -.5, 9):
     #     y = fitzhugh_nagumo_model(t, a=i)
     #     ax.plot(t, y[:,0], label=i)
@@ -724,21 +725,23 @@ def plot_features():
     # ax.plot(t, np.sin(0.01 * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
-    ax.plot(t, np.sin(0.0173*2*np.pi*t))
-    ax.plot(t, np.sin(0.01*2*np.pi*t))
-    ax.plot(t, np.sin(0.015*2*np.pi*t))
-    ax.plot(t, np.sin(0.02*2*np.pi*t))
+    # ax.plot(t, np.sin(0.0172*2*np.pi*t), '--', label='k=17.2')
+    ax.plot(t, np.sin(0.0171*2*np.pi*t), '--', label='k=17.1')
+    # ax.plot(t, np.sin(0.0174*2*np.pi*t), '--', label='k=17.4')
+    # ax.plot(t, np.sin(0.01*2*np.pi*t))
+    # ax.plot(t, np.sin(0.015*2*np.pi*t))
+    # ax.plot(t, np.sin(0.02*2*np.pi*t))
     # .001, .0015, .002
     
     ax.legend()
     plt.show()
     
-    out = []
-    for i in range(2):        
-        out.append(np.mean(np.abs(y[:,i])))
-    print(out)
+    # out = []
+    # for i in range(2):        
+    #     out.append(np.mean(np.abs(y[:,i])))
+    # print(out)
 
 
 if __name__ == "__main__":
-    main()
-    # plot_features()
+    # main()
+    plot_features()

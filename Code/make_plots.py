@@ -14,7 +14,17 @@ import seaborn as sns
 import pickle
 
 
-def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo", params=[0,1]):
+def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagumo", 
+               params=[0,1], non_loc_path=None, 
+               do_exact=False,
+               do_prediction=False,
+               do_nn_prediction=False,
+               do_nnb_prediction=False,
+               do_param_change=False,
+               do_re_change=False,
+               do_noise=False,
+               do_sampled=False,
+               ):
     """
     Loads the saved data, and plots them.
     """
@@ -121,7 +131,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
         plt.xlabel("Time (ms)")
         plt.ylabel("Voltage (mV)")
         plt.title("Exact vs. Sampled data v")
-        plt.savefig(Path.joinpath( path, "plot_samp0.pdf"))
+        plt.savefig(Path.joinpath( path, "plot_samp0.pdf"), bbox_inches='tight')
         plt.show()
     
         plt.plot(t_s, w_s, "o", label="Sampled Input")
@@ -130,7 +140,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
         plt.xlabel("Time (ms)")
         plt.ylabel("Current (mA)")
         plt.title("Exact vs. Sampled data w")
-        plt.savefig(Path.joinpath( path, "plot_samp1.pdf"))
+        plt.savefig(Path.joinpath( path, "plot_samp1.pdf"), bbox_inches='tight')
         plt.show()
         
         
@@ -249,8 +259,12 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Value")
-            plt.title("Change in {}".format(param_names[p]))
-            plt.savefig(Path.joinpath( path, "plot_varchange_{}.pdf".format(param_names[p])))
+            # plt.title("Change in {}".format(param_names[p]))
+            # plt.savefig(Path.joinpath( path, "plot_varchange_{}.pdf".format(param_names[p])), bbox_inches='tight')
+            if non_loc_path == None:    
+                plt.savefig(Path.joinpath( path, "plot_varchange_{}.pdf".format(param_names[p])), bbox_inches='tight')
+            else:
+                plt.savefig(Path.joinpath( non_loc_path, "plot_varchange_{}.pdf".format(param_names[p])), bbox_inches='tight')
             plt.show()   
             
         #plots the change in the prediction of the ode-params.
@@ -260,9 +274,13 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Value")
-        plt.title("Change in paramteers")
+        # plt.title("Change in paramteers")
         plt.yscale("symlog")
-        plt.savefig(Path.joinpath( path, "plot_varchange.pdf"))
+        # plt.savefig(Path.joinpath( path, "plot_varchange.pdf"), bbox_inches='tight')
+        if non_loc_path == None:    
+            plt.savefig(Path.joinpath( path, "plot_varchange.pdf"), bbox_inches='tight')
+        else:
+            plt.savefig(Path.joinpath( non_loc_path, "plot_varchange.pdf"), bbox_inches='tight')  
         plt.show()   
     
     
@@ -275,9 +293,13 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Relative Error")
-            plt.yscale("log")
+            # plt.yscale("log")
             plt.title("Change in Relative Error for {}".format(param_names[p]))
-            plt.savefig(Path.joinpath( path, "plot_rechange_{}.pdf".format(param_names[p])))
+            # plt.savefig(Path.joinpath( path, "plot_rechange_{}.pdf".format(param_names[p])), bbox_inches='tight')
+            if non_loc_path == None:    
+                plt.savefig(Path.joinpath( path, "plot_rechange_{}.pdf".format(param_names[p])), bbox_inches='tight')
+            else:
+                plt.savefig(Path.joinpath( non_loc_path, "plot_rechange_{}.pdf".format(param_names[p])), bbox_inches='tight')
             plt.show()   
             
         #plots the change in the prediction of the ode-params.
@@ -289,35 +311,41 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
             plt.ylabel("Relative Error")
         plt.title("Change in Relative Error")
         plt.yscale("log")
-        plt.savefig(Path.joinpath( path, "plot_rechange.pdf"))
+        # plt.savefig(Path.joinpath( path, "plot_rechange.pdf"), bbox_inches='tight')
+        if non_loc_path == None:    
+            plt.savefig(Path.joinpath( path, "plot_rechange.pdf"), bbox_inches='tight')
+        else:
+            plt.savefig(Path.joinpath( non_loc_path, "plot_rechange.pdf"), bbox_inches='tight')
         plt.show()  
     
     plt.clf()
-    # exact()
-    # prediction()
-    # nn_prediction()
-    # nnb_prediction()
-    param_change()   
-    # re_change()
-    try:
+    if do_exact:    
+        exact()
+    if do_prediction:
+        prediction()
+    if do_nn_prediction:
+        nn_prediction()
+    if do_nnb_prediction:
+        nnb_prediction()
+    if do_param_change:
+        param_change()
+    if do_re_change:
+        re_change()
+    if do_noise:
         noise()
-    except:
-        ""
-    try:
+    if do_sampled:
         sampled()
-    except:
-        ""
-    
+
 
 
 if __name__ == "__main__":
     # make_plots(Path("fhn_res/fhn_res_clus/fhn_res_s-01_v-abtI_n1_e50"), params=[0,1,2,3])
     
-    for dir in os.listdir('./fhn_res/fhn_res_clus'):
-        path = Path("fhn_res/fhn_res_clus/{}".format(dir))
-        with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
-            data = pickle.load(a_file)
-        params = np.where(data['var_trainable'])[0]
+    # for dir in os.listdir('./fhn_res/fhn_res_clus'):
+    #     path = Path("fhn_res/fhn_res_clus/{}".format(dir))
+    #     with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
+    #         data = pickle.load(a_file)
+    #     params = np.where(data['var_trainable'])[0]
         
-        make_plots(path = path, params=params)
-    # make_plots(Path("fhn_res/fitzhugh_nagumo_res_all_01"), if_noise=True, params=[0,1,2,3])
+    #     make_plots(path = path, params=params)
+    make_plots(Path("fhn_res_clus/fhn_res_s-01_v-a_n0_e40/expe_9"), params=[0])
