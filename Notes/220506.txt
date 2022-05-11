@@ -1,0 +1,47 @@
+what from the feedback should I focus on?
+
+figures
+what sort of license does thesis use? e.g. https://en.wikipedia.org/wiki/Threshold_potential#/media/File:Action_potential_vert.png
+By Artwork by Synaptidude at en.wikipedia - From en:Image:Action potential vert.png; Modified version of older Image:Action potential reloaded.jpg., CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1090445
+
+Nernst necessary?
+title still fine?
+how is the notation?
+formulation in introduction
+colors of links and such
+additional figures and tables. Should more be moved there? Should it be removed? 
+remove BR? or expand on
+certain parts too technical
+
+a bit unsure on the whole gentic algo. thing
+brute force paper/ what's actually been shown?
+
+\textit{loss} function or \textit{loss function}?
+
+extra titles/subtitles 
+	cells in general
+	supervised, unsupervised and reinforcement learning
+	Train and test data
+	Gradient descent
+	Remove PINN
+	Expand Summary of Hyperparameters
+	
+
+maybe have a section before PINN using e.g. sgd, see what happens, has problems
+why we extend the loss function
+
+
+
+Want feedback on:
+- figures in physiology
+- identifiability section
+small changes:
+- parts where you've written "rewrite this" - AD, regression in introduction, 
+- abstract
+- introduction
+- conclusion (limited feedback from before)
+
+
+Tabel caption over.
+make what is caption clearer
+legg github i implementation

@@ -46,3 +46,5 @@ Write some about these applications.
 
 
 rsync -chavzP bendiksd@srl-login1.ex3.simula.no:~/PINN/fhn_res/ C:\\Users\\benda\\Documents
+rsync -chavzP bendiksd@srl-login1.ex3.simula.no:~/PINN/fhn_res/ C:/Users/benda/Documents/Master/Mastersthesis/Code/fhn_res_clus
+rsync -chavzP --exclude '/*/expe_*/model/***'  bendiksd@srl-login1.ex3.simula.no:~/PINN/fhn_res/ ./Master/

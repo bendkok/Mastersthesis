@@ -145,10 +145,9 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     #we want to include the possibility for the variables to be both trainable and constant
     for i in range(len(var_trainable)):
         if var_trainable[i]:
-            # var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
-            var = tf.Variable(1e-4, trainable=True, dtype=tf.float32)
+            var0 = tf.Variable(1e-4, trainable=True, dtype=tf.float32)
             #use 1e-4 to avoid divide by zero
-            get_variable(var_modifier[i], var)
+            var = get_variable(var_modifier[i], var0)
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
         var_list.append(var)
@@ -187,7 +186,7 @@ def create_data(data_t, data_y, savename, var_trainable=[True, True, False, Fals
     return data, var_list
 
 
-def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_initializer="He normal", 
+def create_nn(data_y, nn_layers=3, nn_nodes=64, activation = "swish", kernel_initializer="He normal", 
               do_t_input_transform = True, k_vals=[0.0173], do_output_transform = True):
     """
     Creates a neural network object. 
@@ -216,7 +215,7 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
     deepxde maps.FNN
         An object for a feed forward neural network.
     """
-    
+
     # Feed-forward neural networks
     net = dde.maps.FNN(
         layer_size=[1] + [nn_nodes]*nn_layers + [2],
@@ -228,15 +227,14 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
         """
         Helper function for the feature transformation.
         """
-        # t *= 1/999 #new: test if this does anything
-        features = [] 
+        features = []
         if do_t_input_transform: #if we want to include unscaled as well
             features.append(t/999) #[0] = t
             
         for k in range(len(k_vals)):
-            features.append( tf.sin(k_vals[k] * 2*np.pi*t) )
+            features.append( tf.sin(k_vals[k] * 2*np.pi * t))
         return tf.concat(features, axis=1)
-   
+
 
     net.apply_feature_transform(feature_transform)
 
@@ -255,18 +253,18 @@ def create_nn(data_y, nn_layers=3, nn_nodes=128, activation = "swish", kernel_in
     return net
 
 
-def create_callbacks(var_list, savename, save_every=100):
+def create_callbacks(var_list, savename, save_every=1000):
     """
     Helper function for saving the reults during the training. 
     """
-    # Save model after 100 ephocs
+    # Save model after 1000 ephocs
     checkpointer = dde.callbacks.ModelCheckpoint(
         os.path.join(savename, "model/model.ckpt"),
         verbose=1,
         save_better_only=True,
         period=save_every,
     )
-    # Save variables after 100 epochs
+    # Save variables after n epochs
     variable = dde.callbacks.VariableValue(
         var_list,
         period=save_every,
@@ -276,7 +274,7 @@ def create_callbacks(var_list, savename, save_every=100):
     return [checkpointer, variable]
 
 
-def default_weights(noise, init_weights = [[1, 1], [1, 1], [1, 1]]):
+def default_weights(noise, init_weights=[[1, 1], [1, 1], [1, 1]]):
     """
     Makes the weights into a dictionary, and applies scailing if there's noise.
 
@@ -354,8 +352,6 @@ def train_model(model, weights, callbacks, first_num_epochs = int(1e3),
         "adam",
         lr=lr, 
         loss_weights=[0] * 2 + weights["aux_weights"] + weights["data_weights"],
-        # loss_weights=[0] * 4 + weights["data_weights"], #try out no aux as well
-        # decay=("inverse time", 10, .1),
     )
     # And train
     model.train(epochs=int(first_num_epochs), display_every=int(first_num_epochs), batch_size=batch_size)
@@ -389,10 +385,10 @@ def get_model_restore_path(restore, savename):
     #if you want to restore from a previous run
     if restore:
         #reads form the checkpoint text file
-        with open(os.path.join(savename,"model/checkpoint"), 'r') as reader:
+        with open(os.path.join(savename, "model/checkpoint"), 'r') as reader:
             inp = reader.read()
             restore_from = inp.split(" ")[1].split('"')[1]
-        return os.path.join(savename,"model", restore_from)
+        return os.path.join(savename, "model", restore_from)
     else:
         return None
 
@@ -421,12 +417,22 @@ def create_hyperparam_dict(
     """
     
     dictionary = dict(
-        ode_weights=init_weights[0], aux_weights=init_weights[1], data_weights=init_weights[2],
+        ode_weights=init_weights[0], 
+        aux_weights=init_weights[1], 
+        data_weights=init_weights[2],
         weights=weights,
-        first_num_epochs=first_num_epochs, sec_num_epochs=sec_num_epochs,
-        var_trainable=var_trainable, var_modifier=var_modifier, true_values=true_values,
-        k_vals=k_vals, lr=lr, lr_decay=lr_decay, do_output_transform=do_output_transform,
-        do_t_input_transform=do_t_input_transform, batch_size=batch_size, noise=noise,
+        first_num_epochs=first_num_epochs, 
+        sec_num_epochs=sec_num_epochs,
+        var_trainable=var_trainable, 
+        var_modifier=var_modifier, 
+        true_values=true_values,
+        k_vals=k_vals, 
+        lr=lr, 
+        lr_decay=lr_decay, 
+        do_output_transform=do_output_transform,
+        do_t_input_transform=do_t_input_transform, 
+        batch_size=batch_size, 
+        noise=noise,
         observed_states=observed_states,
     )
 
@@ -452,18 +458,19 @@ def pinn(
     lr=1e-2,
     init_weights = [[1, 1], [1, 1], [1, 1]],
     k_vals=[0.013],
-    do_output_transform = False,
-    do_t_input_transform = True,
-    batch_size = 10,
+    do_output_transform=False,
+    do_t_input_transform=True,
+    batch_size=10,
     nn_layers=3,
     nn_nodes=128,
-    display_every=100,
+    display_every=1000,
     true_values=[-.3,1.1,20,.23],
     decay_amount=1e3,
     observed_states=[0,1],
 ):
     """
     Function for seting up and solving the PINN.
+    TODO: update defaults.
 
     Parameters
     ----------
@@ -476,7 +483,7 @@ def pinn(
     savename : pathlib Path
         Path for saving information.
     restore : Bool, optional
-        Wheter we should restore the NN from a previous run. The default is False.
+        Wether we should restore the NN from a previous run. The default is False.
     first_num_epochs : int, optional
         Number of epochs to train without ODE-loss. The default is int(1e3).
     sec_num_epochs : int, optional
@@ -490,11 +497,11 @@ def pinn(
     init_weights : list, optional
         List of weights before noise is considered. The default is [[1, 1], [1, 1], [1, 1]].
     do_t_input_transform : Bool, optional
-        Wheter we should use t in input transformation. The default is True.
+        Wether we should use t in input transformation. The default is True.
     k_vals : list, optional
         Values for the input transformation. The default is [0.0173].
     do_output_transform : Bool, optional
-        Wheter we should use the output transformation. The default is True.
+        Wether we should use the output transformation. The default is True.
     batch_size : int, optional
         Batch size for minibatching. The default is 10.
     nn_layers : Int, optional
@@ -523,10 +530,24 @@ def pinn(
     weights = default_weights(noise, init_weights)
     model_restore_path = get_model_restore_path(restore, savename)
     
-    create_hyperparam_dict(savename, first_num_epochs, sec_num_epochs, var_trainable, 
-                           var_modifier, lr, decay_amount, init_weights, weights, k_vals, #should propably have sent in weights here
-                           do_output_transform, do_t_input_transform, batch_size, 
-                           true_values, noise, observed_states)
+    create_hyperparam_dict(
+        savename, 
+        first_num_epochs, 
+        sec_num_epochs, 
+        var_trainable, 
+        var_modifier, 
+        lr, 
+        decay_amount, 
+        init_weights, 
+        weights, 
+        k_vals, 
+        do_output_transform, 
+        do_t_input_transform, 
+        batch_size, 
+        true_values, 
+        noise, 
+        observed_states,
+    )
     
     losshistory, train_state = train_model(
         model, weights, callbacks, first_num_epochs, sec_num_epochs, model_restore_path, lr=lr, 
@@ -534,7 +555,11 @@ def pinn(
     )
 
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
+    # If the pinn for some reason can't find any states (all predictions get nan) this will return 
+    # an error because best_y will be None. Don't think that's a big issue.
+    # It also returns an error because the model/checkpoint folder isn't created.
         
+
     var_list = [model.sess.run(v) for v in var_list]
     
     nn_pred = model.predict(data_t) 
@@ -593,7 +618,7 @@ def make_copy_of_program(savename):
     From https://stackoverflow.com/questions/23321100/best-way-to-have-a-python-script-copy-itself/49210778    
     """
     # generate filename with timestring
-    copied_script_name = time.strftime("%Y-%m-%d_%H%M") + '_' + os.path.basename(__file__)
+    copied_script_name = time.strftime("%Y-%m-%d_%H%M") + "_" + os.path.basename(__file__)
     # copy script
     shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
@@ -613,8 +638,8 @@ def run_pinn(states=[0,1], var=[True,True,False,False], epochs=int(2e5), noise=0
     # print(va, st, no, ep)
     # print("s-{}_v-{}_n{}_e{}e4".format(st, va, no, ep))
     
-    savename = Path("fhn_res/fitzhugh_nagumo_res_test")
-    # savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
+    # savename = Path("fhn_res/fitzhugh_nagumo_res_test")
+    savename = Path("fhn_res/fhn_res_s-{}_v-{}_n{}_e{}".format(st, va, no, ep))
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
     
@@ -743,5 +768,5 @@ def plot_features():
 
 
 if __name__ == "__main__":
-    # main()
-    plot_features()
+    main()
+    # plot_features()
