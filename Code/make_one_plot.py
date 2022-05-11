@@ -59,6 +59,7 @@ def plot_losses(path,
                 states = [0,1],
                 skiprows=3,
                 state_names = ["v", "w"],
+                param_names=["a","b","tau","Iext"],
                 non_loc_path=None,
     ):
     """
@@ -79,7 +80,7 @@ def plot_losses(path,
     parts = ['ODE ', 'Aux  ', 'Data']
     
     #should make 4 plots
-    fig, axs = plt.subplots(2, 2, figsize=(14,10))
+    fig, axs = plt.subplots(2, 2, figsize=(11,8.5))
     axs_falt = axs.flatten()
         
     for i in range(len(parts)):
@@ -88,8 +89,12 @@ def plot_losses(path,
             if test_loss[:,i*len(states)].all() != 0:    
                 axs_falt[0].plot(epochs[2:], np.sum(test_loss[2:,i*len(states):i*len(states)+len(states)], axis=1), '--', label='{} Test'.format(parts[i]))
         
-        for s in range(len(states)):    
-            axs_falt[i+1].plot(epochs[2:], train_loss[2:,i*len(states)+s], '-', label='{}'.format(state_names[s]))
+        if i==2:
+            for s in range(len(states)):    
+                axs_falt[i+1].plot(epochs[2:], train_loss[2:,i*len(states)+s], '-', label='{}'.format(state_names[s]))
+        else:
+            for s in range(len(state_names)):    
+                axs_falt[i+1].plot(epochs[2:], train_loss[2:,i*len(states)+s], '-', label='{}'.format(state_names[s]))
         # axs_falt[i+1].plot(epochs, train_loss[:,i*2+1], '-', label='{}-w'.format(parts[i]))
         
         if do_test_vals:
@@ -110,6 +115,7 @@ def plot_losses(path,
         axs_falt[i+1].set_xlabel("Epoch")
         axs_falt[i+1].set_ylabel("Loss")
         
+
         
     mean = np.mean(train_loss, axis=1)
     axs_falt[0].plot(epochs, np.zeros_like(epochs)+mean, '--', label='Mean')
@@ -120,8 +126,16 @@ def plot_losses(path,
     axs_falt[0].set_xlabel("Epoch")
     axs_falt[0].set_ylabel("Loss")
     
-    fig.suptitle(get_hyperparam_title(path), fontsize=15)
+    for i in range(4):
+        for item in ([axs_falt[i].title, axs_falt[i].xaxis.label, axs_falt[i].yaxis.label] +
+                     axs_falt[i].get_xticklabels() + axs_falt[i].get_yticklabels()):
+            item.set_fontsize(14)
+        plt.setp(axs_falt[i].get_xticklabels(), rotation=30, horizontalalignment='right')
+    
+    # fig.suptitle(get_hyperparam_title(path), fontsize=15)
     # fig.savefig(Path.joinpath( path, "full_loss.pdf"))
+    
+    plt.tight_layout()
     if non_loc_path == None:    
         fig.savefig(Path.joinpath( path, "full_loss.pdf"))
     else:
@@ -153,7 +167,7 @@ def plot_losses(path,
     print("\nODE train-test diff: ", np.mean(diff), np.min(diff), np.max(diff))
     
 
-def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"]):
+def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"], param_names=["a","b","tau","Iext"], do_tit=True):
     """
     Makes one plot of the prediction.
     """
@@ -179,19 +193,19 @@ def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v
     
     l1, = axs_falt[0].plot(t, v_exe)
     l2, = axs_falt[0].plot(t, v_nn, "r--")
-    axs_falt[0].set_title(f"NN's prediction of {state_names[0]} in the best epoch.")
+    axs_falt[0].set_title(f"NN's prediction of {state_names[states[0]-1]} in the best epoch.")
     
     axs_falt[1].plot(t, v_exe)
     axs_falt[1].plot(t, v_pre, "r--")
-    axs_falt[1].set_title(f"ODE prediction of {state_names[0]}.")
+    axs_falt[1].set_title(f"ODE prediction of {state_names[states[0]-1]}.")
     
     axs_falt[2].plot(t, w_exe)
     axs_falt[2].plot(t, w_nn, "r--")
-    axs_falt[2].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
+    axs_falt[2].set_title(f"NN's prediction of {state_names[states[1]-1]} in the best epoch.")
     
     axs_falt[3].plot(t, w_exe)
     axs_falt[3].plot(t, w_pre, "r--")
-    axs_falt[3].set_title(f"ODE prediction of {state_names[1]}.")
+    axs_falt[3].set_title(f"ODE prediction of {state_names[states[1]-1]}.")
     
     for i in range(4):
         axs_falt[i].set_xlabel("Time (ms)")
@@ -201,7 +215,13 @@ def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v
     axs_falt[2].set_ylabel("Current (mA)")
     axs_falt[3].set_ylabel("Current (mA)")
     
-    fig.suptitle(get_hyperparam_title(path), fontsize=15)
+    if do_tit:
+        title = get_hyperparam_title(path, state_names=state_names, param_names=param_names)
+        with open(os.path.join(path, "hyperparam_title.dat"),'w') as data: 
+            data.write(title)
+        print(title)
+
+    # fig.suptitle(get_hyperparam_title(path, state_names=state_names, param_names=param_names), fontsize=15)
     fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
     
     fig.savefig(Path.joinpath( path, "full_plot.pdf"))
@@ -401,7 +421,7 @@ def make_state_plot(path, model="beeler_reuter", use_nn = False):
         axs_falt[s].set_xlabel("Time (ms)")
         axs_falt[s].set_ylabel("Voltage (mV)") #change
     
-    fig.suptitle(get_hyperparam_title(path), fontsize=15)
+    # fig.suptitle(get_hyperparam_title(path, state_names = "m, h, j, Cai, d, f, x1, V".split(", "), param_names = "g_Na, g_Nac, g_s".split(", ")), fontsize=15)
     fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
     
     if use_nn:    
@@ -412,8 +432,49 @@ def make_state_plot(path, model="beeler_reuter", use_nn = False):
     plt.show()
     
 
+def make_state_comb_plot(path, model="beeler_reuter", use_nn = False):
+    """
+    Makes one plot of all the predictions.
+    """
+    
+    sns.set_theme()
+    
+    states = "m, h, j, Cai, d, f, x1, V".split(", ")
+    
+    
+    filename0 = model+".dat"
+    filename1 = model+"_pred.dat"
+    filename2 = "neural_net_pred_best.dat"
+    
+    exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
+    pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
+    nn    = np.loadtxt(os.path.join(path, filename2), delimiter=' ', skiprows=0, dtype=float)
+    
+    y_labels = ["Dimensionless Value"]*3 + ["Consentration (mole/l)"] + ["Dimensionless Value"]*3 + ["Voltage (mV)"]
+    print(y_labels)
+    
+    fig, axs = plt.subplots(4, 2, figsize=(18,25))
+    axs_falt = axs.flatten()
+    
+    for s in range(0,len(states)):
+        l1, = axs_falt[s].plot(exact[:,0], exact[:,s+1])
+        l2, = axs_falt[s].plot(nn[:,0], nn[:,s+1], "g--")
+        l3, = axs_falt[s].plot(pred[:,0], pred[:,s+1], "r--")
+        
+        
+        axs_falt[s].set_title(f"Prediction of {states[s]}.")
+        axs_falt[s].set_xlabel("Time (ms)")
+        axs_falt[s].set_ylabel(y_labels[s]) #change
+    
+    # fig.suptitle(get_hyperparam_title(path), fontsize=15)
+    fig.legend((l1,l2,l3), ("Exact", "NN Pred.", "ODE Pred."), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
+    
+    fig.savefig(Path.joinpath( path, "full_states_comb.pdf"), bbox_inches='tight')
+    
+    plt.show()
+    
 
-def make_comb_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"], non_loc_path=None):
+def make_comb_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"], non_loc_path=None, do_tit=True):
     """
     Makes one plot of the prediction.
     """
@@ -432,8 +493,10 @@ def make_comb_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["
     v_pre, w_pre    = pred[:,states[0]], pred[:,states[1]]
     v_nn, w_nn      = nn[:,states[0]], nn[:,states[1]]
     
-    fig, axs = plt.subplots(1, 2, figsize=(17,7))
+    
+    fig, axs = plt.subplots(1, 2, figsize=(11,4))
     axs_falt = axs.flatten()
+    
     
     # print(t.shape)
     
@@ -461,19 +524,93 @@ def make_comb_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["
     # axs_falt[3].set_ylabel("Current (mA)")
     
     # fig.suptitle(get_hyperparam_title(path), fontsize=15)
-    title = get_hyperparam_title(path)
-    with open(os.path.join(path, "hyperparam_title.dat"),'w') as data: 
-        data.write(title)
-    print(title)
-    # np.savetxt(
-    #         os.path.join(path, "hyperparam_title.dat"), [get_hyperparam_title(path)]
-    #     )
+    if do_tit:
+        title = get_hyperparam_title(path)
+        with open(os.path.join(path, "hyperparam_title.dat"),'w') as data: 
+            data.write(title)
+        print(title)
+        # np.savetxt(
+        #         os.path.join(path, "hyperparam_title.dat"), [get_hyperparam_title(path)]
+        #     )
+        
     fig.legend((l1,l2,l3), ("Exact", "NN Pred.", "ODE Pred."), bbox_to_anchor=(0.512,0.23), loc="center", ncol=1)
     
     if non_loc_path == None:    
-        fig.savefig(Path.joinpath( path, "full_comb_plot.pdf"))
+        fig.savefig(Path.joinpath( path, "full_comb_plot.pdf"), bbox_inches='tight')
     else:
-        fig.savefig(non_loc_path)
+        fig.savefig(non_loc_path, bbox_inches='tight')
+    
+    plt.show()
+    
+    
+
+
+def make_comb_plot_v2(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"], non_loc_path=None, do_tit=True):
+    """
+    Makes one plot of the prediction.
+    """
+    
+    sns.set_theme()
+    
+    filename0 = model+".dat"
+    filename1 = model+"_pred.dat"
+    filename2 = "neural_net_pred_best.dat"
+    
+    exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
+    pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
+    nn    = np.loadtxt(os.path.join(path, filename2), delimiter=' ', skiprows=0, dtype=float)
+    
+    t, v_exe, w_exe = exact[:,0], exact[:,states[0]], exact[:,states[1]]
+    v_pre, w_pre    = pred[:,states[0]], pred[:,states[1]]
+    v_nn, w_nn      = nn[:,states[0]], nn[:,states[1]]
+    
+    
+    fig, axs = plt.subplots(2, 1, figsize=(12,8))
+    axs_falt = axs.flatten()
+    
+    
+    # print(t.shape)
+    
+    l1, = axs_falt[0].plot(t, v_exe, linewidth=2.)
+    l2, = axs_falt[0].plot(t, v_nn, "g--", linewidth=2.)
+    # axs_falt[0].set_title(f"NN's prediction of {state_names[0]} in the best epoch.")
+    
+    # axs_falt[1].plot(t, v_exe)
+    l3, = axs_falt[0].plot(t, v_pre, "r--", linewidth=2.)
+    axs_falt[0].set_title(f"Prediction of {state_names[0]}.")
+    
+    axs_falt[1].plot(t, w_exe, linewidth=2.)
+    axs_falt[1].plot(t, w_nn, "g--", linewidth=2.)
+    # axs_falt[1].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
+    
+    # axs_falt[3].plot(t, w_exe)
+    axs_falt[1].plot(t, w_pre, "r--", linewidth=2.)
+    axs_falt[1].set_title(f"Prediction of {state_names[1]}.")
+    
+    for i in range(2):
+        axs_falt[i].set_xlabel("Time (ms)")
+        # axs_falt[i].grid()
+    axs_falt[0].set_ylabel("Potential (mV)")        
+    axs_falt[1].set_ylabel("Current (mA)")
+    # axs_falt[3].set_ylabel("Current (mA)")
+    
+    # fig.suptitle(get_hyperparam_title(path), fontsize=15)
+    if do_tit:
+        title = get_hyperparam_title(path)
+        with open(os.path.join(path, "hyperparam_title.dat"),'w') as data: 
+            data.write(title)
+        print(title)
+        # np.savetxt(
+        #         os.path.join(path, "hyperparam_title.dat"), [get_hyperparam_title(path)]
+        #     )
+        
+    fig.legend((l1,l2,l3), ("Exact", "NN Pred.", "ODE Pred."), bbox_to_anchor=(0.86,0.515), loc="center", ncol=1)
+    plt.tight_layout()
+    
+    if non_loc_path == None:    
+        fig.savefig(Path.joinpath( path, "full_comb_plot.pdf"), bbox_inches='tight')
+    else:
+        fig.savefig(non_loc_path, bbox_inches='tight')
     
     plt.show()
 
@@ -481,11 +618,13 @@ def make_comb_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["
 def main():
     
     path = Path("fhn_res_clus/fhn_res_s-01_v-a_n0_e40/expe_9")
+    # path = Path("fhn_res\\fitzhugh_nagumo_res_feature_onlyb_2")
     # path = Path("fhn_res/fitzhugh_nagumo_res_test")
     # make_one_plot(path)
     # make_samp_plot(path, states=[1,2])
-    make_comb_plot(path)
-    plot_losses(path, do_test_vals=False, states=[0,1])
+    # make_comb_plot(path, do_tit=True)
+    make_comb_plot_v2(path, do_tit=True)
+    # plot_losses(path, do_test_vals=False, states=[1])
     
     # for dir in os.listdir('./fhn_res/fhn_res_clus'):
     #     path = Path("fhn_res/fhn_res_clus/{}".format(dir))
@@ -502,14 +641,19 @@ def main():
     
     
     
-    # path = Path("br_res/br_res_09")
-    
-    # sns.set_theme()
-    # make_one_plot(path, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
-    # plot_losses(path, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
+    # path = Path("br_res/br_res_st-all_n-0_e80_exe0")
+    # path = Path("br_res/br_res_st-37_n-2_e100_exe2")
+    # sta = range(8)
+    # sta = [7,3]
+
+    sns.set_theme()
+    # make_one_plot( path, "beeler_reuter", states=[8,4], state_names = "m, h, j, Cai, d, f, x1, V".split(", "), param_names = "g_Na, g_Nac, g_s".split(", ") )
+    # # make_one_plot(path, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
+    # plot_losses(path, do_test_vals=False, states=sta, state_names = "m, h, j, Cai, d, f, x1, V".split(", "), param_names = "g_Na, g_Nac, g_s".split(", "), skiprows=3)
     
     # make_state_plot(path)
     # make_state_plot(path, use_nn=True)
+    # make_state_comb_plot(path)
     
     
     

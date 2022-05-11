@@ -4,7 +4,9 @@ Created on Thu Sep  9 14:13:48 2021
 
 @author: benda
 """
+
 from pathlib import Path
+from random import randrange
 import numpy as np
 from scipy.integrate import odeint
 import deepxde as dde
@@ -14,13 +16,14 @@ import time
 import shutil
 import matplotlib.pyplot as plt
 
-from tensorflow.python import debug as tf_debug
+# from tensorflow.python import debug as tf_debug
 
 import beeler_reuter.beeler_reuter_1977_version06 as br_model
 
 from postprocessing import saveplot
 from make_plots import make_plots
-from make_one_plot import make_one_plot, plot_losses, make_state_plot
+from make_one_plot import make_one_plot, plot_losses, make_samp_plot, make_comb_plot
+from evaluate import evaluate
 
 np.random.seed(2)
 
@@ -52,9 +55,9 @@ def beeler_reuter_model(t, params, x0=br_model.init_state_values()):
     return odeint(func, x0, t)
 
 
-def create_observations(data_t, data_y, geom):
+def create_observations(data_t, data_y, geom, savename, observed_states=[0,1]):
     """
-    Generates synthetic data using observations objects. This represents the specific
+    Generates synthetic data using observations objects. This represents the specific 
     timepoints where observations/measurements were made.
 
     Parameters
@@ -80,7 +83,14 @@ def create_observations(data_t, data_y, geom):
     idx = np.random.choice(np.arange(1, n - 1), size=n // 4, replace=False)
     # Add the last point to the list
     idx = np.append(idx, [0, n - 1])
-
+    
+    #select the points and states from y we sampled
+    observalbe_states=np.array(observed_states)
+    samp_y = data_y[idx][:,observalbe_states]
+    np.savetxt(
+        os.path.join(savename, "beeler_reuter_samp.dat"), np.hstack((idx, data_t[idx].ravel(), samp_y.ravel()))
+    )
+    
     # Turn these timepoints into a set of points
     ptset = dde.bc.PointSet(data_t[idx])
     # Create a function that returns true when a point is part of the point set
@@ -88,18 +98,23 @@ def create_observations(data_t, data_y, geom):
 
     # Create the observations by using the point set
     observes = []
-    for i in range(len(data_y[0])):
+    for s in observed_states:    
         obs = dde.DirichletBC(
-            geom, ptset.values_to_func(data_y[idx, i : i + 1]), inside, component=i
+            geom, ptset.values_to_func(data_y[idx, s:s+1]), inside, component=s
         )
         observes.append(obs)
 
     return observes
 
+def get_variable(v, var):
+    low, up = v * 0.2, v * 1.8
+    l = (up - low) / 2
+    v1 = l * tf.tanh(var) + l + low
+    return v1
+    
 
-def create_data(
-    data_t, data_y, var_trainable, var_modifier, scale_func=tf.math.softplus
-):
+def create_data(data_t, data_y, savename, var_trainable, var_modifier, observed_states,
+                scale_func = tf.math.softplus):
     """
     Function that generates all the required data, and sets up all data objects.
 
@@ -126,20 +141,18 @@ def create_data(
 
     # Define the variables and constants in the model
     var_list = []
-    # we want to include the possibility for the variables to be both trainable and constant
+    #we want to include the possibility for the variables to be both trainable and constant
     for i in range(len(var_trainable)):
         if var_trainable[i]:
-            var = (
-                scale_func(tf.Variable(0, trainable=True, dtype=tf.float32))
-                * var_modifier[i]
-            )
+            # var = scale_func(tf.Variable(0, trainable=True, dtype=tf.float32)) * var_modifier[i]
+            var = tf.Variable(1e-4, trainable=True, dtype=tf.float32)
+            #use 1e-4 to avoid divide by zero
+            get_variable(var_modifier[i], var)
         else:
             var = tf.Variable(var_modifier[i], trainable=False, dtype=tf.float32)
-
         var_list.append(var)
 
-    # the ode in tensorflow syntax
-    # @tf.function
+    #the ode in tensorflow syntax
     def ODE(t, y):
 
         E_Na = 50.0
@@ -271,19 +284,20 @@ def create_data(
     # We assume these points are known
     def boundary(x, _):
         return np.isclose(x[0], data_t[-1, 0])
-
+    
     y1 = data_y[-1]
     # Question: Does it matter which point we choose?
-    bcs = []
+    auxs = []
     for i in range(len(y1)):
-        bcs.append(dde.DirichletBC(geom, lambda X: y1[i], boundary, component=i))
+        auxs.append(dde.DirichletBC(geom, lambda X: y1[i], boundary, component=i))
 
-    observes = create_observations(data_t, data_y, geom)
-    data = dde.data.PDE(
+    observes = create_observations(data_t, data_y, geom, savename, observed_states=observed_states)
+    
+    data = dde.data.PDE(  
         geom,
         ODE,
-        [*bcs, *observes],  # list of boundary conditions
-        anchors=data_t,
+        [*auxs, *observes],  # list of boundary conditions
+        anchors=data_t, #τ technically
     )
     return data, var_list
 
@@ -299,7 +313,7 @@ def create_nn(
     do_output_transform=True,
 ):
     """
-    Creates a neural network object.
+    Creates a neural network object. 
 
     Parameters
     ----------
@@ -325,9 +339,10 @@ def create_nn(
     deepxde maps.FNN
         An object for a feed forward neural network.
     """
+
     # Feed-forward neural networks
     net = dde.maps.FNN(
-        layer_size=[1] + [nn_nodes] * nn_layers + [8],
+        layer_size=[1] + [nn_nodes]*nn_layers + [8],
         activation=activation,
         kernel_initializer=kernel_initializer,
     )
@@ -337,12 +352,13 @@ def create_nn(
         Helper function for the feature transformation.
         """
         features = []
-        if do_t_input_transform:  # if we want to include unscaled as well
-            features.append(t)  # [0] = t
+        if do_t_input_transform: #if we want to include unscaled as well
+            features.append(t/999) #[0] = t
 
         for k in range(len(k_vals)):
-            features.append(tf.sin(k_vals[k] * 2 * np.pi * t))
+            features.append( tf.sin(k_vals[k] * 2*np.pi * t))
         return tf.concat(features, axis=1)
+
 
     net.apply_feature_transform(feature_transform)
 
@@ -352,7 +368,6 @@ def create_nn(
         """
         # Weights in the output layer are chosen as the magnitudes
         # of the mean values of the ODE solution
-        # TODO: this might need to change
         return data_y[0] + tf.math.tanh(t) * tf.constant([.1, 1., 1., .001, .1, 1., .1, 100]) * y
         # return data_y[0] + tf.sin(k_vals[0] * 2*np.pi*t) * tf.constant([.1, .1]) * y
 
@@ -362,7 +377,7 @@ def create_nn(
     return net
 
 
-def create_callbacks(var_list, savename, save_every=100):
+def create_callbacks(var_list, savename, save_every=1000):
     """
     Helper function for saving the reults during the training.
     """
@@ -378,7 +393,7 @@ def create_callbacks(var_list, savename, save_every=100):
         var_list,
         period=save_every,
         filename=os.path.join(savename, "variables.dat"),
-        precision=3,
+        precision=6, #this might be too low, increase if necessary
     )
     return [checkpointer, variable]
 
@@ -400,23 +415,23 @@ def default_weights(noise, init_weights=[[1, 1], [1, 1], [1, 1]]):
         Dictionary of the weights.
 
     """
-    # init_weights are the wheights before noise is considered
-    bc_weights = init_weights[1]  # [1, 1]
+    #init_weights are the wheights before noise is considered
+    aux_weights = init_weights[1] # [1, 1]
     if noise >= 0.1:
-        bc_weights = [w * 10 for w in bc_weights]
+        aux_weights = [w * 10 for w in aux_weights]
 
-    data_weights = init_weights[2]  # [1, 1]
+    data_weights = init_weights[2] # [1, 1]
     # Large noise requires small data_weights
     if noise >= 0.1:
         data_weights = [w / 10 for w in data_weights]
 
-    ode_weights = init_weights[0]  # [1, 1]
+    ode_weights = init_weights[0] # [1, 1]
     # Large noise requires large ode_weights
     if noise > 0:
         ode_weights = [10 * w for w in ode_weights]
 
     return dict(
-        bc_weights=bc_weights, data_weights=data_weights, ode_weights=ode_weights
+        aux_weights=aux_weights, data_weights=data_weights, ode_weights=ode_weights
     )
 
 
@@ -430,6 +445,7 @@ def train_model(
     lr=1e-3,
     batch_size=10,
     display_every=100,
+    decay_amount=1e3,
 ):
     """
     Function that actually trains the PINN.
@@ -463,15 +479,13 @@ def train_model(
         DESCRIPTION.
 
     """
+
     # First compile the model with ode weights set to zero
     model.compile(
         "adam",
         lr=lr,
-        loss_weights=[0] * 8 + weights["bc_weights"] + weights["data_weights"],
+        loss_weights=[0] * 8 + weights["aux_weights"] + weights["data_weights"],
     )
-    # model.sess = tf_debug.LocalCLIDebugWrapperSession(model.sess)
-    # model.sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
-    
     # And train
     model.train(
         epochs=int(first_num_epochs),
@@ -484,8 +498,9 @@ def train_model(
         "adam",
         lr=lr,
         loss_weights=weights["ode_weights"]
-        + weights["bc_weights"]
+        + weights["aux_weights"]
         + weights["data_weights"],
+        decay=("inverse time", 1, decay_amount),
     )
 
     # And train
@@ -504,10 +519,10 @@ def get_model_restore_path(restore, savename):
     """
     Helper function for getting the path for when restoring a previous run.
     """
-    # if you want to restore from a previous run
+    #if you want to restore from a previous run
     if restore:
-        # reads form the checkpoint text file
-        with open(os.path.join(savename, "model/checkpoint"), "r") as reader:
+        #reads form the checkpoint text file
+        with open(os.path.join(savename, "model/checkpoint"), 'r') as reader:
             inp = reader.read()
             restore_from = inp.split(" ")[1].split('"')[1]
         return os.path.join(savename, "model", restore_from)
@@ -519,14 +534,19 @@ def create_hyperparam_dict(
     savename,
     first_num_epochs,
     sec_num_epochs,
-    var_trainable,
+    var_trainable, 
     var_modifier,
     lr,
+    lr_decay,
     init_weights,
+    weights,
     k_vals,
     do_output_transform,
     do_t_input_transform,
     batch_size,
+    true_values,
+    noise,
+    observed_states,
 ):
     """
     This function creates a dictionary contianing all the hyperparameters, and
@@ -534,27 +554,31 @@ def create_hyperparam_dict(
     """
 
     dictionary = dict(
-        ode_weights=init_weights[0],
-        bc_weights=init_weights[1],
+        ode_weights=init_weights[0], 
+        aux_weights=init_weights[1], 
         data_weights=init_weights[2],
-        first_num_epochs=first_num_epochs,
+        weights=weights,
+        first_num_epochs=first_num_epochs, 
         sec_num_epochs=sec_num_epochs,
-        var_trainable=var_trainable,
-        var_modifier=var_modifier,
-        k_vals=k_vals,
-        lr=lr,
+        var_trainable=var_trainable, 
+        var_modifier=var_modifier, 
+        true_values=true_values,
+        k_vals=k_vals, 
+        lr=lr, 
+        lr_decay=lr_decay, 
         do_output_transform=do_output_transform,
-        do_t_input_transform=do_t_input_transform,
-        batch_size=batch_size,
+        do_t_input_transform=do_t_input_transform, 
+        batch_size=batch_size, 
+        noise=noise,
+        observed_states=observed_states,
     )
 
-    with open(os.path.join(savename, "hyperparameters.dat"), "w") as data:
-        for key, value in dictionary.items():
-            data.write("%s: %s\n" % (key, value))
-    import pickle  # try this later
-
-    a_file = open( os.path.join(savename, "hyperparameters.pkl"), "wb")
-    pickle.dump(dictionary, a_file)
+    with open(os.path.join(savename, "hyperparameters.dat"),'w') as data: 
+        for key, value in dictionary.items(): 
+            data.write('%s: %s\n' % (key, value))
+    import pickle #try this later
+    a_file = open(os.path.join(savename, "hyperparameters.pkl"), "wb") 
+    pickle.dump(dictionary, a_file)    
     a_file.close()
 
 
@@ -569,9 +593,10 @@ def pinn(
     var_trainable=[True, True, True],
     var_modifier=[0.01, 1e-05, 0.0001],
     lr=1e-2,
-    ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
-    bc_weights=[1] * 8,  # [1, 1, 1, 1, 1, 1, 1, 1],
-    data_weights=[1, 1, 1, 1, 1, 1, 1, 1],
+    init_weights = [[1] * 8, [1] * 8, [1] * 8],
+    # ode_weights=[1, 1, 1, 1, 1, 1, 1, 1],
+    # aux_weights=[1] * 8,  # [1, 1, 1, 1, 1, 1, 1, 1],
+    # data_weights=[1, 1, 1, 1, 1, 1, 1, 1],
     k_vals=[0.013],
     do_output_transform=False,
     do_t_input_transform=True,
@@ -579,6 +604,9 @@ def pinn(
     nn_layers=3,
     nn_nodes=128,
     display_every=1000,
+    true_values=[0.04,3e-05,0.0009],
+    decay_amount=1e3,
+    observed_states=range(8),
 ):
     """
     Function for seting up and solving the PINN.
@@ -595,7 +623,7 @@ def pinn(
     savename : pathlib Path
         Path for saving information.
     restore : Bool, optional
-        Wheter we should restore the NN from a previous run. The default is False.
+        Wether we should restore the NN from a previous run. The default is False.
     first_num_epochs : int, optional
         Number of epochs to train without ODE-loss. The default is int(1e3).
     sec_num_epochs : int, optional
@@ -609,11 +637,11 @@ def pinn(
     init_weights : list, optional
         List of weights before noise is considered. The default is [[1, 1], [1, 1], [1, 1]].
     do_t_input_transform : Bool, optional
-        Wheter we should use t in input transformation. The default is True.
+        Wether we should use t in input transformation. The default is True.
     k_vals : list, optional
         Values for the input transformation. The default is [0.0173].
     do_output_transform : Bool, optional
-        Wheter we should use the output transformation. The default is True.
+        Wether we should use the output transformation. The default is True.
     batch_size : int, optional
         Batch size for minibatching. The default is 10.
     nn_layers : Int, optional
@@ -630,9 +658,7 @@ def pinn(
 
     """
 
-    init_weights = [ode_weights, bc_weights, data_weights]
-
-    data, var_list = create_data(data_t, data_y, var_trainable, var_modifier)
+    data, var_list = create_data(data_t, data_y, savename, var_trainable, var_modifier, observed_states=observed_states)
 
     net = create_nn(
         data_y,
@@ -642,8 +668,7 @@ def pinn(
         nn_layers=nn_layers,
         nn_nodes=nn_nodes,
     )
-    model = dde.Model(data, net)
-    
+    model = dde.Model(data, net)    
 
     callbacks = create_callbacks(var_list, savename, display_every)
 
@@ -651,22 +676,24 @@ def pinn(
     model_restore_path = get_model_restore_path(restore, savename)
 
     create_hyperparam_dict(
-        savename,
-        first_num_epochs,
-        sec_num_epochs,
-        var_trainable,
-        var_modifier,
-        lr,
-        init_weights,
-        k_vals,
-        do_output_transform,
-        do_t_input_transform,
-        batch_size,
+        savename, 
+        first_num_epochs, 
+        sec_num_epochs, 
+        var_trainable, 
+        var_modifier, 
+        lr, 
+        decay_amount, 
+        init_weights, 
+        weights, 
+        k_vals, 
+        do_output_transform, 
+        do_t_input_transform, 
+        batch_size, 
+        true_values, 
+        noise, 
+        observed_states,
     )
     
-    # sess = tf_debug.LocalCLIDebugWrapperSession(tf.Session())
-    # sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
-
     losshistory, train_state = train_model(
         model,
         weights,
@@ -677,15 +704,15 @@ def pinn(
         lr=lr,
         batch_size=batch_size,
         display_every=display_every,
+        decay_amount=decay_amount,
     )
     
-    # train_state.best_y = np.zeros((2000,8))
     saveplot(losshistory, train_state, issave=True, isplot=True, output_dir=savename)
     # If the pinn for some reason can't find any states (all predictions get nan) this will return 
     # an error because best_y will be None. Don't think that's a big issue.
     # It also returns an error because the model/checkpoint folder isn't created.
     
-    
+
     var_list = [model.sess.run(v) for v in var_list]
 
     nn_pred = model.predict(data_t)
@@ -734,7 +761,9 @@ def generate_data(savename, true_values, t_vars, noise=0.0):
     if noise > 0:
         std = noise * y.std(0)
         y[1:-1, :] += np.random.normal(0, std, (y.shape[0] - 2, y.shape[1]))
-        np.savetxt(os.path.join(savename, "beeler_reuter_noise.dat"), np.hstack((t, y)))
+        np.savetxt(
+            os.path.join(savename, "beeler_reuter_noise.dat"), np.hstack((t, y))
+            )
     return t, y
 
 
@@ -743,11 +772,9 @@ def make_copy_of_program(savename):
     From https://stackoverflow.com/questions/23321100/best-way-to-have-a-python-script-copy-itself/49210778
     """
     # generate filename with timestring
-    copied_script_name = (
-        time.strftime("%Y-%m-%d_%H%M") + "_" + os.path.basename(__file__)
-    )
+    copied_script_name = (time.strftime("%Y-%m-%d_%H%M") + "_" + os.path.basename(__file__))
     # copy script
-    shutil.copy(__file__, os.path.join(savename, copied_script_name))
+    shutil.copy(__file__, os.path.join( savename, copied_script_name) )
 
 
 def main():
@@ -757,7 +784,10 @@ def main():
 
     start = time.time()
     noise = 0.0
-    savename = Path("br_res/br_res_12")
+    epochs = 1e6
+    states = range(8)
+
+    savename = Path("br_res/br_res_st-{}_n-{}_e{}".format("all", int(noise*100), int(epochs/1e4)))
     # Create directory if not exist
     savename.mkdir(exist_ok=True)
 
@@ -767,6 +797,11 @@ def main():
     t_vars = [0, 1999, 2000]
 
     t, y = generate_data(savename, true_values, t_vars, noise)
+    
+    ode_weights = [1e-1, 1e-1, 1e-1, 1e-1, 1, 1, 1e-1, 1e-1]
+    aux_weights = [1e-4, 1, 1e2, 1e0, 1e-4, 1e2, 1e3, 1e3]
+    data_weights = np.array([1e1, 1e0, 1e0, 1e0, 1e-1, 1e0, 1e0, 1e-3])[np.array(states)].tolist()
+    init_weights = [ode_weights, aux_weights, data_weights]
 
     # Train
     var_list = pinn(
@@ -775,8 +810,8 @@ def main():
         noise,
         savename,
         restore=False,
-        first_num_epochs=1000,
-        sec_num_epochs=int(1e5),
+        first_num_epochs=2000,
+        sec_num_epochs=int(epochs),
         # E_Na, g_Na, g_Nac, g_s, IstimAmplitude, IstimEnd, IstimPeriod,
         # IstimPulseDuration, IstimStart, C
         var_trainable=[
@@ -786,27 +821,30 @@ def main():
         ],
         var_modifier=[0.01, 1e-05, 0.0001],
         #m, h, j, Cai, d, f, x1, V
-        ode_weights=[1e-1, 1e-1, 1e-1, 1e-1, 1, 1, 1e-1, 1e-1],
-        bc_weights=[1e-4, 1, 1e2, 1e0, 1e-4, 1e2, 1e3, 1e3],
-        data_weights=[1e1, 1e0, 1e0, 1e0, 1e-1, 1e0, 1e0, 1e-3],
+        init_weights=init_weights,
         k_vals=[1 / 1000],  # [0.0173], # tf.sin(k * 2*np.pi*t),
         do_output_transform=True,
         do_t_input_transform=False,
         # batch_size=50,
-        lr=1e-4,
+        lr=1e-2,
+        decay_amount=1e-4,
         nn_layers=3,
         nn_nodes=128,
+        true_values=true_values,
         display_every=int(1e3),
+        observed_states=states,
     )
 
     params = [true_values[0]] + var_list + true_values[4:].tolist() #[0.5, 50000.0,1000.0,2.0,10.0, 0.01]
     
     # Prediction
     pred_y = beeler_reuter_model(np.ravel(t), params)
-    np.savetxt(os.path.join(savename, "beeler_reuter_pred.dat"), np.hstack((t, pred_y)))
+    np.savetxt(
+        os.path.join(savename, "beeler_reuter_pred.dat"), np.hstack((t, pred_y))
+    )
 
     runtime = time.time() - start
-    print("\n\nTotal runtime: {}".format(runtime))
+    print("\n\nTotal runtime: {} sec".format(runtime))
 
     print("Original values: ")
     print(
@@ -818,27 +856,27 @@ def main():
         f"(g_Na, g_Nac, g_s) = {var_list}\n"
     )
 
-    # fig, ax = plt.subplots(2, 1, sharex=True)
-    # ax[0].set_title("$v$")
-    # ax[0].plot(t, y.T[0], label="True")
-    # ax[0].plot(t, pred_y.T[0], label="Predicted")
+    fig, ax = plt.subplots(2, 1, sharex=True)
+    ax[0].set_title("$V$")
+    ax[0].plot(t, y.T[8], label="True")
+    ax[0].plot(t, pred_y.T[8], label="Predicted")
 
-    # ax[1].set_title("$w$")
-    # ax[1].plot(t, y.T[1], label="True")
-    # ax[1].plot(t, pred_y.T[1], label="Predicted")
+    ax[1].set_title("$Cai$")
+    ax[1].plot(t, y.T[4], label="True")
+    ax[1].plot(t, pred_y.T[4], label="Predicted")
 
-    # for axi in ax:
-    #     axi.legend()
-    #     axi.grid()
+    for axi in ax:
+        axi.legend()
+        axi.grid()
 
-    # fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
-    # plt.show()
+    fig.savefig(savename.joinpath("predicted_vs_true.pdf"))
+    plt.show()
 
-    make_plots(savename, "beeler_reuter") #todo: update
-    make_one_plot(savename, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
-    plot_losses(savename, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
-    make_state_plot(savename)
-    make_state_plot(savename, use_nn=True)
+    # make_plots(savename, "beeler_reuter") #todo: update
+    # make_one_plot(savename, "beeler_reuter", states=[8,4], state_names = ["V", "Cai"])
+    # plot_losses(savename, states = "m, h, j, Cai, d, f, x1, V".split(", "), skiprows=1)
+    # make_state_plot(savename)
+    # make_state_plot(savename, use_nn=True)
 
 
 def plot_features():
@@ -848,7 +886,7 @@ def plot_features():
     y = beeler_reuter_model(t, params)
     fig, ax = plt.subplots()
     ax.plot(t, y[:, -1])
-    # ax.twinx().plot(t, np.sin(2 * np.pi * (1 / 1000) * t))
+    ax.plot(t, 82*np.cos(2 * np.pi * (1 / 1000) * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
     # ax.plot(t, np.sin(0.0173 * 2 * np.pi * t))

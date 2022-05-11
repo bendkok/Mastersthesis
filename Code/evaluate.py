@@ -91,7 +91,7 @@ def evaluate(path, model="fitzhugh_nagumo", true_param = [-0.3, 1.1, 20, 0.23], 
     with open(os.path.join(path, "evaluation.dat"),'w') as data: 
         for key, value in results.items(): 
             data.write('%s: %s\n' % (key, value))
-            
+    
     return param_mre
     # if param_mre > .01:
     #     return True

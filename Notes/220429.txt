@@ -1,0 +1,109 @@
+As an example of a finally good plot I used \fhn_res_clus\fhn_res_s-01_v-a_n0_e40\expe_9
+
+Need to find plots as examples of other stuff as well.
+
+Does σ from FIM not actually count as practical identifiability?
+Do we need to check the singularity of FIM instead?
+
+What's left to write:
+	abstract
+introduction
+	small introduction for each chapter
+	expand on the history of AP models
+	find examples of more cardiac/exitable cell models ?
+find examples of machine learning stuff
+   write about Historical problems with Fitting Cardiac Models - sec. 5.2 quite important - ish done, probably good enough
+	history of PINNs
+	consider moving Identifiability.
+	write how to do structural identifiability
+expand on alternative methods of Practical Identifiability
+decide what to do about Implementation of PINN, move, remove, expand on...
+	check how He-init. does biases - Think it's just 0
+	update create_plots_for_thesis.py with bar and box plots
+update hyp.para. for bad results
+figures for lr
+	say something about search range
+	move search range to only w
+finish res
+	write Fitting More Parameters
+	write Only v Known
+	write Only w Known (kinda, not really sure what to say there)
+	write A Non-Identifiable Test
+	write about outside timedomain
+	write conclusion
+   make better plots of results, inferred value and STD especially
+	make abreviations for identifiability
+	insert abreviations for identifiability
+	make table for results for the finanlly good example
+	make sure all Iext use I_{\text{ext}}
+write appendix stuff
+finnish List of Notation and Abbreviations
+double check that hyp.para. is correct, escpecially lr-decay
+insert citations in conlusions chapter
+	write propper names in figure and table brackets [] for list of figures and tables stuff
+think more about the order of sections and stuff
+in future work add extrapolating to more cells at once - see projcet description for example
+also sparser data and for more complex models we can see how data for a few states can identify more
+also decrease the amount of points in big τ. 
+
+
+	write about how to use DeepXDE ?
+	write about BR ?
+	write BR res ?
+	Structural Identifiability of BR?
+   get figures in methods sections ?  -  Could maybe have something else here
+	plots of exe. cell models?
+	figure of PINN structure?
+in appendix, what happens for feature transform layer with unscaled t ?
+maybe have figure for multiple feature transforms ?
+restructure The Simplest Case for SBINN to introduce some concepts before they are used, not after. maybe?
+elaboarte on why use lr decay?
+
+
+
+In Limitations I've written some things that are lim. with PINNs and some that are with the study.
+Found a bug in the code. When defining variables I call get_variable but didn't asign it.
+Wrote a section about unsuccessfully fitting BR.
+
+What should I have in the Introduction?
+Need to make new figures
+What to do about hyperparameters? 
+Change title?
+Github stuff?
+Does some results need to be rerun?
+Some parts might need elaborating. 
+Also some smaller things, like inserting refferences/examples, get consistent notation, list of notation, etc.
+Should some parts be moved?
+Code for file copying?
+
+
+
+
+
+
+
+	Introduction?
+   some comment on why FHN  -  enough? 
+	short summary of why we looked at BR, and why we are not including the res aomngst the others
+more examples?
+	should probably use loss instead of cost. or not
+	continuation paper?
+	sobie use regression
+	can't use SBINN figure, can probably find one online
+	can maybe be made using inkscape or tikz, latexit
+	can expand on summary of hyperparameters, expand each bulletpoint 
+	show hyp.para. as a two colomn table
+	make the text in figures bigger
+	use Cref instead of ref
+	eqref for equations
+	figure 5.10 stetch out and place on top of each other, thicker lines
+	fig. 5.12 use same line, have one line sepearting them instead
+
+
+
+
+What sort of colors should I use for \ref and stuff?
+
+
+
+

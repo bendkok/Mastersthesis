@@ -1,0 +1,91 @@
+Historical problems with Fitting Cardiac Models
+sec. 5.2 quite important 
+Nelder and Mead (1965) simplex algorithm
+
+"For ion-channel kinetics, state transition rates k can be written as k = Aexp(BV) or sometimes k = exp(C + DV),
+where A, B, C, D are parameters and V is voltage. In these cases, scalings of θ = {ln(A), B} work well (Beattie et al.,
+2018) or, equivalently, an untransformed θ = {C, D} (Teed & Silva, 2016). A detailed comparison of optimization on
+transformed parameter spaces in ion-channel calibration can be found in the supplement to Clerx, Beattie, et al. (2019),
+as well as some advice on constraints for these rates."
+
+
+
+Introduction:
+aim of thesis
+background/motivation
+some overview of exe.cell models?
+some overview of pinns?
+
+
+
+
+
+
+
+
+
+
+
+Disscussions:
+We have seen that PINNs can be very successful at fitting the FitzHugh-Nagumo model to data. Both when we only try to fit one variable, and when we try to fit all of them. 
+It also was able to handle low to medium levels of noise
+
+Very sucesfull for FHN with all states known when fitting a
+didn't struggle much for low levels of noise, but did for 10%
+when fitting all para somewhat worse, got better esults when we changed the lr-decay
+still struggled for 10%
+slightly worse results for only v known, fitting a,b,tau
+could probably do even better here with different hyp.para.
+got expected when fitting all para. with only v known
+stuggled alot with only w, not sure why
+outside domain shows where PINN could be more usefull than regular NN
+SIA was quite usefull
+in genral haven't gotten much out of PIA, only really confirming that good res are good and bad are bad
+
+fitting br unsucessfull so far.
+could maybe look further into this
+transcendental components maybe the problem?
+
+
+Limitations:
+Model complexity and realism
+choosing hyperparameters (tuning?)
+	amount of effort it takes to get good hyperparameters
+runtime/amount of epochs
+evaluation methods
+choise of fitted parameters
+meassurable states
+synthetic data
+	the way noise is made?
+models might not be reflective real life conditions/conditions in the body (in vivo?)
+	inexact meassuring
+amount of knowledge we have about the model beforehand could influence how good the fit is, but if we assumed an unrealistic amount of things it woun't be representative of real life examples
+amount of noise
+	it struggeled at 10%, which is large, but not unrealistic
+Physiological something or other
+SIA for BR
+
+
+
+Conclusions:
+SBINN can give excelent results, but tuning it to the point where it does can be hard
+
+
+
+Future work:
+method should be attempted at more complex, realistic models
+also with real data
+hyp.para. tuning could be useful
+maybe try different NN, like CNN instead of FNN
+other methods for PIA could maybe be more useful
+
+
+
+
+Appendices:
+failed attempt at fitting br
+explanation of using deepxde
+additional figures/tables?
+hyperparameters?
+runtime? 
+

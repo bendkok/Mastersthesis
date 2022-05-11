@@ -52,6 +52,7 @@ def get_data(path):
         
         with open(os.path.join(cur_path, "pra_ident.pkl"), "rb") as a_file:
             pra_data = pickle.load(a_file)
+            # pi_vals.append(pra_data["err"])
             pi_vals.append(pra_data["lowerbound"])
         
     
@@ -62,7 +63,7 @@ def get_data(path):
     return inf_vals, re_vals, pi_vals, tra_para
     
 
-def pros_data(stat = '0', para = 'abt', noises=[0,1,2,5,10]):
+def pros_data(stat = '0', para = 'abt', noises=[0,1,2,5,10], epe=40, lr=""):
     
     # noises = [0,1,2,5,10]
     inf_vals = []
@@ -72,7 +73,12 @@ def pros_data(stat = '0', para = 'abt', noises=[0,1,2,5,10]):
     
     for n in noises:
         
-        inf_val, re_val, pi_val, tra_para = get_data(Path("fhn_res_clus/fhn_res_s-{}_v-{}_n{}_e40".format(stat, para, n)))
+        if lr == "0":
+            inf_val, re_val, pi_val, tra_para = get_data(Path("fhn_res_clus_lr/fhn_res_s-{}_v-{}_n{}_e{}".format(stat, para, n, epe)))
+            # print(lr)
+        else:
+            inf_val, re_val, pi_val, tra_para = get_data(Path("fhn_res_clus/fhn_res_s-{}_v-{}_n{}_e{}".format(stat, para, n, epe)))
+            # print("Not lr")
         
         inf_vals.append(inf_val)
         re_vals.append(re_val)
@@ -85,44 +91,47 @@ def pros_data(stat = '0', para = 'abt', noises=[0,1,2,5,10]):
     return inf_vals, re_vals, pi_vals, tra_para 
 
 
-def run_make_plots(stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], do_scatter=False):
+def run_make_plots(stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], do_scatter=False, epe=40, lr=""):
     
-    inf_vals, re_vals, pi_vals, tra_para = pros_data(stat, para, noises=noises)
+    inf_vals, re_vals, pi_vals, tra_para = pros_data(stat, para, noises=noises, epe=epe, lr=lr)
         
-    make_inf_plot(inf_vals, tra_para, stat = stat, para = para, save=save, noises=noises)
-    make_re_plot(re_vals, tra_para, stat = stat, para = para, save=save, noises=noises, do_scatter=do_scatter)
-    make_pi_plot(pi_vals, tra_para, stat = stat, para = para, save=save, noises=noises)
+    make_inf_plot(inf_vals, tra_para, stat = stat, para = para, save=save, noises=noises, do_scatter=do_scatter, epe=epe, lr=lr)
+    
+    make_re_plot(re_vals, tra_para, stat = stat, para = para, save=save, noises=noises, do_scatter=do_scatter, epe=epe, lr=lr)
+    
+    make_pi_plot(pi_vals, tra_para, stat = stat, para = para, save=save, noises=noises, do_scatter=do_scatter, epe=epe, lr=lr)
 
     
-def make_inf_plot(inf_vals, tra_para, stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], non_loc_path=None):
+def make_inf_plot(inf_vals, tra_para, stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], non_loc_path=None, do_scatter=False, epe=40, lr=""):
     
     pos_paras=['a','b','τ','I_ext']
     
     
-    
-    # inf_vals = np.array(inf_vals[1:])
-    # tmp = np.zeros((len(inf_vals), *inf_vals[1].shape))
-    
-    # for i in range(len(inf_vals)):
-    #     tmp[i] = inf_vals[i]
-    
-    # inf_vals = tmp
-    
-    
     inf_mean = np.array([np.mean(inf_vals[i], axis=0) for i in range(len(inf_vals)) ])
     inf_std = np.array([np.std(inf_vals[i], axis=0) for i in range(len(inf_vals)) ])
-    # inf_std = np.std(inf_vals, axis=1)
-    # print(inf_vals.shape, inf_mean.shape, inf_std.shape, len(noises), stat, para)
     
     noises_str = ['{}%'.format(no) for no in noises]
     
+    if do_scatter:
+        cols = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+        for i in range(inf_mean.shape[1]):    
+            for j in range(inf_mean.shape[0]):    
+                plt.scatter(np.ones(len(inf_vals[j][:,i].ravel()))*j + (i*.15), inf_vals[j][:,i].ravel(), c=cols[i])
+        # plt.yscale('symlog')
+        if inf_mean.shape[1]>1:    
+            plt.yscale('symlog')
+        plt.show()
+    
+    
     grid_vals = np.arange(len(inf_mean), dtype=float)
-    
-    
     width = np.min(np.diff(grid_vals))/(inf_mean.shape[1]+1)
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+        item.set_fontsize(14)
+        
     
     bars = []
     inf_paras = np.array(pos_paras)[np.where(tra_para)[0]]
@@ -147,50 +156,41 @@ def make_inf_plot(inf_vals, tra_para, stat = '0', para = 'abt', save=False, nois
     ax.set_ylabel('Inferred value')
     if inf_mean.shape[1]>1:    
         ax.set_yscale('symlog')
-    ax.legend(loc='best', ncol=inf_mean.shape[1])
+    ax.legend(loc='best', ncol=inf_mean.shape[1], fontsize=14)
     
     if save:
         if non_loc_path==None:
-            plt.savefig("bar_plots/s-{}_v-{}_inf.pdf".format(stat, para), bbox_inches='tight')
+            plt.savefig("bar_plots/s-{}_v-{}_e-{}_inf{}.pdf".format(stat, para, epe, lr), bbox_inches='tight')
         else:
             plt.savefig(non_loc_path, bbox_inches='tight')
     plt.show()
     
 
-def make_re_plot(re_vals, tra_para, stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], do_scatter=False, non_loc_path=None):
+def make_re_plot(re_vals, tra_para, stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], do_scatter=False, non_loc_path=None, epe=40, lr=""):
     
     pos_paras=['a','b','τ','I_ext']
-    
-    
-    # print(re_vals)
-    
+
     re_mean = np.array([np.mean(re_vals[i], axis=0) for i in range(len(re_vals)) ])
     re_std = np.array([np.std(re_vals[i], axis=0) for i in range(len(re_vals)) ])
-    # re_mean = np.mean(re_vals, axis=1)
-    # re_std = np.std(re_vals, axis=1)
-    # print(re_vals.shape, re_mean.shape, re_std.shape, len(noises))
+
     
     do_plot = True
-    for i in range(len(re_std)):
-        for j in range(len(re_std[i])):
-            if re_std[i,j] > re_mean[i,j]:
-                print(stat, para, "{}%".format(noises[i]))
-                print(re_vals[i][:,j])
-                print(re_vals.shape, re_mean.shape, re_std.shape)
-                do_plot=True
+    # for i in range(len(re_std)):
+    #     for j in range(len(re_std[i])):
+    #         if re_std[i,j] > re_mean[i,j]:
+    #             print(stat, para, "{}%".format(noises[i]))
+    #             print(re_vals[i][:,j])
+    #             print(re_vals.shape, re_mean.shape, re_std.shape)
+    #             do_plot=True
     
     
-    # if do_plot and do_scatter:
-    #     # print(re_mean.shape, re_vals.shape, [re_vals[i].shape for i in range(len(re_vals))])
-    #     print(re_mean.shape)
-    #     cols = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
-    #     for i in range(re_mean.shape[1]):    
-    #         for j in range(re_mean.shape[0]):    
-    #             # plt.scatter(range(len(re_vals[j,:,i])), re_vals[j,:,i].ravel(), c=cols[i])
-    #             # plt.scatter(np.ones(len(re_vals[j,:,i].ravel()))*j + (i*.15), re_vals[j,:,i].ravel(), c=cols[i])
-    #             plt.scatter(np.ones(len(re_vals[j][:,i].ravel()))*j + (i*.15), re_vals[j][:,i].ravel(), c=cols[i])
-    #     plt.yscale('log')
-    #     plt.show()
+    if do_plot and do_scatter:
+        cols = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+        for i in range(re_mean.shape[1]):    
+            for j in range(re_mean.shape[0]):    
+                plt.scatter(np.ones(len(re_vals[j][:,i].ravel()))*j + (i*.15), re_vals[j][:,i].ravel(), c=cols[i])
+        plt.yscale('log')
+        plt.show()
                 
     
     noises_str = ['{}%'.format(no) for no in noises]
@@ -202,6 +202,9 @@ def make_re_plot(re_vals, tra_para, stat = '0', para = 'abt', save=False, noises
     if do_plot:
         fig = plt.figure()
         ax = fig.add_subplot(111)
+        for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+                     ax.get_xticklabels() + ax.get_yticklabels()):
+            item.set_fontsize(14)
         
         bars = []
         re_paras = np.array(pos_paras)[np.where(tra_para)[0]]
@@ -216,7 +219,7 @@ def make_re_plot(re_vals, tra_para, stat = '0', para = 'abt', save=False, noises
             multi = -1
         
         for b in range(re_mean.shape[1]):    
-            bars.append(ax.boxplot(grid_vals+(width*(b+multi)), re_mean[:,b], width, yerr=re_std[:,b], 
+            bars.append(ax.bar(grid_vals+(width*(b+multi)), re_mean[:,b], width, yerr=re_std[:,b], 
                                capsize=4, label=re_paras[b]))
         
         ax.set_xticks(grid_vals + width / 2)
@@ -224,38 +227,56 @@ def make_re_plot(re_vals, tra_para, stat = '0', para = 'abt', save=False, noises
         ax.set_xlabel('Noise level')
         ax.set_ylabel('Relative error')
         ax.set_yscale('log')
-        ax.legend(loc='best', ncol=re_mean.shape[1])
+        ax.legend(loc='best', ncol=re_mean.shape[1], fontsize=14)
         
         if save:
             if non_loc_path==None:
-                plt.savefig("bar_plots/s-{}_v-{}_re.pdf".format(stat, para), bbox_inches='tight')
+                plt.savefig("bar_plots/s-{}_v-{}_e-{}_re{}.pdf".format(stat, para, epe, lr), bbox_inches='tight')
             else:
                 plt.savefig(non_loc_path, bbox_inches='tight')
         plt.show()
 
 
 
-def make_pi_plot(pi_vals, tra_para, stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], non_loc_path=None):
+def make_pi_plot(pi_vals, tra_para, stat = '0', para = 'abt', save=False, noises=[0,1,2,5,10], non_loc_path=None, do_scatter=False, epe=40, lr=""):
     
     pos_paras=['a','b','τ','I_ext']
     
-    
-    # print(re_vals)
+    # print(pi_vals.shape, [pi_vals[i].shape for i in range(5)])
     
     pi_mean = np.array([np.mean(pi_vals[i], axis=0) for i in range(len(pi_vals)) ])
     pi_std = np.array([np.std(pi_vals[i], axis=0) for i in range(len(pi_vals)) ])
-    # pi_mean = np.mean(pi_vals, axis=1)
-    # pi_std = np.std(pi_vals, axis=1)
-    # print(pi_vals.shape, pi_mean.shape, pi_std.shape, len(noises))
+    
+    for i in range(pi_vals.shape[0]):
+        for j in range(pi_vals.shape[2]):
+            pi_curr = pi_vals[i,:,j]
+            pi_curr = pi_curr[~np.isinf(pi_curr)]
+            pi_mean[i,j] = np.mean(pi_curr)
+            pi_std[i,j] = np.std(pi_curr)
+    
+    # print(pi_mean.shape)
+    # print(pi_mean)
     
     noises_str = ['{}%'.format(no) for no in noises]
     
-    grid_vals = np.arange(len(pi_mean), dtype=float)
+    if do_scatter:
+        cols = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red']
+        for i in range(pi_mean.shape[1]):    
+            for j in range(pi_mean.shape[0]):    
+                plt.scatter(np.ones(len(pi_vals[j][:,i].ravel()))*j + (i*.15), pi_vals[j][:,i].ravel(), c=cols[i])
+        plt.yscale('log')
+        plt.show()
         
+        
+    
+    grid_vals = np.arange(len(pi_mean), dtype=float)
     width = np.min(np.diff(grid_vals))/(pi_mean.shape[1]+1)
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+        item.set_fontsize(14)
     
     bars = []
     pi_paras = np.array(pos_paras)[np.where(tra_para)[0]]
@@ -278,27 +299,32 @@ def make_pi_plot(pi_vals, tra_para, stat = '0', para = 'abt', save=False, noises
     ax.set_xlabel('Noise level')
     ax.set_ylabel('Lowerbound STD')
     ax.set_yscale('log')
-    ax.legend(loc='best', ncol=pi_mean.shape[1])
+    ax.legend(loc='best', ncol=pi_mean.shape[1], fontsize=14)
     
     if save:
         if non_loc_path==None:
-            plt.savefig("bar_plots/s-{}_v-{}_pi.pdf".format(stat, para), bbox_inches='tight')
+            plt.savefig("bar_plots/s-{}_v-{}_e-{}_pi{}.pdf".format(stat, para, epe, lr), bbox_inches='tight')
         else:
             plt.savefig(non_loc_path, bbox_inches='tight')
     plt.show()
     
+    # print(pi_mean)
     
     
 
 def main():
     
-    run_make_plots(stat = '0', para = 'b', save=True, do_scatter=True)
-    run_make_plots(stat = '0', para = 'bt', save=True, do_scatter=True)
-    run_make_plots(stat = '0', para = 'abt', save=True, do_scatter=True)
+    # run_make_plots(stat = '0', para = 'b', save=True, do_scatter=True)
+    # run_make_plots(stat = '0', para = 'bt', save=True, do_scatter=True)
+    # run_make_plots(stat = '0', para = 'abt', save=True, do_scatter=True)
+    
+    # run_make_plots(stat = '01', para = 'a', save=True, do_scatter=True)
+    # run_make_plots(stat = '01', para = 'ab', save=True, do_scatter=True)
+    # run_make_plots(stat = '01', para = 'abtI', save=True, do_scatter=True)
+    # run_make_plots(stat = '01', para = 'abtI', save=True, do_scatter=True, epe=80, lr="0")
+    run_make_plots(stat = '1', para = 'abtI', save=True, do_scatter=False, epe=80)
+    
     # run_make_plots(stat = '0', para = 'abtI', save=True, noises=[0])
-    run_make_plots(stat = '01', para = 'a', save=True, do_scatter=True)
-    run_make_plots(stat = '01', para = 'ab', save=True, do_scatter=True)
-    run_make_plots(stat = '01', para = 'abtI', save=True, do_scatter=True)
 
 if __name__ == "__main__":
     main()

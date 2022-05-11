@@ -254,8 +254,10 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
     def param_change(params = params, param_names = ["a","b","tau","Iext"], tar=[-.3, 1.1, 20, 0.23]):       
         #plots the change in the prediction of the ode-params.
         for p in params:
-            plt.plot(data4[1:,0], data4[1:,p+1], label="Inf. {}".format(param_names[p]))
-            plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
+            # plt.plot(data4[1:,0], data4[1:,p+1], label="Inf. {}".format(param_names[p]))
+            plt.plot(data4[int(len(data4)/2):,0], data4[int(len(data4)/2):,p+1], label="Inf. {}".format(param_names[p]))
+            # plt.plot(data4[1:,0], np.ones(len(data4[1:,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
+            plt.plot(data4[int(len(data4)/2):,0], np.ones(len(data4[int(len(data4)/2):,0]))*tar[p], "--", label="Tar. {}".format(param_names[p]))
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Value")
@@ -293,7 +295,7 @@ def make_plots(path = Path("fhn_res/fitzhugh_nagumo_res"), model="fitzhugh_nagum
             plt.legend(loc="best")
             plt.xlabel("Epoch")
             plt.ylabel("Relative Error")
-            # plt.yscale("log")
+            plt.yscale("log")
             plt.title("Change in Relative Error for {}".format(param_names[p]))
             # plt.savefig(Path.joinpath( path, "plot_rechange_{}.pdf".format(param_names[p])), bbox_inches='tight')
             if non_loc_path == None:    
@@ -348,4 +350,4 @@ if __name__ == "__main__":
     #     params = np.where(data['var_trainable'])[0]
         
     #     make_plots(path = path, params=params)
-    make_plots(Path("fhn_res_clus/fhn_res_s-01_v-a_n0_e40/expe_9"), params=[0])
+    make_plots(Path("fhn_res_clus/fhn_res_s-01_v-abtI_n0_e80/expe_9"), params=[0,1,2,3], do_param_change=True, do_re_change=False)
