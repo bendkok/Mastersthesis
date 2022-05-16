@@ -35,6 +35,15 @@ def bad_figs():
     
     path2 = Path("fhn_res/fitzhugh_nagumo_res_feature_onlyb_6")
     make_comb_plot(path2, non_loc_path="plots_for_thesis/bad_res/corr_k.pdf", do_tit=False)
+    
+    path3 = Path("fhn_res/fitzhugh_nagumo_res_bas10_2_165")
+    make_comb_plot(path3, non_loc_path="plots_for_thesis/bad_res/low_lr.pdf", do_tit=False)
+    
+    path4 = Path("fhn_res/fitzhugh_nagumo_res_a_21")
+    make_comb_plot(path4, non_loc_path="plots_for_thesis/bad_res/high_lr.pdf", do_tit=False)
+    
+    path5 = Path("fhn_res/fitzhugh_nagumo_res_a_18")
+    make_comb_plot(path5, non_loc_path="plots_for_thesis/bad_res/bad_lr_decay.pdf", do_tit=False)
 
 
 
@@ -150,6 +159,69 @@ def plot_phase():
         
     plt.savefig("plots_for_thesis/fhn_phase.pdf", bbox_inches='tight')
     plt.show()
+    
+def plot_phase2():
+    t = np.linspace(0, 999, num=1000)
+    y0 = fitzhugh_nagumo_model(t)
+    y1 = fitzhugh_nagumo_model(t, a=-.27, b=1., tau=18, Iext=.25)
+    y2 = fitzhugh_nagumo_model(t, a=-.35, b=1.3, tau=25, Iext=.3)
+    y3 = fitzhugh_nagumo_model(t, a=-.27, b=1.3, tau=18, Iext=.3)
+
+
+    fig, axs = plt.subplots(1,4, figsize=(19,4), sharex=True, sharey=True)
+    ax = axs.flatten()
+    ax[0].plot(y0[:,0], y0[:,1], label=r"$a = -0.3,$ $b = 1.1,$"+"\n"+r"$\tau = 20,$ $I_{ext} = 0.23$")
+    ax[1].plot(y1[:,0], y1[:,1], label=r"$a = -0.27,$ $b = 1.0,$"+"\n"+r"$\tau = 18,$ $I_{ext} = 0.25$")
+    ax[2].plot(y2[:,0], y2[:,1], label=r"$a = -0.35,$ $b = 1.3,$"+"\n"+r"$\tau = 25,$ $I_{ext} = 0.3$")
+    ax[3].plot(y3[:,0], y3[:,1], label=r"$a = -0.27,$ $b = 1.3,$"+"\n"+r"$\tau = 18,$ $I_{ext} = 0.3$")
+    
+    fig.subplots_adjust(wspace=.02)
+    
+    tits = [r"$a = -0.3,$ $b = 1.1,$"+"\n"+r"$\tau = 20,$ $I_{ext} = 0.23$", r"$a = -0.27,$ $b = 1.0,$"+"\n"+r"$\tau = 18,$ $I_{ext} = 0.25$",
+            r"$a = -0.35,$ $b = 1.3,$"+"\n"+r"$\tau = 25,$ $I_{ext} = 0.3$", r"$a = -0.27,$ $b = 1.3,$"+"\n"+r"$\tau = 18,$ $I_{ext} = 0.3$"]
+
+    ax[0].set_ylabel(r"$w$")
+    
+    for i in range(4):
+        # ax[i].legend(prop={'size': 20})
+        ax[i].set_xlabel(r"$v$")
+        ax[i].set_title(tits[i])
+        # ax[i].set_xlim([xmin*1.2, xmax*1.2])
+        # ax[i].set_ylim([ymin*1.1, ymax*1.1])
+        # if i != 0:
+        #     ax[i].yaxis.set_visible(False)
+        
+        for item in ([ax[i].title, ax[i].xaxis.label, ax[i].yaxis.label] +
+                     ax[i].get_xticklabels() + ax[i].get_yticklabels()):
+            item.set_fontsize(20)
+    
+    plt.savefig("plots_for_thesis/fhn_phase.pdf", bbox_inches='tight')
+    plt.show()
+    
+    
+    fig, axs = plt.subplots(1,4, figsize=(19,4), sharex=True, sharey=True)
+    ax = axs.flatten()
+    ax[0].plot(t, y0[:,0], y0[:,1])
+    ax[1].plot(t, y1[:,0], y1[:,1])
+    ax[2].plot(t, y2[:,0], y2[:,1])
+    ax[3].plot(t, y3[:,0], y3[:,1])
+    
+    fig.subplots_adjust(wspace=.02)
+    
+    ax[0].set_ylabel(r"$v, w$")
+    ax[3].legend(["v", "w"], prop={'size': 20})
+    
+    for i in range(4):
+        # ax[i].legend(prop={'size': 20})
+        ax[i].set_xlabel(r"$t$")
+        # ax[i].set_ylim([xmin*1.1, xmax*1.1])
+        # ax[i].set_title(tits[i])
+        for item in ([ax[i].title, ax[i].xaxis.label, ax[i].yaxis.label] +
+                     ax[i].get_xticklabels() + ax[i].get_yticklabels()):
+            item.set_fontsize(20)
+    
+    plt.savefig("plots_for_thesis/fhn_time.pdf", bbox_inches='tight')
+    plt.show()
 
 def plot_phase0():
     t = np.linspace(0, 999, 1000)
@@ -232,7 +304,7 @@ def plot_comp():
     plt.show()
     
 # first_good()
-# bad_figs()
+bad_figs()
 
 # first_box()
 # sec_box()
@@ -246,10 +318,11 @@ def plot_comp():
 # undef()
 # plot_phase()    
 # plot_phase0()
+# plot_phase2()
 # plot_fhn()
 
 # plot_features()
-plot_comp()
+# plot_comp()
 
     
     
