@@ -16,62 +16,6 @@ import seaborn as sns
 sns.set_theme()
 
 
-def make_one_plot(path, model="fitzhugh_nagumo", states=[1,2], state_names = ["v", "w"]):
-    """
-    Makes one plot of the prediction.
-    """
-    
-    sns.set_theme()
-    
-    filename0 = model+".dat"
-    filename1 = model+"_pred.dat"
-    filename2 = "neural_net_pred_best.dat"
-    
-    exact = np.loadtxt(os.path.join(path, filename0), delimiter=' ', skiprows=0, dtype=float)
-    pred  = np.loadtxt(os.path.join(path, filename1), delimiter=' ', skiprows=0, dtype=float)
-    nn    = np.loadtxt(os.path.join(path, filename2), delimiter=' ', skiprows=0, dtype=float)
-    
-    t, v_exe, w_exe = exact[:,0], exact[:,states[0]], exact[:,states[1]]
-    v_pre, w_pre    = pred[:,states[0]], pred[:,states[1]]
-    v_nn, w_nn      = nn[:,states[0]], nn[:,states[1]]
-    
-    fig, axs = plt.subplots(2, 2, figsize=(14,10))
-    axs_falt = axs.flatten()
-    
-    # print(t.shape)
-    
-    l1, = axs_falt[0].plot(t, v_exe)
-    l2, = axs_falt[0].plot(t, v_nn, "r--")
-    axs_falt[0].set_title(f"NN's prediction of {state_names[0]} in the best epoch.")
-    
-    axs_falt[1].plot(t, v_exe)
-    axs_falt[1].plot(t, v_pre, "r--")
-    axs_falt[1].set_title(f"ODE prediction of {state_names[0]}.")
-    
-    axs_falt[2].plot(t, w_exe)
-    axs_falt[2].plot(t, w_nn, "r--")
-    axs_falt[2].set_title(f"NN's prediction of {state_names[1]} in the best epoch.")
-    
-    axs_falt[3].plot(t, w_exe)
-    axs_falt[3].plot(t, w_pre, "r--")
-    axs_falt[3].set_title(f"ODE prediction of {state_names[1]}.")
-    
-    for i in range(4):
-        axs_falt[i].set_xlabel("Time (ms)")
-        axs_falt[i].set_ylabel("Potential (mV)")
-        # axs_falt[i].grid()
-        
-    axs_falt[2].set_ylabel("Current (mA)")
-    axs_falt[3].set_ylabel("Current (mA)")
-    
-    fig.legend((l1,l2), ("Exact", "Prediction"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
-    
-    fig.savefig(Path.joinpath( path, "full_plot.pdf"))
-    
-    plt.show()
-
-
-
 def out_dom(saveloc="out_dom"):
     
     path = Path("out_dom/expe_10")
@@ -105,6 +49,9 @@ def out_dom(saveloc="out_dom"):
     t0 = np.linspace(000, 999, 2000)
     t1 = np.linspace(1000, 1999, 1000)
     t = np.append(t0,t1)
+    
+    # for i in range(len(t1)):    
+    #     nn_pred[i,1:] = nn_org[0,1:] + np.tanh(t1[i]) * np.array([1., .1]) * nn_pred[i,1:]
     
     t_full = np.concatenate((t0[1300:], t1))
     
@@ -171,29 +118,12 @@ def out_dom(saveloc="out_dom"):
     
     fig.legend((l1,l2), ("Prediction", "Real"), bbox_to_anchor=(0.5,0.5), loc="center", ncol=1)
     
-    fig.savefig(saveloc+"/out_dom_pred.pdf")
+    # fig.savefig(saveloc+"/out_dom_pred.pdf")
     
     plt.show()
     
     
-    # plt.plot(np.linspace(000, 999, 2000), nn_org[:,1])
-    # plt.plot(t, nn_pred[:,1])
-    # plt.show()
-    
-    # plt.plot(np.linspace(000, 999, 2000), nn_org[:,2])
-    # plt.plot(t, nn_pred[:,2])
-    # plt.show()
-    
-    # plt.plot(t, real[:,0])
-    # plt.plot(t, ode_pred[:,0])
-    # plt.plot(t, nn_pred[:,1])
-    # plt.show()
-    
-    
-    # plt.plot(t, real[:,1])
-    # plt.plot(t, ode_pred[:,1])
-    # plt.plot(t, nn_pred[:,2])
-    # plt.show()
+
 
 if __name__ == "__main__":
     out_dom()

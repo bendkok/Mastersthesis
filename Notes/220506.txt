@@ -19,10 +19,10 @@ brute force paper/ what's actually been shown?
 \textit{loss} function or \textit{loss function}?
 
 extra titles/subtitles 
-	cells in general
-	supervised, unsupervised and reinforcement learning
-	Train and test data
-	Gradient descent
+		cells in general
+		supervised, unsupervised and reinforcement learning
+		Train and test data
+		Gradient descent
 	Remove PINN
 	Expand Summary of Hyperparameters
 	
@@ -42,6 +42,19 @@ small changes:
 - conclusion (limited feedback from before)
 
 
-Tabel caption over.
-make what is caption clearer
-legg github i implementation
+	Tabel caption over.
+	make what is caption clearer
+	legg github i implementation
+	move evaluation to results, sec. 5.2
+
+	Språket i Abstract må bearbeides noe. Vil du ha hjelp med det? (Se også kommentar under om Conclusions)
+	Acknowledgement: kommenterer ikke på dette annet enn: er det ferdigskrevet?
+	Alle latinske termer i kursiv: et al., ad infinitum (bruk søkefunksjonen for å lete opp alle)
+Skal det være preteritum når man omtaler publiserte studier? Du skriver f.eks. på side 15:
+	Physiological Background: har ikke lest I detalj, ser OK ut. Kap. 2.2.1: språket kan forbedres noe: vil du ha hjelp til det?
+	Chapter 3 og 4: ikke lest da det ser ok ut. Er det noe du ønsker at jeg skal fokusere på med hensyn til språk?
+	4.7 Evaluation: usikker på hvorfor du har diskusjonskapittel her? Det er også en del metodeinfo i kapittel 5 Results. Burde du hatt et eget kapittel på metode? Jeg føler at kapittel 2, 3 og 4 er introduksjon (bakgrunnsinformasjon). Se forslag til disposisjon under.
+	Mellomrom: pass på å ha litt luft mellom kapitlene (og like mye space mellom kapitlene).
+	Jeg foretrekker at du skriver ut med ord i stedet for forkortelser den første gang du nevner noe i hovedkapitlene. F.eks. Chapter 5 «In this chapter we present our results. Firstly, we present the results from performing structural indefinability analysis (SIA) in FitzHugh-Nagumo models (FHN).”
+Conclusions skal være et eget kapittel til slutt som i innhold ligner på Abstract. Dette skal svare ut «Objectives»
+

@@ -7,7 +7,7 @@ Do we need to check the singularity of FIM instead?
 
 What's left to write:
 	abstract
-introduction
+	introduction
 	small introduction for each chapter
 	expand on the history of AP models
 	find examples of more cardiac/exitable cell models ?
@@ -16,11 +16,11 @@ find examples of machine learning stuff
 	history of PINNs
 	consider moving Identifiability.
 	write how to do structural identifiability
-expand on alternative methods of Practical Identifiability
-decide what to do about Implementation of PINN, move, remove, expand on...
+	expand on alternative methods of Practical Identifiability
+	decide what to do about Implementation of PINN, move, remove, expand on...
 	check how He-init. does biases - Think it's just 0
 	update create_plots_for_thesis.py with bar and box plots
-update hyp.para. for bad results
+	update hyp.para. for bad results
 figures for lr
 	say something about search range
 	move search range to only w
@@ -37,14 +37,14 @@ finish res
 	make table for results for the finanlly good example
 	make sure all Iext use I_{\text{ext}}
 write appendix stuff
-finnish List of Notation and Abbreviations
+	finnish List of Notation and Abbreviations
 double check that hyp.para. is correct, escpecially lr-decay
-insert citations in conlusions chapter
+	insert citations in conlusions chapter
 	write propper names in figure and table brackets [] for list of figures and tables stuff
-think more about the order of sections and stuff
-in future work add extrapolating to more cells at once - see projcet description for example
-also sparser data and for more complex models we can see how data for a few states can identify more
-also decrease the amount of points in big τ. 
+	think more about the order of sections and stuff
+	in future work add extrapolating to more cells at once - see projcet description for example
+	also sparser data and for more complex models we can see how data for a few states can identify more
+	also decrease the amount of points in big τ. 
 
 
 	write about how to use DeepXDE ?

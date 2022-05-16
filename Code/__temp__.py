@@ -14,24 +14,24 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
-learning_rate = 1e-2
-decay_rate = 2.5e-4
-decay_step = 1
-global_step = np.linspace(0, 8e4, 1000)
+# learning_rate = 1e-2
+# decay_rate = 2.5e-4
+# decay_step = 1
+# global_step = np.linspace(0, 8e4, 1000)
 
-decayed_learning_rate = learning_rate / (1 + decay_rate * global_step /
-decay_step)
-decayed_learning_rate0 = learning_rate / (1 + 1e-4 * global_step /
-decay_step)
-decayed_learning_rate1 = learning_rate / (1 + .5e-4 * global_step /
-decay_step)
+# decayed_learning_rate = learning_rate / (1 + decay_rate * global_step /
+# decay_step)
+# decayed_learning_rate0 = learning_rate / (1 + 1e-4 * global_step /
+# decay_step)
+# decayed_learning_rate1 = learning_rate / (1 + .5e-4 * global_step /
+# decay_step)
 
 
-plt.plot(global_step, decayed_learning_rate)
-plt.plot(global_step, decayed_learning_rate0)
-plt.plot(global_step, decayed_learning_rate1)
-# plt.yscale("log")
-plt.show()
+# plt.plot(global_step, decayed_learning_rate)
+# plt.plot(global_step, decayed_learning_rate0)
+# plt.plot(global_step, decayed_learning_rate1)
+# # plt.yscale("log")
+# plt.show()
 
 # learning_rate = 1e-2
 # decay_rate = .01
@@ -81,63 +81,89 @@ plt.show()
 #     print("Min  loss {}: {}, {}".format(parts[i], np.min(train_loss[:,i*2]), np.min(train_loss[:,i*2+1])))
     
 
+dir_name = os.listdir('./fhn_res/')
+lrs = {}
+for di in dir_name[1:]:
+    path = os.path.join('./fhn_res/', di)
+    # print(di, path)
+    try:
+        if di[:22] == "fitzhugh_nagumo_res_a_":
+            hyp_dat = np.loadtxt(os.path.join(path, 'hyperparameters.dat'), delimiter=': ', dtype=str)
+            loc = np.where(hyp_dat=='lr')[0]
+            lr = float(hyp_dat[loc,1])
+            
+            loc0 = np.where(hyp_dat=='sec_num_epochs')[0]
+            lr = float(hyp_dat[loc0,1])
+            
+            lrs[di] = lr
+        
+        # print(lr, di)
+    except:
+        ""
+    
+lrs0 = {k: v for k, v in sorted(lrs.items(), key=lambda item: item[1])}
+# print(lrs0)
+for i in lrs0:
+    print(lrs0[i], i)
+
+
 # diff = np.abs(train_loss[:2] - test_loss[:2])
 # print("\nODE train-test diff: ", np.mean(diff), np.min(diff), np.max(diff))
 
-dir_name = os.listdir('./fhn_res_clus/fhn_res_s-01_v-abtI_n0_e40')
-pos_para = ["a", "b", "τ", "I"]
-pos_states = ["v", "w"]
-MREs = []
-nns = []
-inc = []
-dirs = []
-
-for n in [0,1,2,5,10]:
-    for di in range(len(dir_name)):
-        path = Path("fhn_res_clus/fhn_res_s-01_v-abtI_n{}_e80/{}".format(n, dir_name[di]))
-        try:
-            with open(os.path.join(path, "evaluation.pkl"), "rb") as a_file:
-                eva_data = pickle.load(a_file)
-            with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
-                hyp_data = pickle.load(a_file)
-            with open(os.path.join(path, "pra_ident.pkl"), "rb") as a_file:
-                pi_data = pickle.load(a_file)
-            data = eva_data.copy()
-            data.update(hyp_data)
-            data.update(pi_data)
-            dirs.append(data)
-        except:
-            ""
-    df = pd.DataFrame(dirs)
-    MREs.append(np.mean(df["param_mre"]))
-    nns.append(np.mean(df["nn_mse"]))
-
-
-dir_name = os.listdir('./fhn_res_clus/fhn_res_s-01_v-a_n0_e40')
-pos_para = ["a", "b", "τ", "I"]
-pos_states = ["v", "w"]
-MREs0 = []
-nns0 = []
-inc = []
-dirs = []
+# dir_name = os.listdir('./fhn_res_clus/fhn_res_s-01_v-abtI_n0_e40')
+# pos_para = ["a", "b", "τ", "I"]
+# pos_states = ["v", "w"]
+# MREs = []
+# nns = []
+# inc = []
+# dirs = []
 
 # for n in [0,1,2,5,10]:
-for di in range(len(dir_name)):
-    path = Path("fhn_res_clus_lr/fhn_res_s-01_v-abtI_n{}_e80/{}".format(0, dir_name[di]))
-    try:
-        with open(os.path.join(path, "evaluation.pkl"), "rb") as a_file:
-            eva_data = pickle.load(a_file)
-        with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
-            hyp_data = pickle.load(a_file)
-        with open(os.path.join(path, "pra_ident.pkl"), "rb") as a_file:
-            pi_data = pickle.load(a_file)
-        data = eva_data.copy()
-        data.update(hyp_data)
-        data.update(pi_data)
-        dirs.append(data)
-    except:
-        ""
-df = pd.DataFrame(dirs)
+#     for di in range(len(dir_name)):
+#         path = Path("fhn_res_clus/fhn_res_s-01_v-abtI_n{}_e80/{}".format(n, dir_name[di]))
+#         try:
+#             with open(os.path.join(path, "evaluation.pkl"), "rb") as a_file:
+#                 eva_data = pickle.load(a_file)
+#             with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
+#                 hyp_data = pickle.load(a_file)
+#             with open(os.path.join(path, "pra_ident.pkl"), "rb") as a_file:
+#                 pi_data = pickle.load(a_file)
+#             data = eva_data.copy()
+#             data.update(hyp_data)
+#             data.update(pi_data)
+#             dirs.append(data)
+#         except:
+#             ""
+#     df = pd.DataFrame(dirs)
+#     MREs.append(np.mean(df["param_mre"]))
+#     nns.append(np.mean(df["nn_mse"]))
+
+
+# dir_name = os.listdir('./fhn_res_clus/fhn_res_s-01_v-a_n0_e40')
+# pos_para = ["a", "b", "τ", "I"]
+# pos_states = ["v", "w"]
+# MREs0 = []
+# nns0 = []
+# inc = []
+# dirs = []
+
+# # for n in [0,1,2,5,10]:
+# for di in range(len(dir_name)):
+#     path = Path("fhn_res_clus_lr/fhn_res_s-01_v-abtI_n{}_e80/{}".format(0, dir_name[di]))
+#     try:
+#         with open(os.path.join(path, "evaluation.pkl"), "rb") as a_file:
+#             eva_data = pickle.load(a_file)
+#         with open(os.path.join(path, "hyperparameters.pkl"), "rb") as a_file:
+#             hyp_data = pickle.load(a_file)
+#         with open(os.path.join(path, "pra_ident.pkl"), "rb") as a_file:
+#             pi_data = pickle.load(a_file)
+#         data = eva_data.copy()
+#         data.update(hyp_data)
+#         data.update(pi_data)
+#         dirs.append(data)
+#     except:
+#         ""
+# df = pd.DataFrame(dirs)
 # MREs0.append(np.mean(df["param_mre"]))
 # nns0.append(np.mean(df["nn_mse"]))
     
@@ -164,8 +190,8 @@ df = pd.DataFrame(dirs)
 #     states.append(np.array(pos_states)[s])
 #     # states.append(np.array(pos_states)[s].tolist())
 # df["States"] = states
-print(df[["found_param", "param_mre"]])
-print(df[["param_re"]])
+# print(df[["found_param", "param_mre"]])
+# print(df[["param_re"]])
 
 
 
