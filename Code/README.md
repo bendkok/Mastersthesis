@@ -7,7 +7,7 @@ ________________________________________________________________________________
 
 The main two files are:
 
-fhn_pinn.py
+fhn_pinn.py,
 br_pinn.py
 
 The rest are either supportive files, for making plots or similar.
