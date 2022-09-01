@@ -1,0 +1,67 @@
+cut at the beginning, used 20min should be 10min
+controll hands better (do less with them)
+some slides had too much whitespace
+keep font size more consistent
+more images in the begining
+slide 4: can skip the current title, use the bullet point as title
+at fhn: show specific formula when explaining cubic…
+sgd
+at NN explain C
+explain all parameters in the functions
+more focused, less abstract (p->a,b,τ,I)
+remember to mention partial data
+at identifiability, have example?
+    maybe the result?
+
+introduce myself
+logo of Simula/UiO
+add slide numbers
+beginning I say everything in 2 min in start then 10min later
+    can be skipped
+for ML relate more to out specific case
+separate loss/optimization/lr
++ more figures
+try to link more to our problem
+NN explain all in formula
+show figure of non-convexity
+show better where the NN is in the PINN
+historical, maybe have table of pors/cons
+PINN loss: motivate why the different terms
+better explain length, e.g. x in S, y in M, s>=M
+relate more to our problem/specific case
+either shorter outline or more transition slides
+    can bold the specific section in the outline
+or maybe on the bottom
+use latex consistently for functions/variables/etc.
+evaluation can be skipped
+instead explain next to specific results
+four the for figure slides, explain one each figure first time
+Importance slide, too many figures
+animate the introduction of the figures
+explain everything on the slides
+missing acknowledgment page
+
+don’t have entire thesis
+maybe just tell a story instead
+maybe not all the background at first
+have more flexibility in how the info is presented
+think more about how I transition between sections
+phsyi to ML: missing some context from the intro or better transition
+first slide more graphics/less or no text
+more about why we model cells in general
+“use synthetic data so we can see the error in the parameter estimation”
+there are various different ion channels in a cell model, a simple rep. is on that open/closes based upon the balance of the potential
+w - double u
+for plots have smaller timescale (500ms?)
+for FHN: only one plot, only a couple of beats
+for loss/opti: more general overview of what happens in ML first
+for PINN: show simple graphical representation
+e.g. full structure of PINN shown later (show earlier)
+identifiability:
+    title be a full sentence
+    combine all three into one slide
+    show one example
+for the inferred values have lines representing the nominal values
+for extrapolating, mention why it is bad or remove/show how it can be explored further
+limitations can maybe removed
+or combine with future work
