@@ -17,6 +17,7 @@ import make_box_plot as box
 from fhn_pinn import fitzhugh_nagumo_model
 from make_plots import make_plots
 from out_dom import out_dom
+import seaborn as sns
 
 
 #first figure
@@ -303,8 +304,38 @@ def plot_comp():
     plt.savefig("plots_for_thesis/inst_comp.pdf")
     plt.show()
     
+    
+def plot_points():
+    
+    sns.set_theme()
+
+    # t = np.linspace(0, 999, 1000)
+    t = np.linspace(0, 174, 1000)
+    y = fitzhugh_nagumo_model(t)
+    fig, ax = plt.subplots()
+    ax.plot(t, y[:,0], label='v')
+    ax.plot(t, y[:,1], label='w')
+    
+    ax.set_xlabel("Time (ms)")
+    ax.set_ylabel("v, w")
+    plt.savefig("plots_for_thesis/fhn_low.pdf")
+    ax.legend()
+    plt.show()
+    
+    t = np.linspace(0, 174, 70)
+    y = fitzhugh_nagumo_model(t)
+    fig, ax = plt.subplots()
+    ax.plot(t, y[:,0], "o", label='v')
+    # ax.plot(t, y[:,1], "o", label='w')
+    
+    ax.legend()
+    ax.set_xlabel("Time (ms)")
+    ax.set_ylabel("Potential (mV)")
+    plt.savefig("plots_for_thesis/fhn_points.pdf")
+    plt.show()
+    
 # first_good()
-bad_figs()
+# bad_figs()
 
 # first_box()
 # sec_box()
@@ -324,5 +355,6 @@ bad_figs()
 # plot_features()
 # plot_comp()
 
+plot_points()
     
     

@@ -14,6 +14,7 @@ import os
 import time
 import shutil
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from postprocessing import saveplot
 from make_plots import make_plots
@@ -737,21 +738,24 @@ def main():
 
 
 def plot_features():
+    
+    sns.set_theme()
 
-    t = np.linspace(0, 999, 1000)
+    # t = np.linspace(0, 999, 1000)
+    t = np.linspace(0, 199, 1000)
     y = fitzhugh_nagumo_model(t)
-    print(np.log(1+np.exp(0))*-.2)
+    # print(np.log(1+np.exp(0))*-.2)
     fig, ax = plt.subplots()
     ax.plot(t, y[:,0], label='v')
     # for i in np.linspace(-.1, -.5, 9):
     #     y = fitzhugh_nagumo_model(t, a=i)
     #     ax.plot(t, y[:,0], label=i)
-    # ax.plot(t, y[:,1])
+    ax.plot(t, y[:,1], label='w')
     # ax.plot(t, np.sin(0.01 * t))
     # ax.plot(t, np.sin(0.05 * t))
     # ax.plot(t, np.sin(0.1 * t))
     # ax.plot(t, np.sin(0.0172*2*np.pi*t), '--', label='k=17.2')
-    ax.plot(t, np.sin(0.0171*2*np.pi*t), '--', label='k=17.1')
+    # ax.plot(t, np.sin(0.0171*2*np.pi*t), '--', label='k=17.1')
     # ax.plot(t, np.sin(0.0174*2*np.pi*t), '--', label='k=17.4')
     # ax.plot(t, np.sin(0.01*2*np.pi*t))
     # ax.plot(t, np.sin(0.015*2*np.pi*t))
@@ -765,8 +769,18 @@ def plot_features():
     # for i in range(2):        
     #     out.append(np.mean(np.abs(y[:,i])))
     # print(out)
+    
+    t = np.linspace(0, 199, 70)
+    y = fitzhugh_nagumo_model(t)
+    fig, ax = plt.subplots()
+    ax.plot(t, y[:,0], "o", label='v')
+    ax.plot(t, y[:,1], "o",label='w')
+
+    
+    ax.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
-    main()
-    # plot_features()
+    # main()
+    plot_features()
