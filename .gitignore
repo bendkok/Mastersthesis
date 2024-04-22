@@ -439,3 +439,4 @@ model.ckpt*
 
 variables.dat
 checkpoint
+*.zip
