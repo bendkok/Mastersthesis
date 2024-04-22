@@ -7,7 +7,7 @@ ________________________________________________________________________________
 
 The main two files are:
 
-fhn_pinn.py,
-br_pinn.py
+- fhn_pinn.py, for FitzHugh-Nagumo model
+- br_pinn.py,  for Beeler-Reuter model
 
 The rest are either supportive files, for making plots or similar.
